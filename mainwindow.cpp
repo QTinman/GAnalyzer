@@ -456,7 +456,7 @@ void MainWindow::shorthelp()
 void MainWindow::welcome()
 {
         ui->textBrowser->append("<h1>Welcome to Gematria Analyzer!</h1><br>");
-        ui->textBrowser->append("<h2>This program calculates Kabbalah ciphers from phrases and compares it to dates numerology.</h2><br>");
+        ui->textBrowser->append("<h2>This program calculates Kabbalah ciphers from phrases and compares it to date numerology.</h2><br>");
         ui->textBrowser->append("<b>For details about ciphers select <font color=\"blue\">Tables->List ciphers</font></b>");
         ui->textBrowser->append("The program takes a phrase and date for comparison, also second date can be entered<br>");
         ui->textBrowser->append("Select <b>Help</b> from menu or type <font color=\"blue\">/h</font> in input area<br>");

@@ -1539,6 +1539,7 @@ QString listciphers(int reduced, int reversed, int type) {
     int i = 1;
     double t1;
     char l=0;
+    int jcount=0;
     stringstream ss;
     QString buffer;
 
@@ -1547,11 +1548,32 @@ QString listciphers(int reduced, int reversed, int type) {
         std::string s(1,c);
         t1 = i;
         if (type == 2) l= c+32;
-        if (type != 2) ss << c << " = " << getwordnumericvalue(tolowerCase(s),reduced,reversed,type) << "\t";
+        if (type != 2 && type != 4) ss << c << " = " << getwordnumericvalue(tolowerCase(s),reduced,reversed,type) << "\t";
+        if (type == 4 && (tolowerCase(s) != "j" ) && (tolowerCase(s) != "&" ) &&
+                (tolowerCase(s) != "v" ) && (tolowerCase(s) != "w" )) {
+            if (tolowerCase(s) == "z") jcount = 1;
+            if (tolowerCase(s) == "i") i--;
+            ss << c << " = " << getwordnumericvalue(tolowerCase(s),reduced,reversed,type) << "\t";
+        }
         if (type == 2) ss << l << " = " << getwordnumericvalue(tolowerCase(s),reduced,reversed,type) << "\t";
         if (floor(i/9) == t1/9) ss << "\n";
+
+        if (type == 4 && jcount == 1) {
+            ss << "J" << " = " << getwordnumericvalue("j",reduced,reversed,type) << "\t";
+            jcount = 2;
+        }
+        if (type == 4 && jcount == 2) {
+            ss << "V" << " = " << getwordnumericvalue("v",reduced,reversed,type) << "\t";
+            jcount = 3;
+        }
+        if (type == 4 && jcount == 3) {
+            ss << "&" << " = " << getwordnumericvalue("&",reduced,reversed,type) << "\t";
+            jcount = 4;
+        }
+        if (type == 4 && jcount == 4)  ss << "W" << " = " << getwordnumericvalue("w",reduced,reversed,type) << "\t";
         i++;
     }
+
     if (type == 2) {
         i = 1;
         ss << "\n\n";
