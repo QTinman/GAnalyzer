@@ -1,4 +1,5 @@
 #include "tools.h"
+#include "mainwindow.h"
 #include <string.h>
 #include <cmath>
 #include <iostream>
@@ -372,42 +373,63 @@ int getntriangular(int tri)
 
 }
 
-int getwordnumericvalue(std::string word, int reduced, int reversed)
+int getwordnumericvalue(std::string word, int reduced, int reversed, int type) // type 0 english ordenal, 1 Single Reduction, 2 Francis Bacon, 3 Satanic, 4 Jewish
 {
         int s1 = 0, sum = 0;// for summing the letter values.
-        tolowerCase(word);
+        if (type != 2) tolowerCase(word);
         for(size_t i=0; i<word.size(); ++i){	    	// loop through the string 1 char at a time
-            if (int(word[i]) <= 122 && int(word[i]) >= 97) sum = (int(word[i]-96));// using the ascii value for each letter
+            //qDebug() << int(word[i]) << "\n";
+            if (int(word[i]) <= 122 && int(word[i]) >= 97) {
+               sum = (int(word[i]-96));// using the ascii value for each letter
+               if (type == 3) sum += 35; //Satanic
+            }
+            if (int(word[i]) <= 90 && int(word[i]) >= 65 && type == 2) sum = (int(tolower(word[i])-96)) + 26; //Francis
+            if ((int((word[i]) <= 122 && int(word[i]) >= 97) || int(word[i]) == 38) && type == 4) { // Jewish
+                if (int(word[i]) == 116) sum = 100; //t
+                if (int(word[i]) == 117) sum = 200; //u
+                if (int(word[i]) == 120) sum = 300; //x
+                if (int(word[i]) == 121) sum = 400; //y
+                if (int(word[i]) == 122) sum = 500; //z
+                if (int(word[i]) == 106) sum = 600; //j
+                if (int(word[i]) == 118) sum = 700; //v
+                if (int(word[i]) == 38) sum = 800; //&
+                if (int(word[i]) == 119) sum = 900; //w
+                if (int(word[i]) <= 115 && int(word[i]) >= 107) { // 10-90
+                    sum = ((int(word[i])-96) - 10)*10;
+                }
+
+            }
             if (reversed == 1 && int(word[i]) <= 122 && int(word[i]) >= 97) sum = reverse(sum);
             if (reduced == 1 && int(word[i]) <= 122 && int(word[i]) >= 97) sum = reduce(sum);
+            if (type == 1 && int(word[i]) <= 122 && int(word[i]) >= 97 && tolower(word[i]) != 's') { //Single reduction
+                sum = reduce(sum);
+               } else if (tolower(word[i]) == 's' && type == 1) sum = 10;
+            if (int(word[i]) == 38 && type == 4) s1 += sum;
             if (int(word[i]) <= 122 && int(word[i]) >= 97) s1 += sum;
+            if (int(word[i]) <= 90 && int(word[i]) >= 65) s1 += sum;
          if (int(word[i]) <= 57 && int(word[i]) >= 49) s1 += int(word[i]-48);
         }
-
+        //qDebug() << word[i] << " = " << s1;
         return(s1);
 }
 
-bool findword(int c1, int c2, int f, std::string line)
+bool findword(int c1, std::string line)
 {
-    int ns1 = 0,ns2 = 0,ns3 = 0,ns4 = 0;
-    if (f!=2) ns1 = getwordnumericvalue(line,0,0);
-    if (f!=1) ns2 = getwordnumericvalue(line,1,0);
-    if (f==4) ns3 = getwordnumericvalue(line,0,1);
-    if (f==4) ns4 = getwordnumericvalue(line,1,1);
-    if (c2==0)
-    {
-        if (c1 == ns1 || c1 == ns2 || c1 == ns3 || c1 ==ns4)
+    int ns1 = 0,ns2 = 0,ns3 = 0,ns4 = 0,ns5 = 0,ns6 = 0,ns7 = 0;
+    ns1 = getwordnumericvalue(line,0,0,0);
+    ns2 = getwordnumericvalue(line,1,0,0);
+    ns3 = getwordnumericvalue(line,0,1,0);
+    ns4 = getwordnumericvalue(line,1,1,0);
+    if (single_r_on) ns5 = getwordnumericvalue(line,0,0,1);
+    if (francis_on) ns6 = getwordnumericvalue(line,0,0,2);
+    if (satanic_on) ns7 = getwordnumericvalue(line,0,0,3);
+    if (jewish_on) ns7 = getwordnumericvalue(line,0,0,4);
+     if (c1 == ns1 || c1 == ns2 || c1 == ns3 || c1 ==ns4 || c1 ==ns5 || c1 ==ns6 || c1 ==ns7)
         {
             return true;
         }
-    }
-    else
-    {
-        if ((c1 == ns1 || c1 == ns2 || c1 == ns3 || c1 ==ns4) && (c2 == ns1 || c2 == ns2 || c2 == ns3 || c2 ==ns4))
-        {
-            return true;
-        }
-    }
+
+
 return false;
 }
 

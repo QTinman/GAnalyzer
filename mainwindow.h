@@ -9,7 +9,8 @@
 extern QString phrase;
 extern QString labeltext;
 extern int year,dd,mm,ns,d2,m2,y2,filter;
-extern bool eudate,primeson;
+extern bool eudate,single_r_on,francis_on,satanic_on,jewish_on;
+
 extern int zerodays[8][250];
 
 
@@ -100,7 +101,6 @@ private slots:
     void on_pushButton_clicked();
     void displaydialog();
     void on_lineEdit_returnPressed();
-
 private:
     Ui::inputDialog *ui;
 

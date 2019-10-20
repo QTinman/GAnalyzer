@@ -9,12 +9,13 @@
 #include <QString>
 
 
+
     int dayNumber(int day, int month, int year);
     std::string dayname(int day);
     std::string getMonthName(int monthNumber);
     int numberOfDays (int monthNumber, int year);
-    int getwordnumericvalue(std::string word, int reduced, int reversed);
-    bool findword(int c1, int c2, int f, std::string line);
+    int getwordnumericvalue(std::string word, int reduced, int reversed, int type);
+    bool findword(int c1, std::string line);
     void eraseAllSubStr(std::string & mainStr, const std::string & toErase);
     void savelog(std::string line);
     void logtime();
