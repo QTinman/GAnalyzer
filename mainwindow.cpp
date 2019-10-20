@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "ui_inputdialog.h"
 #include "ui_selectdialog.h"
+#include "cipherdialog.h"
 #include <QtCore>
 #include <QDate>
 #include "string.h"
@@ -18,7 +19,7 @@ int zerodays[8][250];
 QString phrase = "<none>";
 QString labeltext;
 int year,dd,mm,ns,d2,m2,y2,filter;
-bool eudate = true;
+bool eudate = true,primeson=false;
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -612,6 +613,13 @@ void MainWindow::on_actionAbout_triggered()
     msgBox.exec();
 
     if (msgBox.clickedButton()==pButtonYes) {
-        QMessageBox::about(this,"Donate","Donations can be done by Paypal to jonssofh@hotmail.com or cryptocurrency BTC 3F8BM7RLiYp5j8k47JKSFqqpcru1pBbA9s");
+        QMessageBox::about(this,"Donate","Donations can be done by Paypal to jonssofh@hotmail.com or cryptocurrency BTC 3F8BM7RLiYp5j8k47JKSFqqpcru1pBbA9s , Support is most appreciated.");
     }
+}
+
+void MainWindow::on_action_Add_remove_ciphers_triggered()
+{
+    cipherDialog mDialog;
+    mDialog.setModal(true);
+    mDialog.exec();
 }

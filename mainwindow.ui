@@ -223,9 +223,16 @@
     <addaction name="actionHelp"/>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuCiphers">
+    <property name="title">
+     <string>&amp;Ciphers</string>
+    </property>
+    <addaction name="action_Add_remove_ciphers"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
    <addaction name="menu_Tables"/>
+   <addaction name="menuCiphers"/>
    <addaction name="menu_Help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -363,6 +370,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="action_Add_remove_ciphers">
+   <property name="text">
+    <string>&amp;Add remove ciphers</string>
    </property>
   </action>
  </widget>

@@ -16,17 +16,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    cipherdialog.cpp \
     gcalc.cpp \
     main.cpp \
     mainwindow.cpp \
     tools.cpp
 
 HEADERS += \
+    cipherdialog.h \
     gcalc.h \
     mainwindow.h \
     tools.h
 
 FORMS += \
+    cipherdialog.ui \
     inputdialog.ui \
     mainwindow.ui \
     selectdialog.ui

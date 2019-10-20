@@ -9,7 +9,7 @@
 extern QString phrase;
 extern QString labeltext;
 extern int year,dd,mm,ns,d2,m2,y2,filter;
-extern bool eudate;
+extern bool eudate,primeson;
 extern int zerodays[8][250];
 
 
@@ -74,6 +74,8 @@ private slots:
     void on_pushButton_2_clicked();
 
     void on_actionAbout_triggered();
+
+    void on_action_Add_remove_ciphers_triggered();
 
 private:
     Ui::MainWindow *ui;
