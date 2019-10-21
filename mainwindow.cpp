@@ -258,7 +258,7 @@ void MainWindow::on_lineEdit_returnPressed()
 
     QString tphrase = ui->lineEdit->text();
     std::string stdphrase = tphrase.toUtf8().constData();
-    if (ui->checkBox->isChecked()) stdphrase = "/a" +stdphrase;
+    if (ui->checkBox->isChecked() && stdphrase[0] != '/') stdphrase = "/a" +stdphrase;
     if (stdphrase == "dd" || stdphrase == "DD") {
         QString html = printword(stdphrase,'D',true,false);
         ui->textBrowser->append("<html>"+html+"</html>");
