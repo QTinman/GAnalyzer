@@ -305,48 +305,48 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eutime) {
         logline.str("");
         if (dd2 != 0){
           if (eutime) {
-              logline << "<br>" << d1 << d2 << getMonthName (mm-1).c_str() << " - &emsp;From" << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
+              logline << "<br>" << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << d1 << d2 << getMonthName (mm-1).c_str() << " - &emsp;From" << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
+              logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << d1 << d2 << getMonthName (mm-1).c_str() << " - &emsp;From" << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
+              logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
               } else {
-              logline << "<br>" << getMonthName (mm-1).c_str() << d1 << d2 << " - &emsp;From" << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
+              logline << "<br>" << getMonthName (mm-1).c_str() << " " << d1 << d2 << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << getMonthName (mm-1).c_str() << d1 << d2 << " - &emsp;From" << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
+              logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << getMonthName (mm-1).c_str() << d1 << d2 << " - &emsp;From" << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
+              logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");}
                 daynumb = daynr(dd2,mm2,year);
                 dayleft = daynrleft(dd2,mm2,year);
                 if (eutime) {
-                    logline << dd2 << getMonthName (mm2-1).c_str() << " - &emsp;It is the " << formattext(std::to_string(daynumb),1,1) << "th day in the year<br>";
+                    logline << dd2 << " " << getMonthName (mm2-1).c_str() << " - &emsp;It is the " << formattext(std::to_string(daynumb),1,1) << "th day in the year<br>";
                     buffer += QString::fromStdString(logline.str());
                     savelog(logline.str());
                     logline.str("");
-                    logline << dd2 << getMonthName (mm2-1).c_str() << " - &emsp;There are " << formattext(std::to_string(dayleft),1,1) << " days left in the year<br>";
+                    logline << dd2 << " " << getMonthName (mm2-1).c_str() << " - &emsp;There are " << formattext(std::to_string(dayleft),1,1) << " days left in the year<br>";
                     buffer += QString::fromStdString(logline.str());
                     savelog(logline.str());
                     logline.str("");
                     } else {
-                    logline << getMonthName (mm2-1).c_str() << dd2 << " - &emsp;It is the " << formattext(std::to_string(daynumb),1,1) << "th day in the year<br>";
+                    logline << getMonthName (mm2-1).c_str() << " " << dd2 << " - &emsp;It is the " << formattext(std::to_string(daynumb),1,1) << "th day in the year<br>";
                     buffer += QString::fromStdString(logline.str());
                     savelog(logline.str());
                     logline.str("");
-                    logline << getMonthName (mm2-1).c_str() << dd2 << " - &emsp;There are " << formattext(std::to_string(dayleft),1,1) << " days left in the year<br>";
+                    logline << getMonthName (mm2-1).c_str() << " " << dd2 << " - &emsp;There are " << formattext(std::to_string(dayleft),1,1) << " days left in the year<br>";
                     buffer += QString::fromStdString(logline.str());
                     savelog(logline.str());
                     logline.str("");}

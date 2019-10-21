@@ -258,6 +258,7 @@ void MainWindow::on_lineEdit_returnPressed()
 
     QString tphrase = ui->lineEdit->text();
     std::string stdphrase = tphrase.toUtf8().constData();
+    if (ui->checkBox->isChecked()) stdphrase = "/a" +stdphrase;
     if (stdphrase == "dd" || stdphrase == "DD") {
         QString html = printword(stdphrase,'D',true,false);
         ui->textBrowser->append("<html>"+html+"</html>");
@@ -275,6 +276,7 @@ void MainWindow::on_lineEdit_returnPressed()
         replaceAll(stdphrase,"/e ","/e");
         replaceAll(stdphrase,"/o ","/o");
         //qDebug() << QString::fromStdString(stdphrase) << "\n";
+
         switch (stdphrase[1]) {
         case 'a':
         {
