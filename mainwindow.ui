@@ -114,7 +114,7 @@
            <widget class="QLabel" name="label">
             <property name="maximumSize">
              <size>
-              <width>80</width>
+              <width>60</width>
               <height>16777215</height>
              </size>
             </property>
@@ -157,11 +157,24 @@
           </item>
           <item>
            <widget class="QCheckBox" name="checkBox">
+            <property name="maximumSize">
+             <size>
+              <width>130</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="text">
              <string>To&amp;ggle Analyze</string>
             </property>
             <property name="shortcut">
              <string>Alt+G</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="SaveHistory">
+            <property name="text">
+             <string>&amp;Save</string>
             </property>
            </widget>
           </item>
@@ -215,6 +228,7 @@
     <addaction name="actionList_Ciphers"/>
     <addaction name="actionList_Primenumbers"/>
     <addaction name="actionList_Triangular_numbers"/>
+    <addaction name="actionList_Solar_Eclipses"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -294,7 +308,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Eu date</string>
+    <string>&amp;Date format</string>
    </property>
   </action>
   <action name="actionDate_Details">
@@ -375,6 +389,11 @@
   <action name="action_Add_remove_ciphers">
    <property name="text">
     <string>&amp;Add remove ciphers</string>
+   </property>
+  </action>
+  <action name="actionList_Solar_Eclipses">
+   <property name="text">
+    <string>List Solar Eclipses</string>
    </property>
   </action>
  </widget>

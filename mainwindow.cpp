@@ -32,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent)
     mm = cd.month();
     QString scomstr = "Active phrase : " +phrase+ " - Current date : " + QString::number(dd) + "/" + QString::number(mm) + "/" + QString::number(year);
     ui->setupUi(this);
+    if (eudate) ui->action_Eu_date->setText("Date DMY");
+    else ui->action_Eu_date->setText("Date MDY");
     //setCentralWidget(ui->centralwidget);
     //setCentralWidget(ui->label);
     setCentralWidget(ui->groupBox_3);
@@ -243,6 +245,8 @@ void MainWindow::on_action_Eu_date_toggled(bool arg1)
 {
     if (arg1) eudate = true;
     else eudate = false;
+    if (eudate) ui->action_Eu_date->setText("Date DMY");
+    else ui->action_Eu_date->setText("Date MDY");
     emit updatestatusbar(phrase,dd,mm);
 }
 
@@ -413,7 +417,9 @@ void MainWindow::on_lineEdit_returnPressed()
 
     }
     else if (stdphrase != ""){
-        QString html = printword(stdphrase,'Y',true,false);
+        QString html;
+        if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
+        else html = printword(stdphrase,'N',true,false);
         ui->textBrowser->append("<html>"+html+"</html>");
     }
     ui->lineEdit->clear();
@@ -688,4 +694,16 @@ void MainWindow::on_action_Add_remove_ciphers_triggered()
     cipherDialog mDialog;
     mDialog.setModal(true);
     mDialog.exec();
+}
+
+void MainWindow::on_actionList_Solar_Eclipses_triggered()
+{
+    labeltext = "solar";
+    readsolarfile(dd,mm,year);
+    selectDialog sDialog;
+    sDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
+    sDialog.exec();
+
+    ui->textBrowser->append(printzerodays(dd,mm,year,0,filter,"listsolareclipses",eudate,true));
+
 }

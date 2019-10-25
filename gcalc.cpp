@@ -859,12 +859,31 @@ QString printzerodays(int dd, int mm, int year, int ns, int type, string detail,
     int counter;
     bool printbuffer=false;
     stringstream logline;
-    QString buffer,solartype, se1,se2,se3,se4,se5,se6;
+    QString buffer,solartype, se1,se2,se3,se4,se5,se6,se7;
     eraseAllSubStr(detail,"th ");
     //if (eutime) logline << "" << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;" << " There was a Annular Solar Eclipse exacly " << formattext(std::to_string(ns),1,1) << " weeks ago - " << detail << "<br>";
+    if (eudate) se7 = QString::number(dd) + " " +  getMonthName (mm-1).c_str() + " - ";
+    else se7 = QString::fromStdString(getMonthName (mm-1).c_str()) + " " +  QString::number(dd) + " - ";
     for (counter=0;counter<250;counter++) {
-        //qDebug() << zerodays[0][counter] << " " << zerodays[1][counter] << " " << zerodays[2][counter] << " " << zerodays[3][counter] << " " << zerodays[4][counter] << " " << zerodays[5][counter];
-        if (((zerodays[0][counter] == ns && (zerodays[7][counter] == type || type == 5)) || (zerodays[2][counter] == ns && (zerodays[7][counter] == type || type == 5))) && read) {
+        if (detail == "listsolareclipses" && read) {
+            se1 = "";
+            se2 = "";
+            se3 = " on ";
+            if (eudate) {
+                se4 = QString::fromStdString(formattext(QString::number(zerodays[4][counter]).toUtf8().constData(),1,1));
+                se5 = QString::fromStdString(formattext(QString::number(zerodays[5][counter]).toUtf8().constData(),1,1));
+            } else {
+                se5 = QString::fromStdString(formattext(QString::number(zerodays[4][counter]).toUtf8().constData(),1,1));
+                se4 = QString::fromStdString(formattext(QString::number(zerodays[5][counter]).toUtf8().constData(),1,1));
+            }
+            se6 = QString::fromStdString(formattext(QString::number(zerodays[6][counter]).toUtf8().constData(),1,1));
+            if (zerodays[7][counter] == 1) solartype = "Total";
+            if (zerodays[7][counter] == 2) solartype = "Annular";
+            if (zerodays[7][counter] == 3) solartype = "Partial";
+            if (zerodays[7][counter] == 4) solartype = "Hybrid";
+            if ((zerodays[7][counter] == type || type == 5) && zerodays[4][counter] != 0) buffer += solartype + " Solar Eclipse " + se3 + se2 + se4 + "/" + se5 + "/" + se6 +"<br>";
+        }
+        else if (((zerodays[0][counter] == ns && (zerodays[7][counter] == type || type == 5)) || (zerodays[2][counter] == ns && (zerodays[7][counter] == type || type == 5))) && read) {
             se4 = QString::fromStdString(formattext(QString::number(zerodays[4][counter]).toUtf8().constData(),1,1));
             se5 = QString::fromStdString(formattext(QString::number(zerodays[5][counter]).toUtf8().constData(),1,1));
             se6 = QString::fromStdString(formattext(QString::number(zerodays[6][counter]).toUtf8().constData(),1,1));
@@ -962,14 +981,9 @@ QString printzerodays(int dd, int mm, int year, int ns, int type, string detail,
         }
     }
     if (printbuffer) {
-        if (eudate)
-        buffer += QString::number(dd) + " " +  getMonthName (mm-1).c_str() + " - " + solartype + " Solar Eclipse "
-                + se3 + se2 + se4 + "/" + se5 + "/" + se6 + QString::fromStdString(detail) +"<br>";
-        else buffer += QString::fromStdString(getMonthName (mm-1).c_str()) + " " +  QString::number(dd) + " - " + solartype + " Solar Eclipse "
-                + se3 + se2 + se5 + "/" + se4 + "/" + se6 + QString::fromStdString(detail) +"<br>";
-
+        if (eudate) buffer += se7 + solartype + " Solar Eclipse " + se3 + se2 + se4 + "/" + se5 + "/" + se6 + QString::fromStdString(detail) +"<br>";
+        else buffer += se7 + solartype + " Solar Eclipse " + se3 + se2 + se5 + "/" + se4 + "/" + se6 + QString::fromStdString(detail) +"<br>";
     }
-
     return buffer;
 }
 

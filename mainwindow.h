@@ -78,6 +78,8 @@ private slots:
 
     void on_action_Add_remove_ciphers_triggered();
 
+    void on_actionList_Solar_Eclipses_triggered();
+
 private:
     Ui::MainWindow *ui;
    // QLabel *Statlabel;
