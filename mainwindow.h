@@ -8,10 +8,11 @@
 
 extern QString phrase;
 extern QString labeltext;
-extern int year,dd,mm,ns,d2,m2,y2,filter;
+extern int year,dd,mm,ns,d2,m2,y2,filter,hmempos;
 extern bool eudate,single_r_on,francis_on,satanic_on,jewish_on;
 
 extern int zerodays[8][250];
+extern QString hmem[10];
 
 
 QT_BEGIN_NAMESPACE
@@ -80,9 +81,16 @@ private slots:
 
     void on_actionList_Solar_Eclipses_triggered();
 
+    void keymem(QString memstr);
+
 private:
     Ui::MainWindow *ui;
    // QLabel *Statlabel;
+
+
+protected:
+    //void changeEvent(QEvent *e);
+    bool eventFilter(QObject *obj, QEvent *event);
 
 };
 //#endif // MAINWINDOW_H

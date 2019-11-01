@@ -6,6 +6,7 @@
 #include <QtCore>
 #include <QDate>
 #include "string.h"
+#include <QKeyEvent>
 
 #include <QLabel>
 #include <QDateTime>
@@ -16,10 +17,11 @@
 using namespace std;
 
 int zerodays[8][250];
+QString hmem[10];
 QString phrase = "<none>";
 QString labeltext;
-int year,dd,mm,ns,d2,m2,y2,filter;
-bool eudate = true,single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false;
+int year,dd,mm,ns,d2,m2,y2,filter,hmempos = -1;
+bool eudate=true,single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false;
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -32,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     mm = cd.month();
     QString scomstr = "Active phrase : " +phrase+ " - Current date : " + QString::number(dd) + "/" + QString::number(mm) + "/" + QString::number(year);
     ui->setupUi(this);
+    ui->lineEdit->installEventFilter(this);
     if (eudate) ui->action_Eu_date->setText("Date DMY");
     else ui->action_Eu_date->setText("Date MDY");
     //setCentralWidget(ui->centralwidget);
@@ -53,7 +56,60 @@ MainWindow::~MainWindow()
 }
 
 
+bool MainWindow::eventFilter(QObject* obj, QEvent *event)
+{
+    if (obj == ui->lineEdit)
+    {
+        if (event->type() == QEvent::KeyPress)
+        {
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+            if (keyEvent->key() == Qt::Key_Up)
+            {
 
+                 //ui->lineEdit->setText("Up Key");
+                 if (hmempos > 0) {
+                     hmempos --;
+                     ui->lineEdit->setText(hmem[hmempos]);
+                     //qDebug() << hmem[hmempos] << hmempos;
+
+                 }
+                 return true;
+            }
+            else if(keyEvent->key() == Qt::Key_Down)
+            {
+
+                //ui->lineEdit->setText("Down Key");
+                //if (hmempos == -1) hmempos = 0;
+                if (hmempos < 10 && hmem[hmempos] != "") {
+                    if (hmem[hmempos] != "") hmempos ++;
+                    //qDebug() << hmem[hmempos] << hmempos;
+                    if(hmempos <= 9 ) ui->lineEdit->setText(hmem[hmempos]);
+                    else ui->lineEdit->setText("");
+
+                    //if (hmem[hmempos+2] == "") ui->lineEdit->setText("");
+                }
+                //if (hmempos == 10) ui->lineEdit->setText("");
+                return true;
+            }
+        }
+        return false;
+    }
+    return QMainWindow::eventFilter(obj, event);
+}
+
+void MainWindow::keymem(QString memstr)
+{
+    if (hmem[9] != "") {
+        for (int i=0;i<9;i++){
+            hmem[i] = hmem[i+1];
+        }
+    }
+    hmem[9] = "";
+    for (hmempos=1;hmempos<10;hmempos++){
+        if (hmem[hmempos-1] == "") break;
+    }
+    hmem[hmempos-1] = memstr;
+}
 void MainWindow::on_actionDate_Search_triggered() //Ctrl-S
 {
     labeltext = "Search number :";
@@ -290,6 +346,8 @@ void MainWindow::on_lineEdit_returnPressed()
              datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
              datesearch.exec();
             } else if (QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2)) != "") phrase = QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2));
+
+            keymem(phrase);
             QString html = analyze(dd,mm,year,phrase,false,0,eudate);
             ui->textBrowser->append("<html>"+html+"</html>");
             emit updatestatusbar(phrase,dd,mm);
@@ -351,6 +409,7 @@ void MainWindow::on_lineEdit_returnPressed()
              datesearch.exec();
 
             } else if (QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2)) != "") phrase = QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2));
+             keymem(phrase);
             emit updatestatusbar(phrase,dd,mm);
             if (phrase != "<none>") {
                 std::string stdphrase = phrase.toUtf8().constData();
@@ -418,6 +477,8 @@ void MainWindow::on_lineEdit_returnPressed()
     }
     else if (stdphrase != ""){
         QString html;
+
+         keymem(QString::fromStdString(stdphrase));
         if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
         else html = printword(stdphrase,'N',true,false);
         ui->textBrowser->append("<html>"+html+"</html>");
@@ -594,7 +655,7 @@ void selectDialog::displaydialog()
     if (ui->SingleRed->isChecked()) ns = 5;
     if (ui->Francis->isChecked()) ns = 6;
     if (ui->Satanic->isChecked()) ns = 7;
-    if (ui->Jewish->isChecked()) ns = 7;
+    if (ui->Jewish->isChecked()) ns = 8;
     }
     if (labeltext == "Date to history") {
     if (ui->radioButton1->isChecked()) filter = 1;
@@ -604,7 +665,7 @@ void selectDialog::displaydialog()
     if (ui->SingleRed->isChecked()) filter = 5;
     if (ui->Francis->isChecked()) filter = 6;
     if (ui->Satanic->isChecked()) filter = 7;
-    if (ui->Jewish->isChecked()) filter = 7;
+    if (ui->Jewish->isChecked()) filter = 8;
     }
     if (labeltext == "solar") {
     if (ui->radioButton1->isChecked()) filter = 1;
@@ -658,18 +719,24 @@ void MainWindow::on_actionCompare_SolarE_to_history_triggered()
     sDialog.exec();
 
 
-    ui->textBrowser->append(solar2history(dd,mm,year,filter));
+    ui->textBrowser->append(solar2history(dd,mm,year,filter,eudate));
 }
 
 void MainWindow::on_pushButton_clicked()
 {
-    dd ++;
+    if (numberOfDays(mm-1,year) == dd) {
+        dd = 1;
+        mm ++;
+    } else dd ++;
     emit updatestatusbar(phrase,dd,mm);
 }
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    dd --;
+    if (dd == 1) {
+        mm --;
+        dd = numberOfDays(mm-1,year);
+    } else dd --;
     emit updatestatusbar(phrase,dd,mm);
 }
 
