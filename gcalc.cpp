@@ -31,7 +31,7 @@ QString loopYear(int ns, int year, int printcal, bool eudate)
     // j --> Iterate through all the days of the
     //       month - i
     readsolarfile(dd,mm,year);
-    //buffer = Qtotable("",1,0,0,0);
+
     for (int i = 0; i < mm2; i++)
     {
         //days = numberOfDays (i, year);
@@ -68,6 +68,7 @@ QString loopYear(int ns, int year, int printcal, bool eudate)
             }
             if (printcal == 1) {
           //      MainWindow::setui("hello");
+
             if (eudate) {
              Qdate = QString::number(d1)+QString::number(d2)+" "+getMonthName (i).c_str() + " - ";
              d_d_m_m = QString::fromStdString(formattext(QString::number(d1).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(d2).toUtf8().constData(),1,0))+" + "+QString::fromStdString(formattext(QString::number(m1).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(m2).toUtf8().constData(),1,0));
@@ -83,21 +84,21 @@ QString loopYear(int ns, int year, int printcal, bool eudate)
              Y_Y_y_y = QString::fromStdString(formattext(QString::number(y1).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(y2).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(y3).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(y4).toUtf8().constData(),1,0));
              yy = "("+QString::fromStdString(formattext(QString::number((y3*10)+y4).toUtf8().constData(),1,0))+")";
              y_y = QString::fromStdString(formattext(QString::number(y3).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(y4).toUtf8().constData(),1,0));
-
-             if (ns == (d1*10)+d2+(m1*10)+m2+(y1*10)+y2+(y3*10)+y4) buffer += Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150) + Qtotable(dd_mm + "+" + YY_yy + "= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == (d1*10)+d2+(m1*10)+m2+y1+y2+y3+y4) buffer += Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150) + Qtotable(dd_mm+ "+" +Y_Y_y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == d1+d2+m1+m2+y1+y2+y3+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150)+Qtotable(d_d_m_m+" + "+Y_Y_y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == (d1*10)+d2+(m1*10)+m2+(y3*10)+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150) + Qtotable(dd_mm + "+" + yy+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == d1+d2+m1+m2+y3+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150)+Qtotable(d_d_m_m+" + "+y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == (d1*10)+d2+(m1*10)+m2) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150) + Qtotable(dd_mm +"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == d1+d2+m1+m2+(y1*10)+y2+(y3*10)+y4) buffer += Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150)+Qtotable(d_d_m_m+ " + " +YY_yy+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == (d1*10)+d2+(m1*10)+m2+y3+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150) +Qtotable(dd_mm+"+"+y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == d1+d2+m1+m2+(y3*10)+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150)+Qtotable(d_d_m_m+" + "+yy+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == daynr((d1*10)+d2,(m1*10)+m2,year)) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150)+Qtotable(" It is the "+Qns+"th day of the year",0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == daynrleft((d1*10)+d2,(m1*10)+m2,year)) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150)+Qtotable("There are "+Qns+" days left of the year",0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == eu_amdate(2, d1, d2, m1, m2, ns)) buffer+=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150)+Qtotable(Qns+" fits Europian style of date of dd/mm",0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == eu_amdate(1, d1, d2, m1, m2, ns)) buffer+=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,150)+Qtotable(Qns+" fits American style of date of mm/dd",0,0,1,300)+Qtotable("",0,2,0,0);
-
+            buffer += Qtotable("",1,0,0,0);
+             if (ns == (d1*10)+d2+(m1*10)+m2+(y1*10)+y2+(y3*10)+y4) buffer += Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) + Qtotable(dd_mm + "+" + YY_yy + "= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == (d1*10)+d2+(m1*10)+m2+y1+y2+y3+y4) buffer += Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) + Qtotable(dd_mm+ "+" +Y_Y_y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == d1+d2+m1+m2+y1+y2+y3+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(d_d_m_m+" + "+Y_Y_y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == (d1*10)+d2+(m1*10)+m2+(y3*10)+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) + Qtotable(dd_mm + "+" + yy+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == d1+d2+m1+m2+y3+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(d_d_m_m+" + "+y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == (d1*10)+d2+(m1*10)+m2) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) + Qtotable(dd_mm +"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == d1+d2+m1+m2+(y1*10)+y2+(y3*10)+y4) buffer += Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(d_d_m_m+ " + " +YY_yy+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == (d1*10)+d2+(m1*10)+m2+y3+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) +Qtotable(dd_mm+"+"+y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == d1+d2+m1+m2+(y3*10)+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(d_d_m_m+" + "+yy+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == daynr((d1*10)+d2,(m1*10)+m2,year)) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(" It is the "+Qns+"th day of the year",0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == daynrleft((d1*10)+d2,(m1*10)+m2,year)) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable("There are "+Qns+" days left of the year",0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == eu_amdate(2, d1, d2, m1, m2, ns)) buffer+=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(Qns+" fits Europian style of date of dd/mm",0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == eu_amdate(1, d1, d2, m1, m2, ns)) buffer+=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(Qns+" fits American style of date of mm/dd",0,0,1,300)+Qtotable("",0,2,0,0);
+            buffer += Qtotable("",2,0,0,0);
              if (searchzerodays(ns,1,(d1*10)+d2,(m1*10)+m2,year) == ns) {
                  //qDebug() << ns;
                  buffer += printzerodays((d1*10)+d2,(m1*10)+m2,year,ns,1,"",eudate,false);
@@ -118,7 +119,7 @@ QString loopYear(int ns, int year, int printcal, bool eudate)
         }
     }
     //qDebug() << buffer;
-    //buffer += Qtotable("",2,0,0,0);
+
     return buffer;
 }
 
@@ -984,8 +985,8 @@ QString printzerodays(int dd, int mm, int year, int ns, int type, string detail,
     }
     if (printbuffer) {
         buffer += Qtotable("",1,0,0,0);
-        if (eudate) buffer += Qtotable("",0,1,0,0)+Qtotable(se7,0,0,1,150) + Qtotable(solartype + " Solar Eclipse " + se3 + se2 + se4 + "/" + se5 + "/" + se6 + QString::fromStdString(detail),0,0,1,1000)+Qtotable("",0,2,0,0);
-        else buffer += Qtotable("",0,1,0,0)+Qtotable(se7,0,0,1,150) + Qtotable(solartype + " Solar Eclipse " + se3 + se2 + se5 + "/" + se4 + "/" + se6 + QString::fromStdString(detail),0,0,1,1000)+Qtotable("",0,2,0,0);
+        if (eudate) buffer += Qtotable("",0,1,0,0)+Qtotable(se7,0,0,1,110) + Qtotable(solartype + " Solar Eclipse " + se3 + se2 + se4 + "/" + se5 + "/" + se6 + QString::fromStdString(detail),0,0,1,1000)+Qtotable("",0,2,0,0);
+        else buffer += Qtotable("",0,1,0,0)+Qtotable(se7,0,0,1,110) + Qtotable(solartype + " Solar Eclipse " + se3 + se2 + se5 + "/" + se4 + "/" + se6 + QString::fromStdString(detail),0,0,1,1000)+Qtotable("",0,2,0,0);
         buffer += Qtotable("",2,0,0,0);
     }
     return buffer;

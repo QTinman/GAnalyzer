@@ -21,7 +21,7 @@ QString hmem[10];
 QString phrase = "<none>";
 QString labeltext;
 int year,dd,mm,ns,d2,m2,y2,filter,hmempos = -1;
-bool eudate=true,single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false;
+bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false;
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -197,7 +197,7 @@ void inputDialog::displaydialog()
        if (labeltext == "New date :") {
             dd = ui->lineEdit->text().mid(3,2).toInt();
             mm = ui->lineEdit->text().mid(0,2).toInt();
-            if (valid_date(mm,dd,year) == 0) {
+            if (valid_date(dd,mm,year) == 0) {
                 QDate cd = QDate::currentDate();
                 year = cd.year();
                 dd = cd.day();
@@ -221,7 +221,7 @@ void inputDialog::displaydialog()
         d2 = ui->lineEdit->text().mid(3,2).toInt();
         m2 = ui->lineEdit->text().mid(0,2).toInt();
         y2 = ui->lineEdit->text().mid(6,4).toInt();
-        if (valid_date(m2,d2,y2) == 0) {
+        if (valid_date(d2,m2,y2) == 0) {
             d2 = 0;
             m2 = 0;
             y2 = 0;
@@ -253,7 +253,9 @@ void MainWindow::on_actionNew_Phrase_triggered()
 void MainWindow::on_actionNew_Date_triggered()
 {
     labeltext = "New date :";
+
     inputDialog datesearch;
+    datesearch.eudate = eudate;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
     emit updatestatusbar(phrase,dd,mm);
@@ -686,6 +688,7 @@ void MainWindow::on_action_Second_date_triggered()
 {
     labeltext = "Enter second date :";
     inputDialog datesearch;
+    datesearch.eudate = eudate;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
     emit updatestatusbar(phrase,dd,mm);

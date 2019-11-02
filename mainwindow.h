@@ -9,7 +9,7 @@
 extern QString phrase;
 extern QString labeltext;
 extern int year,dd,mm,ns,d2,m2,y2,filter,hmempos;
-extern bool eudate,single_r_on,francis_on,satanic_on,jewish_on;
+extern bool single_r_on,francis_on,satanic_on,jewish_on;
 
 extern int zerodays[8][250];
 extern QString hmem[10];
@@ -86,6 +86,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
    // QLabel *Statlabel;
+    bool eudate=true;
 
 
 protected:
@@ -104,6 +105,7 @@ class inputDialog : public QDialog
 public:
     explicit inputDialog(QWidget *parent = nullptr);
     ~inputDialog();
+    bool eudate;
 
 
 
