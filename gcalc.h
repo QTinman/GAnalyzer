@@ -6,7 +6,7 @@
 using namespace std;
 
 
-QString loopYear(int ns, int year, int printcal, bool eudate);
+QString loopYear(int ns,int dd, int mm, int year, int printcal, bool eudate);
 QString searchwords(int pattern, bool simpleprint);
 QString printword(string line, char save, bool header, bool simpleprint);
 QString add_dots(QString str,int length);
@@ -30,4 +30,5 @@ string firstletterupper(string line);
 string totable(string str, int start, int endrow, int colum, int width);
 QString Qtotable(QString str, int start, int endrow, int colum, int width);
 string char2string(char *c);
+QString detail(int ns,int dd, int mm, int year, int i,bool eudate);
 #endif // GCALC_H

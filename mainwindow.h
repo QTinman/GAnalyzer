@@ -28,6 +28,7 @@ public:
     ~MainWindow();
     void updatestatusbar(QString str, int dd2, int mm2);
 
+
 private slots:
     void on_actionDate_Search_triggered();
 
@@ -87,6 +88,7 @@ private:
     Ui::MainWindow *ui;
    // QLabel *Statlabel;
     bool eudate=true;
+    //int year,dd,mm;
 
 
 protected:
@@ -106,6 +108,7 @@ public:
     explicit inputDialog(QWidget *parent = nullptr);
     ~inputDialog();
     bool eudate;
+
 
 
 

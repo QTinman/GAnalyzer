@@ -415,7 +415,7 @@ int getwordnumericvalue(std::string word, int reduced, int reversed, int type) /
 
 bool findword(int c1, std::string line)
 {
-    int ns1 = 0,ns2 = 0,ns3 = 0,ns4 = 0,ns5 = 0,ns6 = 0,ns7 = 0;
+    int ns1 = 0,ns2 = 0,ns3 = 0,ns4 = 0,ns5 = 0,ns6 = 0,ns7 = 0,ns8 = 0;
     ns1 = getwordnumericvalue(line,0,0,0);
     ns2 = getwordnumericvalue(line,1,0,0);
     ns3 = getwordnumericvalue(line,0,1,0);
@@ -423,8 +423,8 @@ bool findword(int c1, std::string line)
     if (single_r_on) ns5 = getwordnumericvalue(line,0,0,1);
     if (francis_on) ns6 = getwordnumericvalue(line,0,0,2);
     if (satanic_on) ns7 = getwordnumericvalue(line,0,0,3);
-    if (jewish_on) ns7 = getwordnumericvalue(line,0,0,4);
-     if (c1 == ns1 || c1 == ns2 || c1 == ns3 || c1 ==ns4 || c1 ==ns5 || c1 ==ns6 || c1 ==ns7)
+    if (jewish_on) ns8 = getwordnumericvalue(line,0,0,4);
+     if (c1 == ns1 || c1 == ns2 || c1 == ns3 || c1 ==ns4 || c1 ==ns5 || c1 ==ns6 || c1 ==ns7 || c1 ==ns8)
         {
             return true;
         }

@@ -79,7 +79,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
             {
 
                 //ui->lineEdit->setText("Down Key");
-                //if (hmempos == -1) hmempos = 0;
+                if (hmempos > -1) {
                 if (hmempos < 10 && hmem[hmempos] != "") {
                     if (hmem[hmempos] != "") hmempos ++;
                     //qDebug() << hmem[hmempos] << hmempos;
@@ -88,6 +88,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 
                     //if (hmem[hmempos+2] == "") ui->lineEdit->setText("");
                 }
+            }
                 //if (hmempos == 10) ui->lineEdit->setText("");
                 return true;
             }
@@ -116,7 +117,7 @@ void MainWindow::on_actionDate_Search_triggered() //Ctrl-S
     inputDialog datesearch;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
-    QString html = loopYear(ns,year,1,eudate);
+    QString html = loopYear(ns,dd,mm,year,1,eudate);
     ui->textBrowser->append("<br>Searching dates for whole year starts<br>");
     if (ns > 0) ui->textBrowser->append("<html>"+html+"</html>");
 }
@@ -174,7 +175,6 @@ inputDialog::~inputDialog()
 
 void inputDialog::displaydialog()
 {
-
     if (labeltext == "New Phrase :") phrase = ui->lineEdit->text();
     if (labeltext == "New phrase :") phrase = ui->lineEdit->text();
     if (labeltext == "Search number :") ns = ui->lineEdit->text().mid(0,3).toInt();
@@ -536,7 +536,7 @@ void MainWindow::welcome()
 void MainWindow::on_action_Word_details_triggered() //Ctrl-W
 {
     if (phrase == "<none>") {
-     labeltext = "New Phrase :";
+     labeltext = "New phrase :";
      inputDialog datesearch;
      datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
      datesearch.exec();
@@ -711,7 +711,12 @@ void MainWindow::on_actionHelp_triggered()
 
 void MainWindow::on_actionSolar_Eclipses_triggered()
 {
-    emit ui->textBrowser->append(solareclipe(dd,mm,year,1,1,eudate)); // 1=print
+    labeltext = "solar";
+    selectDialog sDialog;
+    sDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
+    sDialog.exec();
+
+    emit ui->textBrowser->append(solareclipe(dd,mm,year,1,filter,eudate)); // 1=print
 }
 
 void MainWindow::on_actionCompare_SolarE_to_history_triggered()
