@@ -6,3 +6,4 @@ This program was created with Qt Creator 5.12 Community and need to be compiled 
 Binary for Linux-x64 Ubuntu 16.04 and Win x64 is found in release
 
 ![Welcome screen](https://github.com/QTinman/GAnalyzer/blob/master/GematriaAnalyzer.png)
+![Welcome screen](https://github.com/QTinman/GAnalyzer/blob/master/GematriaAnalyzer2.png)
