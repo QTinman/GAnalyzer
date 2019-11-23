@@ -494,7 +494,7 @@ void MainWindow::shorthelp()
         ui->textBrowser->append("<b>By shortcut following functions are available</b>");
         ui->textBrowser->append("<font color=\"blue\">(Ctrl-S)</font> <b>Date search</b> connect number to dates spanning the active year.");
         ui->textBrowser->append("<font color=\"blue\">(Ctrl-H)</font> <b>Search history.txt</b> searches all words connected to entered number in history.txt.");
-        ui->textBrowser->append("<font color=\"blue\">(Ctrl-A)</font> <b>Analyze</b> takes a phrase and compare it to current date displayed on the status bar.");
+        ui->textBrowser->append("<font color=\"blue\">(Ctrl-A)</font> <b>Analyze</b> takes active phrase and compare it to current date displayed on the status bar.");
         ui->textBrowser->append("<font color=\"blue\">(Ctrl-D)</font> <b>Date details</b> displays calculations for current date. Second date will extend the information.");
         ui->textBrowser->append("<font color=\"blue\">(Ctrl-W)</font> <b>Word details</b> shows details about active phrase.");
         ui->textBrowser->append("<font color=\"blue\">(Ctrl-E)</font> <b>Compare Solar Eclipses to History.txt</b> for current date");
@@ -502,7 +502,8 @@ void MainWindow::shorthelp()
         ui->textBrowser->append("<font color=\"blue\">(Ctrl-T)</font> <b>Compare phrase to history.txt</b> takes one of the base ciphers from active phrase and compares it to history.txt<br>");
 
 
-        ui->textBrowser->append("The input area takes phrases wich are displayed and saved to history.txt<br>");
+        ui->textBrowser->append("The input area takes phrases wich are displayed and saved to history.txt if Save is checked<br>");
+        ui->textBrowser->append("Toggle Analyze will run entered phrases through analyzer instead of word details.<br>");
         ui->textBrowser->append("<b>The input area also takes commands:</b>");
 
         ui->textBrowser->append("<font color=\"blue\">/a(phrase)</font> runs analyzer, (<b>Phrase</b> is optional)");
@@ -517,7 +518,7 @@ void MainWindow::shorthelp()
 
 
         ui->textBrowser->append("<font color=\"blue\">/c</font> Clears output");
-        ui->textBrowser->append("Enter <b>Word Phrase</b> shows details about that phrase and saves it to history.");
+        ui->textBrowser->append("Enter <b>Word Phrase</b> shows details about that phrase and saves it to history if Save is checked.");
         ui->textBrowser->append("Change <b>Current Year</b> from The Edit menu");
         ui->textBrowser->append("Change <b>Date Style</b> from The Edit menu");
         ui->textBrowser->append("<br><b>© jonssofh@hotmail.com</b><br>");
@@ -750,10 +751,10 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::on_actionAbout_triggered()
 {
-   // QMessageBox::about(this,"About Gematria Analyzer","Gematria Analyzer is a free software created for playing with the English language. Support is most appreciated.");
+   // QMessageBox::about(this,"About Gematria Analyzer","Version 0.2.2 <br>Gematria Analyzer is a free software created for playing with the English language. Support is most appreciated.");
     QMessageBox msgBox;
     msgBox.setWindowTitle("About Gematria Analyzer");
-    msgBox.setText(tr("Gematria Analyzer is a free software created for playing with the English language"));
+    msgBox.setText(tr("Version 0.2.2 <br>Gematria Analyzer is a free software created for playing with the English language"));
     QAbstractButton* pButtonYes = msgBox.addButton(tr("Donate!"), QMessageBox::YesRole);
     msgBox.addButton(tr("Ok"), QMessageBox::NoRole);
 

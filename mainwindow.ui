@@ -14,8 +14,8 @@
    <string>Gematria Analyzer</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>g_black.png</normaloff>g_black.png</iconset>
+   <iconset resource="resources.qrc">
+    <normaloff>:/new/icon/g_black.png</normaloff>:/new/icon/g_black.png</iconset>
   </property>
   <property name="locale">
    <locale language="NorwegianBokmal" country="Norway"/>
@@ -397,7 +397,9 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>action_Quit</sender>
