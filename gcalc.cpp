@@ -118,7 +118,7 @@ QString loopYear(int ns,int dd, int mm, int year, int printcal, bool eudate)
             }
         }
     }
-    //qDebug() << buffer;
+    //qDebug() << buffer.length();
 
     return buffer;
 }
@@ -130,6 +130,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
     double w1;
     QString buffer;
     stringstream logline;
+    string s1;
       int y1 = year/1000;
       int y2 = (year/100)-(y1*10);
       int y3 = (year-(y1*1000)-(y2*100))/10;
@@ -163,19 +164,37 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
           }
     daynumb = daynr(dd,mm,year);
     dayleft = daynrleft(dd,mm,year);
-    days = spanofdate(dd2,mm2,yy2,dd,mm,year);
-    wd1 = spanofdate(dd2,mm2,yy2,dd,mm,year)/7;
-    w1 = spanofdate(dd2,mm2,yy2,dd,mm,year);
+    //qDebug() << days << " " << QDate(year,mm,dd) << " " << QDate(yy2,mm2,dd2);
+    if (QDate(year,mm,dd) > QDate(yy2,mm2,dd2)) {
+        days = spanofdate(dd2,mm2,yy2,dd,mm,year);
+        wd1 = spanofdate(dd2,mm2,yy2,dd,mm,year)/7;
+        w1 = spanofdate(dd2,mm2,yy2,dd,mm,year);
+        s1 = " - From ";
+        //qDebug() << days << " " << QDate(dd,mm,year) << " " << QDate(dd2,mm2,yy2);
+        if (dd2<=dd) {
+         nm1 = mm - mm2 + (year - yy2) *12;
+         nm2 = spanofdate(dd2,mm,year,dd,mm,year);
+        } else {
+         nm1 = mm - mm2-1 + (year - yy2) *12;
+         nm2 = spanofdate(dd2,mm-1,year,dd,mm,year);
+    }
+    } else {
+        days = spanofdate(dd,mm,year,dd2,mm2,yy2);
+        wd1 = spanofdate(dd,mm,year,dd2,mm2,yy2)/7;
+        w1 = spanofdate(dd,mm,year,dd2,mm2,yy2);
+        s1 = " - To ";
+        if (dd<=dd2) {
+         nm1 = mm2 - mm + (yy2 - year) *12;
+         nm2 = spanofdate(dd,mm2,yy2,dd2,mm2,yy2);
+        } else {
+         nm1 = mm2 - mm-1 + (yy2 - year) *12;
+         nm2 = spanofdate(dd,mm2-1,yy2,dd2,mm2,yy2);
+        }
+    }
     w1 = w1/7-wd1;
     wd2 = round(w1*7);
-    if (dd2<=dd) {
-        nm1 = mm - mm2 + (year - yy2) *12;
-        nm2 = spanofdate(dd2,mm,year,dd,mm,year);
-    }
-    else {
-        nm1 = mm - mm2-1 + (year - yy2) *12;
-        nm2 = spanofdate(dd2,mm-1,year,dd,mm,year);
-    }
+
+
 
     logtime();
     logline.clear();
@@ -308,28 +327,28 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         logline.str("");
         if (dd2 != 0){
           if (eudate) {
-              logline << "<br>" << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
+              logline << "<br>" << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
+              logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
+              logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
               } else {
-              logline << "<br>" << getMonthName (mm-1).c_str() << " " << d1 << d2 << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
+              logline << "<br>" << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
+              logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << " - &emsp;From " << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
+              logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");}
@@ -381,7 +400,9 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
                     }
                 }
                 if (eudate) {
-                    if (dayleft > daynumb) logline << "From " << dd2 << " " << getMonthName (mm2-1).c_str() << " to " << dd << " " << getMonthName (mm-1).c_str() << " are " << formattext(std::to_string(daysbeetween),1,1) << " days <b>or</b> " << formattext(std::to_string(wd1),1,1) << " weeks+" << formattext(std::to_string(wd2),1,1) << " days <b>or</b> " << formattext(std::to_string(nm1),1,1) << " months+" << formattext(std::to_string(nm2),1,1) << " days<br>";
+                    if (dayleft > daynumb) logline << "From " << dd2 << " " << getMonthName (mm2-1).c_str() << " to " << dd << " " << getMonthName (mm-1).c_str() << " are "
+                       << formattext(std::to_string(daysbeetween),1,1) << " days <b>or</b> " << formattext(std::to_string(wd1),1,1) << " weeks+" << formattext(std::to_string(wd2),1,1)
+                       << " days <b>or</b> " << formattext(std::to_string(nm1),1,1) << " months+" << formattext(std::to_string(nm2),1,1) << " days<br>";
                     else logline << "From " << dd << " " << getMonthName (mm-1).c_str() << " to " << dd2 << " " << getMonthName (mm2-1).c_str() << " are " << formattext(std::to_string(daysbeetween),1,1) << " days <b>or</b> " << formattext(std::to_string(wd1),1,1) << " weeks+" << formattext(std::to_string(wd2),1,1) << " days <b>or</b> " << formattext(std::to_string(nm1),1,1) << " months+" << formattext(std::to_string(nm2),1,1) << " days<br>";
                     buffer += QString::fromStdString(logline.str());
                     savelog(logline.str());
@@ -451,7 +472,7 @@ int weeks_months(QDate startDate, QDate endDate, bool months, bool days)
 
 void readsolarfile(int dd, int mm, int year)
 {
-    int counter=0;
+    int counter=0,linelength=0;
     string line;
     ifstream myfile;
     stringstream ss;
@@ -459,9 +480,12 @@ void readsolarfile(int dd, int mm, int year)
     myfile.open("solareclipse.txt");
     if (myfile.is_open())
           {
-          while ( getline (myfile,line) )
+          //while ( getline (myfile,line) )
+          while ( myfile >>line )
             {
-
+        qDebug() << QString::fromStdString(line);
+        linelength = line.length();
+        if (linelength > 8) {
         if (QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))) > QDate(year, mm, dd)) {
             //if (weeks_months(QDate(year, mm, dd),QDate(fields[0].toInt(), fields[1].toInt(), fields[2].toInt()),false,true) == 0) {*/
                 zerodays[0][counter] = weeks_months(QDate(year, mm, dd),QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))),false,false);
@@ -512,7 +536,7 @@ void readsolarfile(int dd, int mm, int year)
             //if (counter == 50) break;
 
         }
-
+       }
     }
    }
     myfile.close();
@@ -539,7 +563,7 @@ QString solareclipe(int dd,int mm,int year, int output, int type,bool eudate)
     solartype2int=type;
     readsolarfile(dd,mm,year);
 
-    while (counter < 250) {
+    while (counter < 249) {
 
         if (QDate(zerodays[6][counter], zerodays[5][counter], zerodays[4][counter]) < QDate(year, mm, dd) && !foundafter && (type == zerodays[7][counter] || type == 5)) {
 
@@ -565,7 +589,7 @@ QString solareclipe(int dd,int mm,int year, int output, int type,bool eudate)
      if (zerodays[6][counter] != 0) {
      solartmp = zerodays[7][counter];
 
-
+    qDebug() << counter;
     if (type == solartmp || type == 5) {
      if (!foundafter) {
          afterweeks=zerodays[0][counter];
@@ -992,6 +1016,140 @@ QString printzerodays(int dd, int mm, int year, int ns, int type, string detail,
     return buffer;
 }
 
+
+int getns(string phrase, int out, int pt)
+{
+    int ns=0;
+    switch (out) {
+    case 1 :
+        ns = getwordnumericvalue(phrase,0,0,0);
+        break;
+    case 2 :
+        ns = getwordnumericvalue(phrase,1,0,0);
+        break;
+    case 3 :
+        ns = getwordnumericvalue(phrase,0,1,0);
+        break;
+    case 4 :
+        ns = getwordnumericvalue(phrase,1,1,0);
+        break;
+    case 5 :
+        if (single_r_on && getwordnumericvalue(phrase,0,0,1) != getwordnumericvalue(phrase,1,0,0)) ns = getwordnumericvalue(phrase,0,0,1);
+        break;
+    case 6 :
+        if (francis_on && getwordnumericvalue(phrase,0,0,2) != getwordnumericvalue(phrase,0,0,0)) ns = getwordnumericvalue(phrase,0,0,2);
+        break;
+    case 7 :
+        if (satanic_on) ns = getwordnumericvalue(phrase,0,0,3);
+        break;
+    case 8 :
+        if (jewish_on) ns = getwordnumericvalue(phrase,0,0,4);
+        break;
+
+    }
+    if (pt == 1) ns = getnprime(ns);
+    if (pt == 2) ns = getntriangular(ns);
+    return ns;
+}
+
+
+int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar)
+{
+    int rank=0, i, nrns,ns;
+
+    for(nrns=1;nrns<=8;nrns++){
+        for(i=1;i<=21;i++){
+           if (getns(phrase,nrns,0) > 0) if (phrasetodate(getns(phrase,nrns,0),dd,mm,year,i)) rank += 1;
+           if (getns(phrase,nrns,1) > 0) if (phrasetodate(getns(phrase,nrns,1),dd,mm,year,i)) rank += 1;
+           if (getns(phrase,nrns,2) > 0) if (phrasetodate(getns(phrase,nrns,2),dd,mm,year,i)) rank += 1;
+        }
+        if (runsolar) {
+            ns = searchzerodays(getns(phrase,nrns,0),1,dd,mm,year);
+            if (rank >= minimum-1) if (ns > 0) {
+                rank += 101;
+
+        //qDebug() << dd << " " << mm << " " << ns;
+        }
+      }
+        //qDebug() << getns(phrase,nrns,0);
+    }
+
+    return rank;
+}
+
+
+QString phraserank(string phrase, bool eudate, int minimum)
+{
+    QString buffer="";
+    int year_rank[5][500];
+    string s1="",s2="",solar="";
+    bool runsolar=false;
+    if (minimum > 100) {
+        minimum -= 100;
+        runsolar=true;
+    }
+    readsolarfile(dd,mm,year);
+    size_t found = phrase.find(",");
+    if (found < phrase.length()) {
+        s1 = phrase.substr(0,found);
+        s2 = phrase.substr(found+1,phrase.length());
+    } else s1 = phrase;
+    //cout << s1 << " " << s2;
+    int rank, days, mm2 = 12,pos=0,top=0,dd2 = 31;
+    for (int i = 0; i < mm2; i++)
+    {
+        //days = numberOfDays (i, year);
+        QDate cd(year,i+1,1);
+        days = cd.daysInMonth();
+
+        for (int j = 1; j <= days; j++)
+        {
+            if (j == dd2 && i == mm2) break;
+            rank = counter(s1,j,i+1,year,minimum,runsolar);
+
+            if (found < phrase.length() && counter(s2,j,i+1,year,minimum,runsolar) > 0 && rank > 0) rank+=counter(s2,j,i+1,year, minimum,runsolar);
+            if (rank >= 100) {
+                rank -= 100;
+                solar = "T";
+            } else solar = "";
+            if (rank >= 100) rank -= 100;
+            if (rank >= minimum) {
+                year_rank[0][pos] = rank;
+                year_rank[1][pos] = j;
+                year_rank[2][pos] = i+1;
+                year_rank[3][pos] = year;
+                if (solar == "T") {
+                    year_rank[4][pos] = 1;
+                    //qDebug() << QString::fromStdString(solar);
+                } else year_rank[4][pos] = 0;
+                if (rank > top) top = rank;
+
+                pos ++;
+                //qDebug() << j << "/" << i+1 << " " << rank << " " << pos << " " << buffer.length();
+            }
+        }
+    }
+    //for (int t=top;t>=minimum;t--){
+    for (int t=minimum;t<=top;t++){
+        if (s2 =="") buffer += "<br>" + QString::fromStdString(formattext(QString::number(t).toUtf8().constData(),1,0)) + " Hits found on phrase " +QString::fromStdString(formattext(s1,1,0)) + "<br><br>";
+        else buffer += "<br>" + QString::fromStdString(formattext(QString::number(t).toUtf8().constData(),1,0)) + " Hits found on phrase " +QString::fromStdString(formattext(s1,1,0)) + " & " +QString::fromStdString(formattext(s2,1,0))+"<br><br>";
+    for (int i=0;i<=pos;i++) {
+        if (year_rank[0][i] == t) {
+            if (year_rank[4][i] == 1) solar = "T";
+            else solar = "";
+
+            if (eudate)
+            buffer += QString::number(year_rank[1][i])+" "+QString::fromStdString(getMonthName (year_rank[2][i]-1).c_str()) + " " + QString::fromStdString(formattext(solar,1,1)) +"<br>";
+            else buffer += QString::fromStdString(getMonthName (year_rank[2][i]-1).c_str()) + " " + QString::number(year_rank[1][i])+ "<br>";
+        }
+        //qDebug() << t << " " << i << " " << year_rank[0][i] << " " << buffer.length();
+    }
+}
+    return buffer;
+}
+
+
+
 bool phrasetodate(int ns, int dd, int mm, int year, int i) {
     int d1, d2, m1 ,m2,daynumb,dayleft,DMY,MDY;
     int y1 = year/1000;
@@ -1099,18 +1257,22 @@ bool phrasetodate(int ns, int dd, int mm, int year, int i) {
         break;
    case 22 :
      if (searchzerodays(ns,1,0,0,0) > 0) return true;
+     //if (searchzerodays(ns,1,dd,mm,year) > 0) return true;
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
    case 23 :
      if (searchzerodays(ns,2,0,0,0) > 0) return true;
+     //  if (searchzerodays(ns,2,dd,mm,year) > 0) return true;
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
    case 24 :
      if (searchzerodays(ns,3,0,0,0) > 0) return true;
+     //  if (searchzerodays(ns,3,dd,mm,year) > 0) return true;
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
    case 25 :
      if (searchzerodays(ns,4,0,0,0) > 0) return true;
+     //  if (searchzerodays(ns,4,dd,mm,year) > 0) return true;
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
 
@@ -1357,13 +1519,13 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
     }
     if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
     for(i=1;i<=25;i++)
-    if (phrasetodate(ns,dd,mm,year,i) && (filter==5||!hlist) && single_r_on) {
+    if (phrasetodate(ns,dd,mm,year,i) && (filter==5||!hlist) && single_r_on && ns != getwordnumericvalue(phrase,1,0,0)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Single Reduction",eudate);
         found = true;
     }
     if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
     for(i=1;i<=25;i++)
-    if (phrasetodate(ns,dd,mm,year,i) && (filter==6||!hlist) && francis_on) {
+    if (phrasetodate(ns,dd,mm,year,i) && (filter==6||!hlist) && francis_on && ns != getwordnumericvalue(phrase,0,0,0)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Francis Bacon",eudate);
         found = true;
     }
@@ -1409,6 +1571,30 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Reverse Full Reduction",eudate);
             found = true;
         }
+    if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
+    for(i=1;i<=25;i++)
+        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && single_r_on && getnprime(ns) != getnprime(getwordnumericvalue(phrase,1,0,0))) {
+            if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Single Reduction",eudate);
+            found = true;
+        }
+    if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
+    for(i=1;i<=25;i++)
+        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && francis_on && getnprime(ns) != getnprime(getwordnumericvalue(phrase,0,0,0))) {
+            if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Francis Bacon",eudate);
+            found = true;
+        }
+    if (filter==7||!hlist) ns = getwordnumericvalue(phrase,0,0,3); //Satanic
+    for(i=1;i<=25;i++)
+        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && satanic_on) {
+            if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Satanic",eudate);
+            found = true;
+        }
+    if (filter==8||!hlist) ns = getwordnumericvalue(phrase,0,0,4); //Jewish
+    for(i=1;i<=25;i++)
+        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && jewish_on) {
+            if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Jewish",eudate);
+            found = true;
+        }
     if (found && used) {
         used = false;
         ex1 << formattext(std::to_string(getnprime(ns)),1,1) << formattext("th Prime",2,2);
@@ -1435,6 +1621,30 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
     for(i=1;i<=25;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==4||!hlist)) && getntriangular(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Reverse Full Reduction",eudate);
+            found = true;
+        }
+    if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
+    for(i=1;i<=25;i++)
+        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && single_r_on && getntriangular(ns) != getntriangular(getwordnumericvalue(phrase,1,0,0))) {
+            if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Single Reduction",eudate);
+            found = true;
+        }
+    if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
+    for(i=1;i<=25;i++)
+        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && francis_on && getntriangular(ns) != getntriangular(getwordnumericvalue(phrase,0,0,0))) {
+            if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Francis Bacon",eudate);
+            found = true;
+        }
+    if (filter==7||!hlist) ns = getwordnumericvalue(phrase,0,0,3); //Satanic
+    for(i=1;i<=25;i++)
+        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && satanic_on) {
+            if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Satanic",eudate);
+            found = true;
+        }
+    if (filter==8||!hlist) ns = getwordnumericvalue(phrase,0,0,4); //Jewish
+    for(i=1;i<=25;i++)
+        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && jewish_on) {
+            if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Jewish",eudate);
             found = true;
         }
     if (found && used) {
@@ -1816,8 +2026,8 @@ string charnumeric(int reduced, int reversed, string phrase, int type) {
     for (i=0;i<phrase.length();i++)
     {
         s1 << phrase[i];
-        if (i < phrase.length()-1) ss << getwordnumericvalue(s1.str(),reduced,reversed,type) << "+";
-        else
+        if (i < phrase.length()-1 && getwordnumericvalue(s1.str(),reduced,reversed,type) > 0) ss << getwordnumericvalue(s1.str(),reduced,reversed,type) << "+";
+        else if (getwordnumericvalue(s1.str(),reduced,reversed,type) > 0)
         ss << getwordnumericvalue(s1.str(),reduced,reversed,type) << "=";
         s1.str("");
     }
@@ -1876,7 +2086,7 @@ QString printword(string line, char save, bool header, bool simpleprint)
     buffer += QString::fromStdString(logline.str());
     savelog(logline.str());
     logline.str("");
-    logline << "English Orinal : &emsp;" << charnumeric(0,0,line,0) << formattext(std::to_string(ns1),1,1) << " Prime? "<< isprime(ns1) << " Triangular? " << istriangular(ns1) << "<br>";
+    logline << "English Ordinal : &emsp;" << charnumeric(0,0,line,0) << formattext(std::to_string(ns1),1,1) << " Prime? "<< isprime(ns1) << " Triangular? " << istriangular(ns1) << "<br>";
     buffer += QString::fromStdString(logline.str());
     savelog(logline.str());
     logline.str("");

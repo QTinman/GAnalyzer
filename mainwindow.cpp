@@ -2,7 +2,9 @@
 #include "ui_mainwindow.h"
 #include "ui_inputdialog.h"
 #include "ui_selectdialog.h"
+#include "ui_rankdialog.h"
 #include "cipherdialog.h"
+#include "rankdialog.h"
 #include <QtCore>
 #include <QDate>
 #include "string.h"
@@ -337,6 +339,7 @@ void MainWindow::on_lineEdit_returnPressed()
         replaceAll(stdphrase,"/w ","/w");
         replaceAll(stdphrase,"/e ","/e");
         replaceAll(stdphrase,"/o ","/o");
+        replaceAll(stdphrase,"/r ","/r");
         //qDebug() << QString::fromStdString(stdphrase) << "\n";
 
         switch (stdphrase[1]) {
@@ -473,6 +476,29 @@ void MainWindow::on_lineEdit_returnPressed()
                 }
                 break;
                 }
+            case 'r':
+            {
+                if (jewish_on) {
+                    single_r_on=false;
+                    francis_on=false;
+                    satanic_on=false;
+                    jewish_on=false;
+                } else{
+                    single_r_on=true;
+                    francis_on=true;
+                    satanic_on=true;
+                    jewish_on=true;
+                }
+                break;
+            }
+           case 'y':
+            {
+                QString html;
+
+              html = phraserank(phrase.toUtf8().constData(),eudate,3);
+              //html = phraserank("Donald Trump",eudate,2);
+              ui->textBrowser->append("<html>"+html+"</html>");
+            }
           }
         }
 
@@ -508,11 +534,12 @@ void MainWindow::shorthelp()
 
         ui->textBrowser->append("<font color=\"blue\">/a(phrase)</font> runs analyzer, (<b>Phrase</b> is optional)");
         ui->textBrowser->append("<font color=\"blue\">/w(phrase)</font> phrase details (<b>Phrase</b> is optional)");
-        ui->textBrowser->append("<font color=\"blue\">/n##/##/####</font> gives new date, (Year is optional)");
-        ui->textBrowser->append("<font color=\"blue\">/s##/##/####</font> gives new second date");
+        ui->textBrowser->append("<font color=\"blue\">/n##/##/####</font> New date, (Year is optional)");
+        ui->textBrowser->append("<font color=\"blue\">/s##/##/####</font> New second date");
         ui->textBrowser->append("<font color=\"blue\">/d##/##/####</font> date details (date is optional, year is extra option)");
         ui->textBrowser->append("<font color=\"blue\">/o#/##/##</font> Date compare to history (first number is filter 1-4, date is optional)");
         ui->textBrowser->append("<font color=\"blue\">/e@/##/##/####</font> Last and next Solar eclipse relative to date. @ is type \"T A P H-X=for all\" (date is optional, year is extra option)");
+        ui->textBrowser->append("<font color=\"blue\">/r</font> Toggle all extra ciphers on or off");
         ui->textBrowser->append("<font color=\"blue\">dd</font> deletes last line from history.txt");
         ui->textBrowser->append("<font color=\"blue\">/h</font> shows this help");
 
@@ -782,4 +809,18 @@ void MainWindow::on_actionList_Solar_Eclipses_triggered()
 
     ui->textBrowser->append(printzerodays(dd,mm,year,0,filter,"listsolareclipses",eudate,true));
 
+}
+
+void MainWindow::on_actionPhrase_ranking_triggered()
+{
+    rankDialog rDialog;
+    rDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
+    rDialog.exec();
+    QString html;
+    html = phraserank(phrase.toUtf8().constData(),eudate,ns);
+    ui->textBrowser->append("<html>"+html+"</html>");
+
+    QStringList myStringList = phrase.split(',').first().split(':');
+    phrase = myStringList.first();
+    emit updatestatusbar(phrase,dd,mm);
 }

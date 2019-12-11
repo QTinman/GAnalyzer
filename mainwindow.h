@@ -84,6 +84,8 @@ private slots:
 
     void keymem(QString memstr);
 
+    void on_actionPhrase_ranking_triggered();
+
 private:
     Ui::MainWindow *ui;
    // QLabel *Statlabel;

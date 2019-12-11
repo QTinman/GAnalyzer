@@ -20,18 +20,21 @@ SOURCES += \
     gcalc.cpp \
     main.cpp \
     mainwindow.cpp \
+    rankdialog.cpp \
     tools.cpp
 
 HEADERS += \
     cipherdialog.h \
     gcalc.h \
     mainwindow.h \
+    rankdialog.h \
     tools.h
 
 FORMS += \
     cipherdialog.ui \
     inputdialog.ui \
     mainwindow.ui \
+    rankdialog.ui \
     selectdialog.ui
 
 # Default rules for deployment.

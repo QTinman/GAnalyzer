@@ -31,4 +31,7 @@ string totable(string str, int start, int endrow, int colum, int width);
 QString Qtotable(QString str, int start, int endrow, int colum, int width);
 string char2string(char *c);
 QString detail(int ns,int dd, int mm, int year, int i,bool eudate);
+QString phraserank(string phrase, bool eudate, int minimum);
+int getns(string phrase, int out, int pt);
+int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar);
 #endif // GCALC_H
