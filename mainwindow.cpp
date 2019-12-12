@@ -341,7 +341,7 @@ void MainWindow::on_lineEdit_returnPressed()
         replaceAll(stdphrase,"/o ","/o");
         replaceAll(stdphrase,"/r ","/r");
         //qDebug() << QString::fromStdString(stdphrase) << "\n";
-
+         keymem(QString::fromStdString(stdphrase));
         switch (stdphrase[1]) {
         case 'a':
         {
@@ -498,6 +498,32 @@ void MainWindow::on_lineEdit_returnPressed()
               html = phraserank(phrase.toUtf8().constData(),eudate,3);
               //html = phraserank("Donald Trump",eudate,2);
               ui->textBrowser->append("<html>"+html+"</html>");
+              break;
+            }
+            case 'x':
+            {
+               if (stdphrase [2] == 'd') {
+                ns = ui->lineEdit->text().length();
+                ns = ui->lineEdit->text().mid(3,ns-3).toInt();
+                int d1,m1,y1;
+                QDate cd(year,mm,dd);
+                cd = cd.addDays(ns);
+                y1 = cd.year();
+                d1 = cd.day();
+                m1 = cd.month();
+                if (eudate) ui->textBrowser->append("<html>"+QString::number(d1)+"/"+QString::number(m1)+"/"+QString::number(y1)+"</html>");
+                else ui->textBrowser->append("<html>"+QString::number(m1)+"/"+QString::number(d1)+"/"+QString::number(y1)+"</html>");
+               } else {
+                ns = ui->lineEdit->text().length();
+                ns = ui->lineEdit->text().mid(2,ns-2).toInt();
+                QDate cd(year,mm,dd);
+                cd = cd.addDays(ns);
+                year = cd.year();
+                dd = cd.day();
+                mm = cd.month();
+                emit updatestatusbar(phrase,dd,mm);
+                break;
+               }
             }
           }
         }
@@ -506,7 +532,7 @@ void MainWindow::on_lineEdit_returnPressed()
     else if (stdphrase != ""){
         QString html;
 
-         keymem(QString::fromStdString(stdphrase));
+        keymem(QString::fromStdString(stdphrase));
         if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
         else html = printword(stdphrase,'N',true,false);
         ui->textBrowser->append("<html>"+html+"</html>");
@@ -540,6 +566,8 @@ void MainWindow::shorthelp()
         ui->textBrowser->append("<font color=\"blue\">/o#/##/##</font> Date compare to history (first number is filter 1-4, date is optional)");
         ui->textBrowser->append("<font color=\"blue\">/e@/##/##/####</font> Last and next Solar eclipse relative to date. @ is type \"T A P H-X=for all\" (date is optional, year is extra option)");
         ui->textBrowser->append("<font color=\"blue\">/r</font> Toggle all extra ciphers on or off");
+        ui->textBrowser->append("<font color=\"blue\">/x##</font> Add or subtract days from current date");
+        ui->textBrowser->append("<font color=\"blue\">/xd##</font> Add or subtract days from current date and display only in output.");
         ui->textBrowser->append("<font color=\"blue\">dd</font> deletes last line from history.txt");
         ui->textBrowser->append("<font color=\"blue\">/h</font> shows this help");
 

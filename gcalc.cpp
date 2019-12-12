@@ -483,7 +483,7 @@ void readsolarfile(int dd, int mm, int year)
           //while ( getline (myfile,line) )
           while ( myfile >>line )
             {
-        qDebug() << QString::fromStdString(line);
+        //qDebug() << QString::fromStdString(line);
         linelength = line.length();
         if (linelength > 8) {
         if (QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))) > QDate(year, mm, dd)) {
@@ -589,7 +589,7 @@ QString solareclipe(int dd,int mm,int year, int output, int type,bool eudate)
      if (zerodays[6][counter] != 0) {
      solartmp = zerodays[7][counter];
 
-    qDebug() << counter;
+    //qDebug() << counter;
     if (type == solartmp || type == 5) {
      if (!foundafter) {
          afterweeks=zerodays[0][counter];
