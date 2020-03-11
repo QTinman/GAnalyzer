@@ -22,3 +22,8 @@ void rankDialog::on_buttonBox_accepted()
     ns = ui->min->value();
     if (ui->checkBox->isChecked()) ns += 100;
 }
+
+void rankDialog::on_buttonBox_rejected()
+{
+    if (phrase != "<none>") phrase = "<none>";
+}

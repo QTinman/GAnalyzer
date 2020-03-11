@@ -210,6 +210,7 @@
     <addaction name="actionCompare_SolarE_to_history"/>
     <addaction name="actionSolar_Eclipses"/>
     <addaction name="separator"/>
+    <addaction name="action_Print"/>
     <addaction name="action_Quit"/>
    </widget>
    <widget class="QMenu" name="menu_Edit">
@@ -218,9 +219,12 @@
     </property>
     <addaction name="actionNew_Phrase"/>
     <addaction name="actionNew_Date"/>
+    <addaction name="separator"/>
     <addaction name="actionSet_Year"/>
     <addaction name="action_Eu_date"/>
     <addaction name="action_Second_date"/>
+    <addaction name="separator"/>
+    <addaction name="action_Font"/>
    </widget>
    <widget class="QMenu" name="menu_Tables">
     <property name="title">
@@ -403,6 +407,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="action_Font">
+   <property name="text">
+    <string>&amp;Font</string>
+   </property>
+  </action>
+  <action name="action_Print">
+   <property name="text">
+    <string>&amp;Print</string>
    </property>
   </action>
  </widget>

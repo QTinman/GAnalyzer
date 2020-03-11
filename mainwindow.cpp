@@ -11,6 +11,8 @@
 #include <QKeyEvent>
 
 #include <QLabel>
+#include <QFont>
+#include <QFontDialog>
 #include <QDateTime>
 #include "gcalc.h"
 #include <QLocale>
@@ -37,13 +39,17 @@ MainWindow::MainWindow(QWidget *parent)
     QString scomstr = "Active phrase : " +phrase+ " - Current date : " + QString::number(dd) + "/" + QString::number(mm) + "/" + QString::number(year);
     ui->setupUi(this);
     ui->lineEdit->installEventFilter(this);
+    ui->statusbar->installEventFilter(this);
     if (eudate) ui->action_Eu_date->setText("Date DMY");
     else ui->action_Eu_date->setText("Date MDY");
     //setCentralWidget(ui->centralwidget);
     //setCentralWidget(ui->label);
+
+    //ui->menu_File->menuAction()->setStatusTip("File Menu is hovered");
     setCentralWidget(ui->groupBox_3);
     ui->lineEdit->focusWidget();
     ui->statusbar->showMessage(scomstr);
+
     std::setlocale(LC_ALL,"");
 
             //int curr_locale = QLocale().language();
@@ -94,9 +100,12 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
                 //if (hmempos == 10) ui->lineEdit->setText("");
                 return true;
             }
+
         }
         return false;
     }
+
+    if(obj == ui->statusbar) emit updatestatusbar(phrase,dd,mm);
     return QMainWindow::eventFilter(obj, event);
 }
 
@@ -120,13 +129,16 @@ void MainWindow::on_actionDate_Search_triggered() //Ctrl-S
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
     QString html = loopYear(ns,dd,mm,year,1,eudate);
+    if (ns > 0) {
     ui->textBrowser->append("<br>Searching dates for whole year starts<br>");
-    if (ns > 0) ui->textBrowser->append("<html>"+html+"</html>");
+    ui->textBrowser->append("<html>"+html+"</html>");
+    }
 }
 
 void MainWindow::updatestatusbar(QString str, int dd2, int mm2)
 {
     QString scombstr;
+
     if (d2 == 0) {
     if (eudate) scombstr = "Active phrase : " +str+ " - Current date : " + QString::number(dd2) + "/" + QString::number(mm2) + "/" + QString::number(year);
     else scombstr = "Active phrase : " +str+ " - Current date : " + QString::number(mm2) + "/" + QString::number(dd2) + "/" + QString::number(year);
@@ -135,6 +147,7 @@ void MainWindow::updatestatusbar(QString str, int dd2, int mm2)
     else scombstr = "Active phrase : " +str+ " - Current date : " + QString::number(mm2) + "/" + QString::number(dd2) + "/" + QString::number(year) + " Second date : " + QString::number(m2) + "/" + QString::number(d2) + "/" + QString::number(y2);
     }
     //ui->statusbar->setStyleSheet("color: red");
+    ui->menu_File->menuAction()->setStatusTip(scombstr);
     ui->statusbar->showMessage(scombstr);
 }
 
@@ -155,7 +168,7 @@ inputDialog::inputDialog(QWidget *parent) :
 
     if (labeltext == "Search number :") {
         inputDialog::setWindowTitle("Search whole year for cipher");
-        ui->lineEdit->setInputMask("000");
+        ui->lineEdit->setInputMask("0000");
     }
     if (labeltext == "New Phrase :") inputDialog::setWindowTitle("Phrase needed for Analyzer to run");
     if (labeltext == "New phrase :") inputDialog::setWindowTitle("Enter new phrase");
@@ -165,7 +178,7 @@ inputDialog::inputDialog(QWidget *parent) :
     }
     if (labeltext == "Enter Cipher nr. :") {
         inputDialog::setWindowTitle("Search history.txt");
-        ui->lineEdit->setInputMask("000");
+        ui->lineEdit->setInputMask("0000");
     }
     ui->label->setText(labeltext);
 }
@@ -179,10 +192,10 @@ void inputDialog::displaydialog()
 {
     if (labeltext == "New Phrase :") phrase = ui->lineEdit->text();
     if (labeltext == "New phrase :") phrase = ui->lineEdit->text();
-    if (labeltext == "Search number :") ns = ui->lineEdit->text().mid(0,3).toInt();
-    if (labeltext == "Compare to history :") ns = ui->lineEdit->text().mid(0,3).toInt();
+    if (labeltext == "Search number :") ns = ui->lineEdit->text().mid(0,4).toInt();
+    if (labeltext == "Compare to history :") ns = ui->lineEdit->text().mid(0,4).toInt();
     if (labeltext == "Enter Year:") year = ui->lineEdit->text().mid(0,4).toInt();
-    if (labeltext == "Enter Cipher nr. :") ns = ui->lineEdit->text().mid(0,3).toInt();
+    if (labeltext == "Enter Cipher nr. :") ns = ui->lineEdit->text().mid(0,4).toInt();
     if (eudate) {
     if (labeltext == "New date :") {
         dd = ui->lineEdit->text().mid(0,2).toInt();
@@ -233,10 +246,12 @@ void inputDialog::displaydialog()
    }
 }
 
-void inputDialog::on_pushButton_clicked()
+
+void inputDialog::on_buttonBox_accepted()
 {
     emit displaydialog();
 }
+
 
 void inputDialog::on_lineEdit_returnPressed()
 {
@@ -265,14 +280,16 @@ void MainWindow::on_actionNew_Date_triggered()
 
 void MainWindow::on_actionSearch_History_txt_triggered() //Ctrl-H
 {
-
+    ns = 0;
     labeltext = "Enter Cipher nr. :";
     inputDialog datesearch;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
+    if (ns > 0){
     ui->textBrowser->append("<br>Search history with number starts<br>");
     QString html = searchwords(ns,true);
     if (ns >0) ui->textBrowser->append("<html>"+html+"</html>");
+    }
 }
 
 void MainWindow::on_actionSet_Year_triggered()
@@ -341,7 +358,7 @@ void MainWindow::on_lineEdit_returnPressed()
         replaceAll(stdphrase,"/o ","/o");
         replaceAll(stdphrase,"/r ","/r");
         //qDebug() << QString::fromStdString(stdphrase) << "\n";
-         keymem(QString::fromStdString(stdphrase));
+        if (stdphrase[1] != 'a') keymem(QString::fromStdString(stdphrase));
         switch (stdphrase[1]) {
         case 'a':
         {
@@ -350,12 +367,14 @@ void MainWindow::on_lineEdit_returnPressed()
              inputDialog datesearch;
              datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
              datesearch.exec();
-            } else if (QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2)) != "") phrase = QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2));
+            } else if (QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2)) != ""){
 
-            keymem(phrase);
-            QString html = analyze(dd,mm,year,phrase,false,0,eudate);
-            ui->textBrowser->append("<html>"+html+"</html>");
-            emit updatestatusbar(phrase,dd,mm);
+             phrase = QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2));
+             keymem(phrase);
+             QString html = analyze(dd,mm,year,phrase,false,0,eudate);
+             ui->textBrowser->append("<html>"+html+"</html>");
+             emit updatestatusbar(phrase,dd,mm);
+            }
             break;
         }
         case 'c':
@@ -478,12 +497,12 @@ void MainWindow::on_lineEdit_returnPressed()
                 }
             case 'r':
             {
-                if (jewish_on) {
+                if (jewish_on && single_r_on && francis_on && satanic_on) {
                     single_r_on=false;
                     francis_on=false;
                     satanic_on=false;
                     jewish_on=false;
-                } else{
+                } else if (!jewish_on && !single_r_on && !francis_on && !satanic_on) {
                     single_r_on=true;
                     francis_on=true;
                     satanic_on=true;
@@ -496,7 +515,7 @@ void MainWindow::on_lineEdit_returnPressed()
                 QString html;
 
               html = phraserank(phrase.toUtf8().constData(),eudate,3);
-              //html = phraserank("Donald Trump",eudate,2);
+
               ui->textBrowser->append("<html>"+html+"</html>");
               break;
             }
@@ -653,11 +672,13 @@ void MainWindow::on_actionCompare_phrase_to_history_triggered() //Ctrl-T
      datesearch.exec();
      emit updatestatusbar(phrase,dd,mm);
     }
+    ns = 0;
     if (phrase != "<none>") {
     labeltext = "New Phrase :";
     selectDialog sDialog;
     sDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     sDialog.exec();
+    if (ns > 0) {
     ui->textBrowser->append("<br>Search history from phrase starts<br>");
     ui->textBrowser->append(searchhistory(ns,phrase.toUtf8().constData()));
 
@@ -669,6 +690,7 @@ void MainWindow::on_actionCompare_phrase_to_history_triggered() //Ctrl-T
     if (ns == 6) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Francis Bacon",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     if (ns == 7) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Satanic",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     if (ns == 8) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Jewish",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    }
     }
 }
 
@@ -752,12 +774,15 @@ void MainWindow::on_action_Second_date_triggered()
 
 void MainWindow::on_actionC_ompare_date_to_History_txt_triggered() // Ctrl-O
 {
+    filter = 0;
     labeltext = "Date to history";
     selectDialog sDialog;
     sDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     sDialog.exec();
+    if (filter > 0) {
     ui->textBrowser->append("<br>Search history connected to current date starts");
     ui->textBrowser->append(date2history(dd,mm,year,true,eudate,filter));
+    }
 }
 
 void MainWindow::on_actionHelp_triggered()
@@ -767,22 +792,24 @@ void MainWindow::on_actionHelp_triggered()
 
 void MainWindow::on_actionSolar_Eclipses_triggered()
 {
+    filter = 0;
     labeltext = "solar";
     selectDialog sDialog;
     sDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     sDialog.exec();
-
+    if (filter > 0)
     emit ui->textBrowser->append(solareclipe(dd,mm,year,1,filter,eudate)); // 1=print
 }
 
 void MainWindow::on_actionCompare_SolarE_to_history_triggered()
 {
+    filter = 0;
     labeltext = "solar";
     selectDialog sDialog;
     sDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     sDialog.exec();
 
-
+    if (filter > 0)
     ui->textBrowser->append(solar2history(dd,mm,year,filter,eudate));
 }
 
@@ -806,10 +833,10 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::on_actionAbout_triggered()
 {
-   // QMessageBox::about(this,"About Gematria Analyzer","Version 0.2.2 <br>Gematria Analyzer is a free software created for playing with the English language. Support is most appreciated.");
+   // QMessageBox::about(this,"About Gematria Analyzer","Version 0.2.3 <br>Gematria Analyzer is a free software created for playing with the English language. Support is most appreciated.");
     QMessageBox msgBox;
     msgBox.setWindowTitle("About Gematria Analyzer");
-    msgBox.setText(tr("Version 0.2.2 <br>Gematria Analyzer is a free software created for playing with the English language"));
+    msgBox.setText(tr("Version 0.2.3 <br>Gematria Analyzer is a free software created for playing with the English language"));
     QAbstractButton* pButtonYes = msgBox.addButton(tr("Donate!"), QMessageBox::YesRole);
     msgBox.addButton(tr("Ok"), QMessageBox::NoRole);
 
@@ -823,6 +850,7 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::on_action_Add_remove_ciphers_triggered()
 {
     cipherDialog mDialog;
+    mDialog.setWindowTitle("Add/Remove ciphers");
     mDialog.setModal(true);
     mDialog.exec();
 }
@@ -845,10 +873,60 @@ void MainWindow::on_actionPhrase_ranking_triggered()
     rDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     rDialog.exec();
     QString html;
+    if (phrase != "<none>") {
     html = phraserank(phrase.toUtf8().constData(),eudate,ns);
     ui->textBrowser->append("<html>"+html+"</html>");
 
     QStringList myStringList = phrase.split(',').first().split(':');
     phrase = myStringList.first();
+    }
     emit updatestatusbar(phrase,dd,mm);
 }
+
+void MainWindow::on_action_Font_triggered()
+{
+    //const QFontDialog::FontDialogOptions options = QFlag(fontDialogOptionsWidget->value());
+    bool ok;
+    QFont font = QFontDialog::getFont(&ok,QFont(ui->textBrowser->font()),this,"Select Font");
+    if (ok) {
+        ui->textBrowser->setFont(font);
+    }
+}
+
+void MainWindow::doPrint(QPrinter * printer)
+{
+    QTime ct = QTime::currentTime();
+    //ui->textBrowser->print(printer);
+    printer->newPage();
+    printer->setDocName("Gematria Analyzer - "+ct.currentTime().toString());
+    ui->textBrowser->print(printer);
+}
+
+void MainWindow::on_action_Print_triggered()
+{
+    /*QPrinter printer;
+    QPrintDialog dialog(&printer, this);
+    dialog.setWindowTitle("Select printer");
+    //if (ui->textBrowser->textCursor().hasSelection())
+        dialog.addEnabledOption(QAbstractPrintDialog::PrintSelection);
+    if (dialog.exec() != QDialog::Accepted) return;
+
+    QPrinter printer(QPrinter::HighResolution); //create your QPrinter (don't need to be high resolution, anyway)
+    printer.setPageSize(QPrinter::A4);
+    printer.setOrientation(QPrinter::Portrait);
+    printer.setPageMargins (15,15,15,15,QPrinter::Millimeter);
+    printer.setFullPage(false);
+    printer.setOutputFileName("output.pdf");
+    printer.setOutputFormat(QPrinter::PdfFormat); //you can use native format of system usin QPrinter::NativeFormat
+    QPainter painter(&printer); // create a painter which will paint 'on printer'.
+    painter.setFont(QFont("Tahoma",8));
+    painter.drawText(200,200,
+    //                 ui->textBrowser->render(&painter);
+    //painter.end();*/
+
+
+    QPrintPreviewDialog * printPreview = new QPrintPreviewDialog(this);
+    connect(printPreview, SIGNAL(paintRequested(QPrinter *)), this, SLOT(doPrint(QPrinter *)));
+    printPreview->exec();
+}
+

@@ -776,7 +776,9 @@ int searchzerodays(int ns,int type,int dd,int mm, int year)
         if (dd==0) {
         if (zerodays[0][counter] == ns && (zerodays[7][counter] == type || type == 5) && zerodays[1][counter] == 0) return 1;
         if (zerodays[2][counter] == ns && (zerodays[7][counter] == type || type == 5) && zerodays[3][counter] == 0) return 2;
+        //qDebug() << type;
         //if (ns == 303) qDebug() << ns;
+        //qDebug() << " Type " << zerodays[7][counter];
         //if (zerodays[0][counter] == 303) qDebug() << " zerodays " << zerodays[0][counter];
         } else {
 
@@ -805,7 +807,7 @@ QString solar2history(int dd, int mm, int year, int type, bool eudate)
 {
     string line;
     //type =2;
-    QString buffer;
+    QString buffer,solartype;
     stringstream logline;
     int lines=0;
     ifstream myfile;
@@ -820,55 +822,60 @@ QString solar2history(int dd, int mm, int year, int type, bool eudate)
                 ns = getwordnumericvalue(line,0,0,0);
                 if (searchzerodays(ns,type,0,0,0) > 0){
                     lines ++;
-                    buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,1,1) + " - English Ordinal",eudate,true);
+                    buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,2,1) + " - English Ordinal",eudate,true);
                 }
                 ns = getwordnumericvalue(line,1,0,0);
                 if (searchzerodays(ns,type,0,0,0) > 0) {
                     lines ++;
-                    buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,1,1) + " - Full Reduction",eudate,true);
+                    buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,2,1) + " - Full Reduction",eudate,true);
                 }
                 ns = getwordnumericvalue(line,0,1,0);
                 if (searchzerodays(ns,type,0,0,0) > 0) {
                     lines ++;
-                    buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,1,1) + " - Reverse Ordinal",eudate,true);
+                    buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,2,1) + " - Reverse Ordinal",eudate,true);
                 }
                 ns = getwordnumericvalue(line,1,1,0);
                 if (searchzerodays(ns,type,0,0,0) > 0) {
                     lines ++;
-                    buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,1,1) + " - Reverse full Reduction",eudate,true);
+                    buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,2,1) + " - Reverse full Reduction",eudate,true);
                 }
                 if (single_r_on) {
                     ns = getwordnumericvalue(line,0,0,1);
                     if (searchzerodays(ns,type,0,0,0) > 0) {
                         lines ++;
-                        buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,1,1) + " - Single Reduction",eudate,true);
+                        buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,2,1) + " - Single Reduction",eudate,true);
                     }
                 }
                 if (francis_on) {
                     ns = getwordnumericvalue(line,0,0,2);
                     if (searchzerodays(ns,type,0,0,0) > 0) {
                         lines ++;
-                        buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,1,1) + " - Francis Bacon",eudate,true);
+                        buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,2,1) + " - Francis Bacon",eudate,true);
                     }
                 }
                 if (satanic_on) {
                     ns = getwordnumericvalue(line,0,0,3);
                     if (searchzerodays(ns,type,0,0,0) > 0) {
                         lines ++;
-                        buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,1,1) + " - Satanic",eudate,true);
+                        buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,2,1) + " - Satanic",eudate,true);
                     }
                 }
                 if (jewish_on) {
                     ns = getwordnumericvalue(line,0,0,4);
                     if (searchzerodays(ns,type,0,0,0) > 0) {
                         lines ++;
-                        buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,1,1) + " - Jewish",eudate,true);
+                        buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,2,1) + " - Jewish",eudate,true);
                     }
                 }
 
             }
 
-     buffer += "<br>" + QString::fromStdString(formattext(std::to_string(lines),1,1)) + " words found matching Solar Eclipses <br><br>";
+          if (type == 1) solartype = "Total";
+          if (type == 2) solartype = "Annular";
+          if (type == 3) solartype = "Partial";
+          if (type == 4) solartype = "Hybrid";
+          if (type == 5) solartype = "";
+     buffer += "<br>" + QString::fromStdString(formattext(std::to_string(lines),1,1)) + " words found matching "+solartype+" Solar Eclipses <br><br>";
      // buffer += QString::fromStdString(logline.str());
       logline << buffer.toStdString();
       logtime();
@@ -1255,22 +1262,25 @@ bool phrasetodate(int ns, int dd, int mm, int year, int i) {
       case 21 :
         if (ns == getntriangular(MDY)) return true;
         break;
-   case 22 :
+      case 22 :
+        if (ns == dd) return true;
+        break;
+   case 23 :
      if (searchzerodays(ns,1,0,0,0) > 0) return true;
      //if (searchzerodays(ns,1,dd,mm,year) > 0) return true;
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
-   case 23 :
+   case 24 :
      if (searchzerodays(ns,2,0,0,0) > 0) return true;
      //  if (searchzerodays(ns,2,dd,mm,year) > 0) return true;
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
-   case 24 :
+   case 25 :
      if (searchzerodays(ns,3,0,0,0) > 0) return true;
      //  if (searchzerodays(ns,3,dd,mm,year) > 0) return true;
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
-   case 25 :
+   case 26 :
      if (searchzerodays(ns,4,0,0,0) > 0) return true;
      //  if (searchzerodays(ns,4,dd,mm,year) > 0) return true;
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
@@ -1453,22 +1463,27 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
-       case 22 :
+          case 22 :
+              logline << Qdate.toUtf8().constData() << " &emsp;" <<  "Matches date as " << Qns.toUtf8().constData() << detail << "<br>";
+              buffer += QString::fromStdString(logline.str());
+              savelog(logline.str());
+              break;
+       case 23 :
            //logline << printzerodays(dd,mm,year,ns,1);
            buffer += printzerodays(dd,mm,year,ns,1," - " + detail,eudate,true); // printing of phrase compare to solar eclipse
            savelog(logline.str());
            break;
-       case 23 :
+       case 24 :
            //logline << searchzerodays(ns,2);
            buffer += printzerodays(dd,mm,year,ns,2," - " + detail,eudate,true);
            savelog(logline.str());
            break;
-       case 24 :
+       case 25 :
            //logline << searchzerodays(ns,3);
            buffer += printzerodays(dd,mm,year,ns,3," - " + detail,eudate,true);
            savelog(logline.str());
            break;
-       case 25 :
+       case 26 :
            //logline << searchzerodays(ns,4);
            buffer += printzerodays(dd,mm,year,ns,4," - " + detail,eudate,true);
            savelog(logline.str());
@@ -1494,49 +1509,49 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
         savelog(logline.str());
     }
     if (filter==1||!hlist) ns = getwordnumericvalue(phrase,0,0,0); //English Ordinal - start of compare cifers to date
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==1||!hlist)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," English Ordinal",eudate);
         found = true;
     }
     if (filter==2||!hlist) ns = getwordnumericvalue(phrase,1,0,0); //Full Reduction
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==2||!hlist)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Full Reduction",eudate);
         found = true;
     }
     if (filter==3||!hlist) ns = getwordnumericvalue(phrase,0,1,0); //Reverse Ordinal
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==3||!hlist)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Reverse Ordinal",eudate);
         found = true;
     }
     if (filter==4||!hlist) ns = getwordnumericvalue(phrase,1,1,0); //Reverse Full Reduction
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==4||!hlist)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Reverse Full Reduction",eudate);
         found = true;
     }
     if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==5||!hlist) && single_r_on && ns != getwordnumericvalue(phrase,1,0,0)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Single Reduction",eudate);
         found = true;
     }
     if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==6||!hlist) && francis_on && ns != getwordnumericvalue(phrase,0,0,0)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Francis Bacon",eudate);
         found = true;
     }
     if (filter==7||!hlist) ns = getwordnumericvalue(phrase,0,0,3); //Satanic
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==7||!hlist) && satanic_on) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Satanic",eudate);
         found = true;
     }
     if (filter==8||!hlist) ns = getwordnumericvalue(phrase,0,0,4); //Jewish
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==8||!hlist) && jewish_on) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Jewish",eudate);
         found = true;
@@ -1548,49 +1563,49 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
     }
 
     if (filter==1||!hlist) ns = getwordnumericvalue(phrase,0,0,0); //English Ordinal - start of compare prime numbers to date
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from English Ordinal",eudate);
             found = true;
         }
     if (filter==2||!hlist) ns = getwordnumericvalue(phrase,1,0,0); //Full Reduction
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==2||!hlist)) && getnprime(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Full Reduction",eudate);
             found = true;
         }
     if (filter==3||!hlist) ns = getwordnumericvalue(phrase,0,1,0); //Reverse Ordinal
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==3||!hlist)) && getnprime(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Reverse Ordinal",eudate);
             found = true;
         }
     if (filter==4||!hlist) ns = getwordnumericvalue(phrase,1,1,0); //Reverse Full Reduction
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==4||!hlist)) && getnprime(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Reverse Full Reduction",eudate);
             found = true;
         }
     if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && single_r_on && getnprime(ns) != getnprime(getwordnumericvalue(phrase,1,0,0))) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Single Reduction",eudate);
             found = true;
         }
     if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && francis_on && getnprime(ns) != getnprime(getwordnumericvalue(phrase,0,0,0))) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Francis Bacon",eudate);
             found = true;
         }
     if (filter==7||!hlist) ns = getwordnumericvalue(phrase,0,0,3); //Satanic
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && satanic_on) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Satanic",eudate);
             found = true;
         }
     if (filter==8||!hlist) ns = getwordnumericvalue(phrase,0,0,4); //Jewish
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && jewish_on) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Jewish",eudate);
             found = true;
@@ -1600,49 +1615,49 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
         ex1 << formattext(std::to_string(getnprime(ns)),1,1) << formattext("th Prime",2,2);
     }
     if (filter==1||!hlist) ns = getwordnumericvalue(phrase,0,0,0); //English Ordinal - start of compare triangular numbers to date
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from English Ordinal",eudate);
             found = true;
         }
     if (filter==2||!hlist) ns = getwordnumericvalue(phrase,1,0,0); //Full Reduction
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==2||!hlist)) && getntriangular(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Full Reduction",eudate);
             found = true;
         }
     if (filter==3||!hlist) ns = getwordnumericvalue(phrase,0,1,0); //Reverse Ordinal
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==3||!hlist)) && getntriangular(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Reverse Ordinal",eudate);
             found = true;
         }
     if (filter==4||!hlist) ns = getwordnumericvalue(phrase,1,1,0); //Reverse Full Reduction
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==4||!hlist)) && getntriangular(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Reverse Full Reduction",eudate);
             found = true;
         }
     if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && single_r_on && getntriangular(ns) != getntriangular(getwordnumericvalue(phrase,1,0,0))) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Single Reduction",eudate);
             found = true;
         }
     if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && francis_on && getntriangular(ns) != getntriangular(getwordnumericvalue(phrase,0,0,0))) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Francis Bacon",eudate);
             found = true;
         }
     if (filter==7||!hlist) ns = getwordnumericvalue(phrase,0,0,3); //Satanic
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && satanic_on) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Satanic",eudate);
             found = true;
         }
     if (filter==8||!hlist) ns = getwordnumericvalue(phrase,0,0,4); //Jewish
-    for(i=1;i<=25;i++)
+    for(i=1;i<=26;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && jewish_on) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Jewish",eudate);
             found = true;
@@ -1656,7 +1671,7 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
     if (found && hlist){
         qt2 = "";
         buffer += Qtotable("",1,0,0,0);
-        for(i=1;i<=25;i++) {
+        for(i=1;i<=26;i++) {
             qt2 = detail(ns,dd,mm,year,i,eudate);
             if (qt2 !="") break;
             qt2 = detail(getnprime(ns),dd,mm,year,i,eudate);
@@ -1804,19 +1819,23 @@ QString detail(int ns, int dd, int mm, int year, int i,bool eudate) {
       case 21 :
         if (ns == getntriangular(MDY)) return "th triangular from MD";
         break;
-   case 22 :
+      case 22 :
+        if (ns == DMY) return "Equal date";
+        break;
+
+   case 23 :
      if (searchzerodays(ns,1,0,0,0) > 0) return "Hit on Total Solar Eclipse";
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
-   case 23 :
+   case 24 :
      if (searchzerodays(ns,2,0,0,0) > 0) return "Hit on Partial Solar Eclipse";
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
-   case 24 :
+   case 25 :
      if (searchzerodays(ns,3,0,0,0) > 0) return "Hit on Annular Solar Eclipse";
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
-   case 25 :
+   case 26 :
      if (searchzerodays(ns,4,0,0,0) > 0) return "Hit on Hybrid Solar Eclipse";
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
@@ -2082,7 +2101,7 @@ QString printword(string line, char save, bool header, bool simpleprint)
     if (line.size() < 24 && line.size() >= 16) tabs = "&emsp;";
     if (line.size() > 24) tabs = " ";
     if (save != 'D' && !simpleprint) {
-    logline << "Statistic for phrase : " << formattext(line,1,1) << "<br>";
+    logline << "Statistic for phrase : " << formattext(line,2,1) << "<br>";
     buffer += QString::fromStdString(logline.str());
     savelog(logline.str());
     logline.str("");
@@ -2221,123 +2240,54 @@ QString searchwords(int pattern, bool simpleprint) //Ctrl-H
 
 
 QString searchhistory(int i, string phrase) {
-    int ns;
+    int ns=0;
     QString buffer;
     stringstream ss;
     switch(i) {
 
     case 1 :
         ns = getwordnumericvalue(phrase,0,0,0); //English Ordinal
-        buffer += searchwords(ns,true);
-        if (getnprime(ns) != 0) {
-            ss << "Now searching with prime number " << formattext(std::to_string(getnprime(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getnprime(ns),true);
-        }
-        if (getntriangular(ns) != 0) {
-            ss << "Now searching with triangular number " << formattext(std::to_string(getntriangular(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getntriangular(ns),true);
-        }
+
         break;
     case 2 :
         ns = getwordnumericvalue(phrase,1,0,0); //Full Reduction
-        buffer += searchwords(ns,true);
-        if (getnprime(ns) != 0) {
-            ss << "Now searching with prime number " << formattext(std::to_string(getnprime(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getnprime(ns),true);
-        }
-        if (getntriangular(ns) != 0) {
-            ss << "Now searching with triangular number " << formattext(std::to_string(getntriangular(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getntriangular(ns),true);
-        }
+
         break;
     case 3 :
         ns = getwordnumericvalue(phrase,0,1,0); //Reverse Ordinal
-        buffer += searchwords(ns,true);
-        if (getnprime(ns) != 0) {
-            ss << "Now searching with prime number " << formattext(std::to_string(getnprime(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getnprime(ns),true);
-        }
-        if (getntriangular(ns) != 0) {
-            ss << "Now searching with triangular number " << formattext(std::to_string(getntriangular(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getntriangular(ns),true);
-        }
+
         break;
     case 4 :
         ns = getwordnumericvalue(phrase,1,1,0); //Reverse Full Reduction
-        buffer += searchwords(ns,true);
-        if (getnprime(ns) != 0) {
-            ss << "Now searching with prime number " << formattext(std::to_string(getnprime(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getnprime(ns),true);
-        }
-        if (getntriangular(ns) != 0) {
-            ss << "Now searching with triangular number " << formattext(std::to_string(getntriangular(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getntriangular(ns),true);
-        }
+
         break;
     case 5 :
         ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
-        buffer += searchwords(ns,true);
-        if (getnprime(ns) != 0) {
-            ss << "Now searching with prime number " << formattext(std::to_string(getnprime(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getnprime(ns),true);
-        }
-        if (getntriangular(ns) != 0) {
-            ss << "Now searching with triangular number " << formattext(std::to_string(getntriangular(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getntriangular(ns),true);
-        }
+
         break;
     case 6 :
         ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
-        buffer += searchwords(ns,true);
-        if (getnprime(ns) != 0) {
-            ss << "Now searching with prime number " << formattext(std::to_string(getnprime(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getnprime(ns),true);
-        }
-        if (getntriangular(ns) != 0) {
-            ss << "Now searching with triangular number " << formattext(std::to_string(getntriangular(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getntriangular(ns),true);
-        }
+
         break;
     case 7 :
         ns = getwordnumericvalue(phrase,0,0,3); //Satanic
-        buffer += searchwords(ns,true);
-        if (getnprime(ns) != 0) {
-            ss << "Now searching with prime number " << formattext(std::to_string(getnprime(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getnprime(ns),true);
-        }
-        if (getntriangular(ns) != 0) {
-            ss << "Now searching with triangular number " << formattext(std::to_string(getntriangular(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getntriangular(ns),true);
-        }
+
         break;
     case 8 :
         ns = getwordnumericvalue(phrase,0,0,4); //Jewish
-        buffer += searchwords(ns,true);
-        if (getnprime(ns) != 0) {
-            ss << "Now searching with prime number " << formattext(std::to_string(getnprime(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getnprime(ns),true);
-        }
-        if (getntriangular(ns) != 0) {
-            ss << "Now searching with triangular number " << formattext(std::to_string(getntriangular(ns)),1,1) << "<br>";
-            buffer += QString::fromStdString(ss.str());
-            buffer += searchwords(getntriangular(ns),true);
-        }
+
         break;
+    }
+    buffer += searchwords(ns,true);
+    if (getnprime(ns) != 0) {
+        ss << "Now searching with prime number " << formattext(std::to_string(getnprime(ns)),1,1) << "<br>";
+        buffer += QString::fromStdString(ss.str());
+        buffer += searchwords(getnprime(ns),true);
+    }
+    if (getntriangular(ns) != 0) {
+        ss << "Now searching with triangular number " << formattext(std::to_string(getntriangular(ns)),1,1) << "<br>";
+        buffer += QString::fromStdString(ss.str());
+        buffer += searchwords(getntriangular(ns),true);
     }
     return buffer;
 }

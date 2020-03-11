@@ -5,6 +5,11 @@
 #include <QDialog>
 #include <QLabel>
 #include "gcalc.h"
+#include <QPrinter>
+#include <QPrintDialog>
+#include <QPainter>
+#include <QPrintPreviewDialog>
+
 
 extern QString phrase;
 extern QString labeltext;
@@ -86,6 +91,11 @@ private slots:
 
     void on_actionPhrase_ranking_triggered();
 
+    void on_action_Font_triggered();
+
+    void on_action_Print_triggered();
+    void doPrint(QPrinter * printer);
+
 private:
     Ui::MainWindow *ui;
    // QLabel *Statlabel;
@@ -115,9 +125,10 @@ public:
 
 
 private slots:
-    void on_pushButton_clicked();
     void displaydialog();
     void on_lineEdit_returnPressed();
+    void on_buttonBox_accepted();
+
 private:
     Ui::inputDialog *ui;
 
