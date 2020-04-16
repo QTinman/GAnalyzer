@@ -39,6 +39,10 @@
     void savetotemp(std::string line);
     void replaceAll( std::string &s, const std::string &search, const std::string &replace );
 
+    void createSettings(std::string file, std:: string entry);
+    QString readSettings(std::string file, std::string entry);
+    void writeSettings(char file[], std::string entry,std::string settings);
+
 
 
 #endif // TOOLS_H

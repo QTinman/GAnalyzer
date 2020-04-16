@@ -35,7 +35,7 @@
      <x>30</x>
      <y>20</y>
      <width>142</width>
-     <height>112</height>
+     <height>116</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -64,6 +64,32 @@
      <widget class="QCheckBox" name="jewish">
       <property name="text">
        <string>Jewish</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>80</y>
+     <width>131</width>
+     <height>56</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QCheckBox" name="sumerian">
+      <property name="text">
+       <string>Sumerian</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="rev_sumerian">
+      <property name="text">
+       <string>Reverse Sumerian</string>
       </property>
      </widget>
     </item>

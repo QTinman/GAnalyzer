@@ -7,71 +7,126 @@
     <x>0</x>
     <y>0</y>
     <width>352</width>
-    <height>152</height>
+    <height>163</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Phrase ranking over a year.</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Enter up to two phrases sepparated by comma</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QSplitter" name="splitter_2">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <widget class="QLabel" name="label_2">
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>9</y>
+     <width>334</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Enter up to two phrases sepparated by comma</string>
+   </property>
+  </widget>
+  <widget class="QSplitter" name="splitter_2">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>31</y>
+     <width>334</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <widget class="QLabel" name="label_2">
+    <property name="text">
+     <string>Phrases</string>
+    </property>
+    <property name="buddy">
+     <cstring>phrases</cstring>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="phrases"/>
+  </widget>
+  <widget class="QSplitter" name="splitter">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>60</y>
+     <width>334</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <widget class="QLabel" name="label_3">
+    <property name="text">
+     <string>Minimum ocurrances</string>
+    </property>
+    <property name="buddy">
+     <cstring>min</cstring>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="min"/>
+  </widget>
+  <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>130</y>
+     <width>334</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>90</y>
+     <width>181</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QCheckBox" name="checkBox">
       <property name="text">
-       <string>Phrases</string>
-      </property>
-      <property name="buddy">
-       <cstring>phrases</cstring>
+       <string>Total Solar eclipses (slow)</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="phrases"/>
-    </widget>
-   </item>
-   <item>
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <widget class="QLabel" name="label_3">
+    </item>
+    <item>
+     <widget class="QCheckBox" name="checkBox_3">
       <property name="text">
-       <string>Minimum ocurrances</string>
-      </property>
-      <property name="buddy">
-       <cstring>min</cstring>
+       <string>Prime</string>
       </property>
      </widget>
-     <widget class="QSpinBox" name="min"/>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="checkBox">
-     <property name="text">
-      <string>Total Solar eclipses (slow)</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-  </layout>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="checkBox_2">
+      <property name="text">
+       <string>Triangular</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
  </widget>
+ <tabstops>
+  <tabstop>phrases</tabstop>
+  <tabstop>min</tabstop>
+  <tabstop>checkBox</tabstop>
+  <tabstop>checkBox_3</tabstop>
+  <tabstop>checkBox_2</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

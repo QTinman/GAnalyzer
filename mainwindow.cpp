@@ -25,7 +25,7 @@ QString hmem[10];
 QString phrase = "<none>";
 QString labeltext;
 int year,dd,mm,ns,d2,m2,y2,filter,hmempos = -1;
-bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false;
+bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false,sumerian_on=false,rev_sumerian_on=false;
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -42,10 +42,26 @@ MainWindow::MainWindow(QWidget *parent)
     ui->statusbar->installEventFilter(this);
     if (eudate) ui->action_Eu_date->setText("Date DMY");
     else ui->action_Eu_date->setText("Date MDY");
-    //setCentralWidget(ui->centralwidget);
-    //setCentralWidget(ui->label);
+    QString font = readSettings("settings.txt","font");
+    QString DMY = readSettings("settings.txt","DMY");
+    QString ciphers = readSettings("settings.txt","ciphers");
+    if (DMY == "false") {
+        eudate = false;
+        ui->action_Eu_date->setText("Date MDY");
+        ui->action_Eu_date->setChecked(false);
+    }
+    if (font != "none") {
+        QFont f1;
+        f1.fromString(font);
+        ui->textBrowser->setFont(f1);
+    }
+    if (ciphers.mid(0,1) == "1") single_r_on = true;
+    if (ciphers.mid(1,1) == "1") francis_on = true;
+    if (ciphers.mid(2,1) == "1") satanic_on = true;
+    if (ciphers.mid(3,1) == "1") jewish_on = true;
+    if (ciphers.mid(4,1) == "1") sumerian_on = true;
+    if (ciphers.mid(5,1) == "1") rev_sumerian_on = true;
 
-    //ui->menu_File->menuAction()->setStatusTip("File Menu is hovered");
     setCentralWidget(ui->groupBox_3);
     ui->lineEdit->focusWidget();
     ui->statusbar->showMessage(scomstr);
@@ -60,6 +76,21 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    QString ciphers;
+    if (single_r_on) ciphers = "1";
+    else ciphers = "0";
+    if (francis_on) ciphers += "1";
+    else ciphers += "0";
+    if (satanic_on) ciphers += "1";
+    else ciphers += "0";
+    if (jewish_on) ciphers += "1";
+    else ciphers += "0";
+    if (sumerian_on) ciphers += "1";
+    else ciphers += "0";
+    if (rev_sumerian_on) ciphers += "1";
+    else ciphers += "0";
+    qDebug() << ciphers;
+    writeSettings("settings.txt","ciphers",ciphers.toUtf8().constData());
     delete ui;
 }
 
@@ -322,8 +353,13 @@ void MainWindow::on_action_Eu_date_toggled(bool arg1)
 {
     if (arg1) eudate = true;
     else eudate = false;
-    if (eudate) ui->action_Eu_date->setText("Date DMY");
-    else ui->action_Eu_date->setText("Date MDY");
+    if (eudate) {
+        ui->action_Eu_date->setText("Date DMY");
+        writeSettings("settings.txt","DMY","true");
+    } else  {
+        ui->action_Eu_date->setText("Date MDY");
+        writeSettings("settings.txt","DMY","false");
+    }
     emit updatestatusbar(phrase,dd,mm);
 }
 
@@ -497,16 +533,20 @@ void MainWindow::on_lineEdit_returnPressed()
                 }
             case 'r':
             {
-                if (jewish_on && single_r_on && francis_on && satanic_on) {
+                if (jewish_on && single_r_on && francis_on && satanic_on && sumerian_on && rev_sumerian_on) {
                     single_r_on=false;
                     francis_on=false;
                     satanic_on=false;
                     jewish_on=false;
-                } else if (!jewish_on && !single_r_on && !francis_on && !satanic_on) {
+                    sumerian_on=false;
+                    rev_sumerian_on=false;
+                } else if (!jewish_on && !single_r_on && !francis_on && !satanic_on && !sumerian_on && !rev_sumerian_on) {
                     single_r_on=true;
                     francis_on=true;
                     satanic_on=true;
                     jewish_on=true;
+                    sumerian_on=true;
+                    rev_sumerian_on=true;
                 }
                 break;
             }
@@ -514,7 +554,7 @@ void MainWindow::on_lineEdit_returnPressed()
             {
                 QString html;
 
-              html = phraserank(phrase.toUtf8().constData(),eudate,3);
+              html = phraserank(phrase.toUtf8().constData(),eudate,3,true,true);
 
               ui->textBrowser->append("<html>"+html+"</html>");
               break;
@@ -561,7 +601,8 @@ void MainWindow::on_lineEdit_returnPressed()
 
 void MainWindow::shorthelp()
 {
-        ui->textBrowser->append("<br><b>All functions are available from the Menu</b>");
+        ui->textBrowser->append("<br><h1>Short help</h1><br>");
+        ui->textBrowser->append("<b>All functions are available from the Menu</b>");
         ui->textBrowser->append("<b>By shortcut following functions are available</b>");
         ui->textBrowser->append("<font color=\"blue\">(Ctrl-S)</font> <b>Date search</b> connect number to dates spanning the active year.");
         ui->textBrowser->append("<font color=\"blue\">(Ctrl-H)</font> <b>Search history.txt</b> searches all words connected to entered number in history.txt.");
@@ -585,7 +626,7 @@ void MainWindow::shorthelp()
         ui->textBrowser->append("<font color=\"blue\">/o#/##/##</font> Date compare to history (first number is filter 1-4, date is optional)");
         ui->textBrowser->append("<font color=\"blue\">/e@/##/##/####</font> Last and next Solar eclipse relative to date. @ is type \"T A P H-X=for all\" (date is optional, year is extra option)");
         ui->textBrowser->append("<font color=\"blue\">/r</font> Toggle all extra ciphers on or off");
-        ui->textBrowser->append("<font color=\"blue\">/x##</font> Add or subtract days from current date");
+        ui->textBrowser->append("<font color=\"blue\">/x##</font> Add or subtract days from current date and set that date.");
         ui->textBrowser->append("<font color=\"blue\">/xd##</font> Add or subtract days from current date and display only in output.");
         ui->textBrowser->append("<font color=\"blue\">dd</font> deletes last line from history.txt");
         ui->textBrowser->append("<font color=\"blue\">/h</font> shows this help");
@@ -650,6 +691,14 @@ void MainWindow::on_actionList_Ciphers_triggered()
     ui->textBrowser->append("Jewish");
     ui->textBrowser->append(listciphers(0,0,4));
     }
+    if (sumerian_on) {
+    ui->textBrowser->append("Sumerian");
+    ui->textBrowser->append(listciphers(0,0,5));
+    }
+    if (rev_sumerian_on) {
+    ui->textBrowser->append("Reverse Sumerian");
+    ui->textBrowser->append(listciphers(0,1,5));
+    }
 }
 
 void MainWindow::on_actionList_Primenumbers_triggered()
@@ -690,6 +739,8 @@ void MainWindow::on_actionCompare_phrase_to_history_triggered() //Ctrl-T
     if (ns == 6) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Francis Bacon",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     if (ns == 7) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Satanic",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     if (ns == 8) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Jewish",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 9) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Sumerian",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 10) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Reverse Sumerian",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     }
     }
 }
@@ -705,6 +756,8 @@ selectDialog::selectDialog(QWidget *parent) :
         ui->Francis->hide();
         ui->Satanic->hide();
         ui->SingleRed->hide();
+        ui->Sumerian->hide();
+        ui->rev_sumerian->hide();
         ui->radioButton1->setText("Total Solar Eclipse");
         ui->radioButton2->setText("Annular Solar Eclipse");
         ui->radioButton3->setText("Partial Solar Eclipse");
@@ -716,6 +769,8 @@ selectDialog::selectDialog(QWidget *parent) :
     if (!francis_on) ui->Francis->hide();
     if (!satanic_on) ui->Satanic->hide();
     if (!jewish_on) ui->Jewish->hide();
+    if (!sumerian_on) ui->Sumerian->hide();
+    if (!rev_sumerian_on) ui->rev_sumerian->hide();
     }
 
 }
@@ -736,6 +791,8 @@ void selectDialog::displaydialog()
     if (ui->Francis->isChecked()) ns = 6;
     if (ui->Satanic->isChecked()) ns = 7;
     if (ui->Jewish->isChecked()) ns = 8;
+    if (ui->Sumerian->isChecked()) ns = 9;
+    if (ui->rev_sumerian->isChecked()) ns = 10;
     }
     if (labeltext == "Date to history") {
     if (ui->radioButton1->isChecked()) filter = 1;
@@ -746,6 +803,8 @@ void selectDialog::displaydialog()
     if (ui->Francis->isChecked()) filter = 6;
     if (ui->Satanic->isChecked()) filter = 7;
     if (ui->Jewish->isChecked()) filter = 8;
+    if (ui->Sumerian->isChecked()) filter = 9;
+    if (ui->rev_sumerian->isChecked()) filter = 10;
     }
     if (labeltext == "solar") {
     if (ui->radioButton1->isChecked()) filter = 1;
@@ -836,7 +895,7 @@ void MainWindow::on_actionAbout_triggered()
    // QMessageBox::about(this,"About Gematria Analyzer","Version 0.2.3 <br>Gematria Analyzer is a free software created for playing with the English language. Support is most appreciated.");
     QMessageBox msgBox;
     msgBox.setWindowTitle("About Gematria Analyzer");
-    msgBox.setText(tr("Version 0.2.3 <br>Gematria Analyzer is a free software created for playing with the English language"));
+    msgBox.setText(tr("Version 0.2.4 <br>Gematria Analyzer is a free software created for playing with the English language"));
     QAbstractButton* pButtonYes = msgBox.addButton(tr("Donate!"), QMessageBox::YesRole);
     msgBox.addButton(tr("Ok"), QMessageBox::NoRole);
 
@@ -869,12 +928,21 @@ void MainWindow::on_actionList_Solar_Eclipses_triggered()
 
 void MainWindow::on_actionPhrase_ranking_triggered()
 {
+    bool prime=false,triangular=false;
     rankDialog rDialog;
     rDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     rDialog.exec();
     QString html;
     if (phrase != "<none>") {
-    html = phraserank(phrase.toUtf8().constData(),eudate,ns);
+        if (ns>=10000){
+            triangular = true;
+            ns -= 10000;
+        }
+        if (ns>=1000){
+            prime = true;
+            ns -= 1000;
+        }
+    html = phraserank(phrase.toUtf8().constData(),eudate,ns,prime,triangular);
     ui->textBrowser->append("<html>"+html+"</html>");
 
     QStringList myStringList = phrase.split(',').first().split(':');
@@ -889,6 +957,8 @@ void MainWindow::on_action_Font_triggered()
     bool ok;
     QFont font = QFontDialog::getFont(&ok,QFont(ui->textBrowser->font()),this,"Select Font");
     if (ok) {
+        //qDebug() << font;
+        writeSettings("settings.txt","font",font.toString().toUtf8().constData());
         ui->textBrowser->setFont(font);
     }
 }
@@ -904,25 +974,6 @@ void MainWindow::doPrint(QPrinter * printer)
 
 void MainWindow::on_action_Print_triggered()
 {
-    /*QPrinter printer;
-    QPrintDialog dialog(&printer, this);
-    dialog.setWindowTitle("Select printer");
-    //if (ui->textBrowser->textCursor().hasSelection())
-        dialog.addEnabledOption(QAbstractPrintDialog::PrintSelection);
-    if (dialog.exec() != QDialog::Accepted) return;
-
-    QPrinter printer(QPrinter::HighResolution); //create your QPrinter (don't need to be high resolution, anyway)
-    printer.setPageSize(QPrinter::A4);
-    printer.setOrientation(QPrinter::Portrait);
-    printer.setPageMargins (15,15,15,15,QPrinter::Millimeter);
-    printer.setFullPage(false);
-    printer.setOutputFileName("output.pdf");
-    printer.setOutputFormat(QPrinter::PdfFormat); //you can use native format of system usin QPrinter::NativeFormat
-    QPainter painter(&printer); // create a painter which will paint 'on printer'.
-    painter.setFont(QFont("Tahoma",8));
-    painter.drawText(200,200,
-    //                 ui->textBrowser->render(&painter);
-    //painter.end();*/
 
 
     QPrintPreviewDialog * printPreview = new QPrintPreviewDialog(this);

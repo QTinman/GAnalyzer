@@ -21,6 +21,8 @@ void rankDialog::on_buttonBox_accepted()
     phrase = ui->phrases->text();
     ns = ui->min->value();
     if (ui->checkBox->isChecked()) ns += 100;
+    if (ui->checkBox_3->isChecked()) ns += 1000;
+    if (ui->checkBox_2->isChecked()) ns += 10000;
 }
 
 void rankDialog::on_buttonBox_rejected()

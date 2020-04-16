@@ -373,7 +373,7 @@ int getntriangular(int tri)
 
 }
 
-int getwordnumericvalue(std::string word, int reduced, int reversed, int type) // type 0 english ordenal, 1 Single Reduction, 2 Francis Bacon, 3 Satanic, 4 Jewish
+int getwordnumericvalue(std::string word, int reduced, int reversed, int type) // type 0 english ordenal, 1 Single Reduction, 2 Francis Bacon, 3 Satanic, 4 Jewish, 5 Sumerian
 {
         int s1 = 0, sum = 0;// for summing the letter values.
         if (type != 2) tolowerCase(word);
@@ -382,6 +382,7 @@ int getwordnumericvalue(std::string word, int reduced, int reversed, int type) /
             if (int(word[i]) <= 122 && int(word[i]) >= 97) {
                sum = (int(word[i]-96));// using the ascii value for each letter
                if (type == 3) sum += 35; //Satanic
+               if (type == 5 && reversed == 0) sum = sum*6; // Sumerian
             }
             if (int(word[i]) <= 90 && int(word[i]) >= 65 && type == 2) sum = (int(tolower(word[i])-96)) + 26; //Francis
             if ((int((word[i]) <= 122 && int(word[i]) >= 97) || int(word[i]) == 38) && type == 4) { // Jewish
@@ -399,7 +400,10 @@ int getwordnumericvalue(std::string word, int reduced, int reversed, int type) /
                 }
 
             }
-            if (reversed == 1 && int(word[i]) <= 122 && int(word[i]) >= 97) sum = reverse(sum);
+            if (reversed == 1 && int(word[i]) <= 122 && int(word[i]) >= 97){
+                sum = reverse(sum);
+                if (type == 5) sum = sum*6;
+            }
             if (reduced == 1 && int(word[i]) <= 122 && int(word[i]) >= 97) sum = reduce(sum);
             if (type == 1 && int(word[i]) <= 122 && int(word[i]) >= 97 && tolower(word[i]) != 's') { //Single reduction
                 sum = reduce(sum);
@@ -415,7 +419,7 @@ int getwordnumericvalue(std::string word, int reduced, int reversed, int type) /
 
 bool findword(int c1, std::string line)
 {
-    int ns1 = 0,ns2 = 0,ns3 = 0,ns4 = 0,ns5 = 0,ns6 = 0,ns7 = 0,ns8 = 0;
+    int ns1 = 0,ns2 = 0,ns3 = 0,ns4 = 0,ns5 = 0,ns6 = 0,ns7 = 0,ns8 = 0,ns9=0,ns10=0;
     ns1 = getwordnumericvalue(line,0,0,0);
     ns2 = getwordnumericvalue(line,1,0,0);
     ns3 = getwordnumericvalue(line,0,1,0);
@@ -424,7 +428,9 @@ bool findword(int c1, std::string line)
     if (francis_on) ns6 = getwordnumericvalue(line,0,0,2);
     if (satanic_on) ns7 = getwordnumericvalue(line,0,0,3);
     if (jewish_on) ns8 = getwordnumericvalue(line,0,0,4);
-     if (c1 == ns1 || c1 == ns2 || c1 == ns3 || c1 ==ns4 || c1 ==ns5 || c1 ==ns6 || c1 ==ns7 || c1 ==ns8)
+    if (sumerian_on) ns9 = getwordnumericvalue(line,0,0,5);
+    if (rev_sumerian_on) ns10 = getwordnumericvalue(line,0,1,5);
+     if (c1 == ns1 || c1 == ns2 || c1 == ns3 || c1 ==ns4 || c1 ==ns5 || c1 ==ns6 || c1 ==ns7 || c1 ==ns8 || c1 ==ns9 || c1 ==ns10)
         {
             return true;
         }
@@ -681,4 +687,95 @@ int daynrleft(int dd, int mm, int year)
     date.tm_mday = 31;
     mktime( &date );
     return date.tm_yday - daynr(dd,mm,year)+1;
+}
+
+
+void createSettings(string file, string entry)
+{
+
+       std::ofstream fout;  // Create Object of Ofstream
+       fout.open (file,ios::app); // Append mode
+       if(!fout)
+       {
+           qDebug() << "Error opening files!" << endl;
+           //return 1;
+       }
+       //qDebug() << QString::fromStdString(file);
+
+       if (file == "settings.txt") {
+        fout << entry+"=\n";
+       }
+
+        fout.close(); // Closing the file
+   // return false;
+}
+
+
+QString readSettings(string file, string entry)
+{
+    string strReplace = entry+"=";
+    ifstream filein(file); //File to read from
+    if(!filein)
+    {
+        createSettings(file,entry);
+        cout << "Error opening files!" << endl;
+        //return 1;
+    }
+    string strTemp;
+    bool found = false;
+    while(!filein.eof())
+    //while(filein >> strTemp)
+    {
+        getline(filein,strTemp);
+
+        if(strTemp.substr(0,strReplace.length()) == strReplace){
+            found = true;
+            return QString::fromStdString(strTemp.substr(strReplace.length(),strTemp.length()-strReplace.length()));
+        }
+        strTemp += "\n";
+
+
+    }
+    if(!found) createSettings(file,entry);
+    return "none";
+}
+
+void writeSettings(char file[], string entry,string settings)
+{
+    string strReplace = entry+"=";
+    string strNew = entry+"="+settings;
+    //qDebug() << QString::fromStdString(strNew);
+    ifstream filein(file); //File to read from
+    ofstream fileout("settings.txt.tmp"); //Temporary file
+    if(!filein || !fileout)
+    {
+        cout << "Error opening files!" << endl;
+        //return 1;
+    }
+
+    string strTemp;
+    //bool found = false;
+    while(!filein.eof())
+    //while(filein >> strTemp)
+    {
+        getline(filein,strTemp);
+        if(strTemp.substr(0,strReplace.length()) == strReplace){
+
+            strTemp = strNew;
+            //qDebug() << QString::fromStdString(strTemp);
+            //found = true;
+        }
+        strTemp += "\n";
+        fileout << strTemp;
+        //if(found) break;
+    }
+
+
+    filein.close();
+    fileout.close();
+    remove(file);
+    if (rename("settings.txt.tmp","settings.txt") ==0)
+        cout<<"file renamed successfully.";
+     else
+        cout<<"error remaining file.";
 }

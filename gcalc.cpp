@@ -867,7 +867,20 @@ QString solar2history(int dd, int mm, int year, int type, bool eudate)
                         buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,2,1) + " - Jewish",eudate,true);
                     }
                 }
-
+                if (sumerian_on) {
+                    ns = getwordnumericvalue(line,0,0,5);
+                    if (searchzerodays(ns,type,0,0,0) > 0) {
+                        lines ++;
+                        buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,2,1) + " - Sumerian",eudate,true);
+                    }
+                }
+                if (rev_sumerian_on) {
+                    ns = getwordnumericvalue(line,0,1,5);
+                    if (searchzerodays(ns,type,0,0,0) > 0) {
+                        lines ++;
+                        buffer += printzerodays(dd,mm,year,ns,type," - " + formattext(line,2,1) + " - Reverse Sumerian",eudate,true);
+                    }
+                }
             }
 
           if (type == 1) solartype = "Total";
@@ -1052,7 +1065,12 @@ int getns(string phrase, int out, int pt)
     case 8 :
         if (jewish_on) ns = getwordnumericvalue(phrase,0,0,4);
         break;
-
+    case 9 :
+        if (sumerian_on) ns = getwordnumericvalue(phrase,0,0,5);
+        break;
+    case 10 :
+        if (rev_sumerian_on) ns = getwordnumericvalue(phrase,0,1,5);
+        break;
     }
     if (pt == 1) ns = getnprime(ns);
     if (pt == 2) ns = getntriangular(ns);
@@ -1060,15 +1078,15 @@ int getns(string phrase, int out, int pt)
 }
 
 
-int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar)
+int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar, bool prime, bool triangular)
 {
     int rank=0, i, nrns,ns;
 
     for(nrns=1;nrns<=8;nrns++){
         for(i=1;i<=21;i++){
            if (getns(phrase,nrns,0) > 0) if (phrasetodate(getns(phrase,nrns,0),dd,mm,year,i)) rank += 1;
-           if (getns(phrase,nrns,1) > 0) if (phrasetodate(getns(phrase,nrns,1),dd,mm,year,i)) rank += 1;
-           if (getns(phrase,nrns,2) > 0) if (phrasetodate(getns(phrase,nrns,2),dd,mm,year,i)) rank += 1;
+           if (prime) if (getns(phrase,nrns,1) > 0) if (phrasetodate(getns(phrase,nrns,1),dd,mm,year,i)) rank += 1;
+           if (triangular) if (getns(phrase,nrns,2) > 0) if (phrasetodate(getns(phrase,nrns,2),dd,mm,year,i)) rank += 1;
         }
         if (runsolar) {
             ns = searchzerodays(getns(phrase,nrns,0),1,dd,mm,year);
@@ -1085,7 +1103,7 @@ int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar)
 }
 
 
-QString phraserank(string phrase, bool eudate, int minimum)
+QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool triangular)
 {
     QString buffer="";
     int year_rank[5][500];
@@ -1112,9 +1130,9 @@ QString phraserank(string phrase, bool eudate, int minimum)
         for (int j = 1; j <= days; j++)
         {
             if (j == dd2 && i == mm2) break;
-            rank = counter(s1,j,i+1,year,minimum,runsolar);
+            rank = counter(s1,j,i+1,year,minimum,runsolar, prime, triangular);
 
-            if (found < phrase.length() && counter(s2,j,i+1,year,minimum,runsolar) > 0 && rank > 0) rank+=counter(s2,j,i+1,year, minimum,runsolar);
+            if (found < phrase.length() && counter(s2,j,i+1,year,minimum,runsolar, prime, triangular) > 0 && rank > 0) rank+=counter(s2,j,i+1,year, minimum,runsolar, prime, triangular);
             if (rank >= 100) {
                 rank -= 100;
                 solar = "T";
@@ -1556,6 +1574,18 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Jewish",eudate);
         found = true;
     }
+    if (filter==9||!hlist) ns = getwordnumericvalue(phrase,0,0,5); //Sumerian
+    for(i=1;i<=26;i++)
+    if (phrasetodate(ns,dd,mm,year,i) && (filter==9||!hlist) && sumerian_on) {
+        if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Sumerian",eudate);
+        found = true;
+    }
+    if (filter==10||!hlist) ns = getwordnumericvalue(phrase,0,1,5); //Reverse Sumerian
+    for(i=1;i<=26;i++)
+    if (phrasetodate(ns,dd,mm,year,i) && (filter==10||!hlist) && rev_sumerian_on) {
+        if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Reverse Sumerian",eudate);
+        found = true;
+    }
     if (found) {
         used = false;
         //ex1 << ns << " " << phrase.size() ;
@@ -1588,26 +1618,38 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
         }
     if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
     for(i=1;i<=26;i++)
-        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && single_r_on && getnprime(ns) != getnprime(getwordnumericvalue(phrase,1,0,0))) {
+        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==5||!hlist)) && getnprime(ns) != 0 && single_r_on && getnprime(ns) != getnprime(getwordnumericvalue(phrase,1,0,0))) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Single Reduction",eudate);
             found = true;
         }
     if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
     for(i=1;i<=26;i++)
-        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && francis_on && getnprime(ns) != getnprime(getwordnumericvalue(phrase,0,0,0))) {
+        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==6||!hlist)) && getnprime(ns) != 0 && francis_on && getnprime(ns) != getnprime(getwordnumericvalue(phrase,0,0,0))) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Francis Bacon",eudate);
             found = true;
         }
     if (filter==7||!hlist) ns = getwordnumericvalue(phrase,0,0,3); //Satanic
     for(i=1;i<=26;i++)
-        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && satanic_on) {
+        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==7||!hlist)) && getnprime(ns) != 0 && satanic_on) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Satanic",eudate);
             found = true;
         }
     if (filter==8||!hlist) ns = getwordnumericvalue(phrase,0,0,4); //Jewish
     for(i=1;i<=26;i++)
-        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0 && jewish_on) {
+        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==8||!hlist)) && getnprime(ns) != 0 && jewish_on) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Jewish",eudate);
+            found = true;
+        }
+    if (filter==9||!hlist) ns = getwordnumericvalue(phrase,0,0,5); //Sumerian
+    for(i=1;i<=26;i++)
+        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==9||!hlist)) && getnprime(ns) != 0 && sumerian_on) {
+            if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Sumerian",eudate);
+            found = true;
+        }
+    if (filter==10||!hlist) ns = getwordnumericvalue(phrase,0,1,5); //Reverse Sumerian
+    for(i=1;i<=26;i++)
+        if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==10||!hlist)) && getnprime(ns) != 0 && rev_sumerian_on) {
+            if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Reverse Sumerian",eudate);
             found = true;
         }
     if (found && used) {
@@ -1640,26 +1682,38 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
         }
     if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
     for(i=1;i<=26;i++)
-        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && single_r_on && getntriangular(ns) != getntriangular(getwordnumericvalue(phrase,1,0,0))) {
+        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==5||!hlist)) && getntriangular(ns) != 0 && single_r_on && getntriangular(ns) != getntriangular(getwordnumericvalue(phrase,1,0,0))) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Single Reduction",eudate);
             found = true;
         }
     if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
     for(i=1;i<=26;i++)
-        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && francis_on && getntriangular(ns) != getntriangular(getwordnumericvalue(phrase,0,0,0))) {
+        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==6||!hlist)) && getntriangular(ns) != 0 && francis_on && getntriangular(ns) != getntriangular(getwordnumericvalue(phrase,0,0,0))) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Francis Bacon",eudate);
             found = true;
         }
     if (filter==7||!hlist) ns = getwordnumericvalue(phrase,0,0,3); //Satanic
     for(i=1;i<=26;i++)
-        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && satanic_on) {
+        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==7||!hlist)) && getntriangular(ns) != 0 && satanic_on) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Satanic",eudate);
             found = true;
         }
     if (filter==8||!hlist) ns = getwordnumericvalue(phrase,0,0,4); //Jewish
     for(i=1;i<=26;i++)
-        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0 && jewish_on) {
+        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==8||!hlist)) && getntriangular(ns) != 0 && jewish_on) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Jewish",eudate);
+            found = true;
+        }
+    if (filter==9||!hlist) ns = getwordnumericvalue(phrase,0,0,5); //Sumerian
+    for(i=1;i<=26;i++)
+        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==9||!hlist)) && getntriangular(ns) != 0 && sumerian_on) {
+            if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Sumerian",eudate);
+            found = true;
+        }
+    if (filter==10||!hlist) ns = getwordnumericvalue(phrase,0,1,5); //Reverse Sumerian
+    for(i=1;i<=26;i++)
+        if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==10||!hlist)) && getntriangular(ns) != 0 && rev_sumerian_on) {
+            if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Reverse Sumerian",eudate);
             found = true;
         }
     if (found && used) {
@@ -1925,6 +1979,18 @@ QString date2history(int dd, int mm, int year,bool hlist, bool eudate,int filter
         buffer += QString::fromStdString(logline.str());
         savelog(logline.str());
       break;
+    case 9 :
+        //sumerian_on = true;
+        logline << "<br>Sumerian - connected to date. " << formattext(std::to_string(d1),1,1) << "/" << formattext(std::to_string(d2),1,1) << "/" << formattext(std::to_string(year),1,1) <<"<br>";
+        buffer += QString::fromStdString(logline.str());
+        savelog(logline.str());
+      break;
+    case 10 :
+        //sumerian_on = true;
+        logline << "<br>Reverse Sumerian - connected to date. " << formattext(std::to_string(d1),1,1) << "/" << formattext(std::to_string(d2),1,1) << "/" << formattext(std::to_string(year),1,1) <<"<br>";
+        buffer += QString::fromStdString(logline.str());
+        savelog(logline.str());
+      break;
     }
 
 
@@ -2081,9 +2147,9 @@ QString printallwords(string line, char save, bool header, bool simpleprint)
 
 QString printword(string line, char save, bool header, bool simpleprint)
 {
-    int ns1,ns2,ns3,ns4,ns5,ns6,ns7,ns8;
+    int ns1,ns2,ns3,ns4,ns5,ns6,ns7,ns8,ns9,ns10;
     string tabs;
-    QString buffer,qs1,qs2,qs3,qs4,qs5,qs6="",qs7="",qs8="",qs9="";
+    QString buffer,qs1,qs2,qs3,qs4,qs5,qs6="",qs7="",qs8="",qs9="",qs10="",qs11="";
     ns1 = getwordnumericvalue(line,0,0,0); //English Ordinal
     ns2 = getwordnumericvalue(line,1,0,0); //Full Reduction
     ns3 = getwordnumericvalue(line,0,1,0); //Reverse Ordinal
@@ -2092,6 +2158,8 @@ QString printword(string line, char save, bool header, bool simpleprint)
     ns6 = getwordnumericvalue(line,0,0,2); //Francis Bacon
     ns7 = getwordnumericvalue(line,0,0,3); //Satanic
     ns8 = getwordnumericvalue(line,0,0,4); //Jewish
+    ns9 = getwordnumericvalue(line,0,0,5); //Sumerian
+    ns10 = getwordnumericvalue(line,0,1,5); //Reverse Sumerian
     eraseAllSubStr(line,"<br>");
     stringstream logline;
     if (header) logtime();
@@ -2146,6 +2214,18 @@ QString printword(string line, char save, bool header, bool simpleprint)
           buffer += QString::fromStdString(logline.str());
           savelog(logline.str());
       }
+      if (sumerian_on) {
+          logline.str("");
+          logline << "Sumerian : &emsp;" << charnumeric(0,0,line,5) << formattext(std::to_string(ns9),1,1) << " Prime? "<< isprime(ns9) << " Triangular? " << istriangular(ns9) << "<br>";
+          buffer += QString::fromStdString(logline.str());
+          savelog(logline.str());
+      }
+      if (rev_sumerian_on) {
+          logline.str("");
+          logline << "Reverse Sumerian : &emsp;" << charnumeric(0,0,line,5) << formattext(std::to_string(ns10),1,1) << " Prime? "<< isprime(ns10) << " Triangular? " << istriangular(ns10) << "<br>";
+          buffer += QString::fromStdString(logline.str());
+          savelog(logline.str());
+      }
     }
     if (simpleprint) {
      logline << "<br>" << line << tabs << ns1 << "&emsp;" << ns2 << "&emsp;" << ns3 << "&emsp;" << ns4 << "&emsp;";
@@ -2157,12 +2237,14 @@ QString printword(string line, char save, bool header, bool simpleprint)
      qs3 = QString::fromStdString(formattext(std::to_string(ns2),1,1));
      qs4 = QString::fromStdString(formattext(std::to_string(ns3),1,1));
      qs5 = QString::fromStdString(formattext(std::to_string(ns4),1,1));
-     if (single_r_on) qs6 = "SR " + QString::fromStdString(formattext(std::to_string(ns5),1,1));
-     if (francis_on) qs7 = "FB " + QString::fromStdString(formattext(std::to_string(ns6),1,1));
-     if (satanic_on) qs8 = "Sat " + QString::fromStdString(formattext(std::to_string(ns7),1,1));
-     if (jewish_on) qs9 = "Jew " + QString::fromStdString(formattext(std::to_string(ns8),1,1));
+     if (single_r_on) qs6 = Qtotable("SR " + QString::fromStdString(formattext(std::to_string(ns5),1,1)),0,0,1,70);
+     if (francis_on) qs7 = Qtotable("FB " + QString::fromStdString(formattext(std::to_string(ns6),1,1)),0,0,1,70);
+     if (satanic_on) qs8 = Qtotable("Sat " + QString::fromStdString(formattext(std::to_string(ns7),1,1)),0,0,1,70);
+     if (jewish_on) qs9 = Qtotable("Jew " + QString::fromStdString(formattext(std::to_string(ns8),1,1)),0,0,1,70);
+     if (sumerian_on) qs10 = Qtotable("Sum " + QString::fromStdString(formattext(std::to_string(ns9),1,1)),0,0,1,70);
+     if (rev_sumerian_on) qs11 = Qtotable("RS " + QString::fromStdString(formattext(std::to_string(ns10),1,1)),0,0,1,70);
      //buffer += "<br>" + qs1 + "&emsp;EO " + qs2 + "&emsp;FR " + qs3 + "&emsp;RO " + qs4 + "&emsp;RF " + qs5 + "&emsp;" + qs6 + "&emsp;" + qs7 + "&emsp;" + qs8 + "&emsp;" + qs9;
-     buffer += Qtotable("",0,1,0,0)+Qtotable(qs1,0,0,1,150) + Qtotable("EO " + qs2,0,0,1,70) + Qtotable("FR " + qs3,0,0,1,70) + Qtotable("RO " + qs4,0,0,1,70) + Qtotable("RF " + qs5,0,0,1,70) + Qtotable(qs6,0,0,1,70) + Qtotable(qs7,0,0,1,70) + Qtotable(qs8,0,0,1,70) + Qtotable(qs9,0,0,1,70)+Qtotable("",0,2,0,0);
+     buffer += Qtotable("",0,1,0,0)+Qtotable(qs1,0,0,1,150) + Qtotable("EO " + qs2,0,0,1,70) + Qtotable("FR " + qs3,0,0,1,70) + Qtotable("RO " + qs4,0,0,1,70) + Qtotable("RF " + qs5,0,0,1,70) + qs6+qs7+qs8+qs9+qs10+qs11+Qtotable("",0,2,0,0);
      buffer += Qtotable("",2,0,0,0);
      savelog(logline.str());
     }
@@ -2201,7 +2283,7 @@ string firstletterupper(string line)
 QString searchwords(int pattern, bool simpleprint) //Ctrl-H
 {
     string line;
-    QString buffer,qs5="",qs6="",qs7="",qs8="";
+    QString buffer,qs5="",qs6="",qs7="",qs8="",qs9="",qs10="";
     bool header=true;
     stringstream logline;
     int c1, lines = 0;
@@ -2210,7 +2292,9 @@ QString searchwords(int pattern, bool simpleprint) //Ctrl-H
     if (francis_on) qs6 = " - Francis Bacon";
     if (satanic_on) qs7 = " - Satanic";
     if (jewish_on) qs8 = " - Jewish";
-    if (simpleprint) buffer += "&emsp;&emsp;&emsp;Englis Ordinal - Full Reduction - Reverse Ordinal - Reverse Full Reduction" + qs5 + qs6 + qs7 + qs8;
+    if (sumerian_on) qs9 = " - Sumerian";
+    if (rev_sumerian_on) qs10 = " - Reverse Sumerian";
+    if (simpleprint) buffer += "&emsp;&emsp;&emsp;Englis Ordinal - Full Reduction - Reverse Ordinal - Reverse Full Reduction" + qs5 + qs6 + qs7 + qs8 + qs9 + qs10;
     myfile.open("history.txt");
     if (myfile.is_open())
           {
@@ -2275,6 +2359,14 @@ QString searchhistory(int i, string phrase) {
         break;
     case 8 :
         ns = getwordnumericvalue(phrase,0,0,4); //Jewish
+
+        break;
+    case 9 :
+        ns = getwordnumericvalue(phrase,0,0,5); //Sumerian
+
+        break;
+    case 10 :
+        ns = getwordnumericvalue(phrase,0,1,5); //Reverse Sumerian
 
         break;
     }
