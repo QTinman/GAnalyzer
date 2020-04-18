@@ -192,7 +192,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -234,6 +234,8 @@
     <addaction name="actionList_Primenumbers"/>
     <addaction name="actionList_Triangular_numbers"/>
     <addaction name="actionList_Solar_Eclipses"/>
+    <addaction name="actionList_History"/>
+    <addaction name="actionCalendar"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -417,6 +419,16 @@
   <action name="action_Print">
    <property name="text">
     <string>&amp;Print</string>
+   </property>
+  </action>
+  <action name="actionList_History">
+   <property name="text">
+    <string>List History</string>
+   </property>
+  </action>
+  <action name="actionCalendar">
+   <property name="text">
+    <string>Calendar</string>
    </property>
   </action>
  </widget>

@@ -52,6 +52,50 @@ int valid_date(int dd, int mm, int yy) {
     return 1;
 }
 
+QString Qformattext(string line, int color, int bold)
+{
+
+    string formatedcolor;
+    string formatedtag;
+    int i;
+    if (color != 10 && color != 20) {
+    switch (color) {
+        case 0: //none
+        formatedcolor = line;
+        break;
+        case 1: // red
+        formatedcolor = "<font color=\"red\">" +line+ "</font>";
+        break;
+        case 2: // blue
+        formatedcolor = "<font color=\"blue\">" +line+ "</font>";
+        break;
+
+
+    }
+    switch (bold) {
+        case 0: //none
+        formatedtag = formatedcolor;
+        break;
+        case 1: //bold
+        formatedtag = "<b>" +formatedcolor+"</b>";
+        break;
+        case 2: //italic
+        formatedtag = "<i>" +formatedcolor+"</i>";
+        break;
+        case 3: //bold & italic
+        formatedtag = "<i><b>" +formatedcolor+"</b></i>";
+        break;
+
+    }
+    }
+    else formatedtag = line;
+    //qDebug() <<  QString::fromStdString(formatedtag);
+    if (color == 10) for (i=1;i<bold;i++) formatedtag=formatedtag+"&emsp;"; //tab after
+    if (color == 20) for (i=1;i<bold;i++) formatedtag="&emsp;"+formatedtag; //tab before
+    // html == "#include &lt;QtCore&gt;"
+    return QString::fromStdString(formatedtag);
+}
+
 string formattext(string line, int color, int bold)
 {
 
@@ -778,4 +822,34 @@ void writeSettings(char file[], string entry,string settings)
         cout<<"file renamed successfully.";
      else
         cout<<"error remaining file.";
+}
+
+
+QString listhistory(QString filter)
+{
+ifstream myfile;
+QString buffer;
+int i = 1;
+double t1;
+string line;
+myfile.open("history.txt");
+buffer = Qtotable("",1,1,0,70);
+if (myfile.is_open())
+      {
+
+        while ( getline (myfile,line) )
+        {
+            if (QString::fromStdString(line).contains(filter, Qt::CaseInsensitive))
+            {
+                t1 = i;
+                buffer += Qtotable(Qformattext(line,2,2),0,0,1,350);
+                if (floor(i/2) == t1/2) buffer += "</tr><tr>";
+                i++;
+            }
+
+        }
+
+myfile.close();
+}
+return buffer;
 }

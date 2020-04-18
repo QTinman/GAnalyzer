@@ -5,10 +5,12 @@
 #include "ui_rankdialog.h"
 #include "cipherdialog.h"
 #include "rankdialog.h"
+#include "calwindow.h"
 #include <QtCore>
 #include <QDate>
 #include "string.h"
 #include <QKeyEvent>
+
 
 #include <QLabel>
 #include <QFont>
@@ -23,7 +25,7 @@ using namespace std;
 int zerodays[8][250];
 QString hmem[10];
 QString phrase = "<none>";
-QString labeltext;
+QString labeltext,tmpstring;
 int year,dd,mm,ns,d2,m2,y2,filter,hmempos = -1;
 bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false,sumerian_on=false,rev_sumerian_on=false;
 
@@ -42,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->statusbar->installEventFilter(this);
     if (eudate) ui->action_Eu_date->setText("Date DMY");
     else ui->action_Eu_date->setText("Date MDY");
+
     QString font = readSettings("settings.txt","font");
     QString DMY = readSettings("settings.txt","DMY");
     QString ciphers = readSettings("settings.txt","ciphers");
@@ -72,6 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
             //qDebug() << " String ="<< curr_locale << endl;
     emit welcome();
 
+    //qDebug() << MainWindow::width() << " " << MainWindow::x() << " " << ui->textBrowser->width();
 }
 
 MainWindow::~MainWindow()
@@ -89,8 +93,9 @@ MainWindow::~MainWindow()
     else ciphers += "0";
     if (rev_sumerian_on) ciphers += "1";
     else ciphers += "0";
-    qDebug() << ciphers;
+    //qDebug() << ciphers;
     writeSettings("settings.txt","ciphers",ciphers.toUtf8().constData());
+    //qDebug()  << MainWindow::width() << " " << MainWindow::x() << " " << ui->textBrowser->width();
     delete ui;
 }
 
@@ -211,6 +216,10 @@ inputDialog::inputDialog(QWidget *parent) :
         inputDialog::setWindowTitle("Search history.txt");
         ui->lineEdit->setInputMask("0000");
     }
+    if (labeltext == "Filter history :") {
+        inputDialog::setWindowTitle("List History");
+        tmpstring = "<none>";
+    }
     ui->label->setText(labeltext);
 }
 
@@ -227,6 +236,7 @@ void inputDialog::displaydialog()
     if (labeltext == "Compare to history :") ns = ui->lineEdit->text().mid(0,4).toInt();
     if (labeltext == "Enter Year:") year = ui->lineEdit->text().mid(0,4).toInt();
     if (labeltext == "Enter Cipher nr. :") ns = ui->lineEdit->text().mid(0,4).toInt();
+    if (labeltext == "Filter history :") tmpstring = ui->lineEdit->text();
     if (eudate) {
     if (labeltext == "New date :") {
         dd = ui->lineEdit->text().mid(0,2).toInt();
@@ -981,3 +991,25 @@ void MainWindow::on_action_Print_triggered()
     printPreview->exec();
 }
 
+
+void MainWindow::on_actionList_History_triggered()
+{
+    labeltext = "Filter history :";
+    inputDialog datesearch;
+    datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
+    datesearch.exec();
+    if (tmpstring != "<none>") {
+        QString buffer = listhistory(tmpstring);
+        ui->textBrowser->append("List history starts<br>");
+        ui->textBrowser->append(buffer);
+    }
+}
+
+void MainWindow::on_actionCalendar_triggered()
+{
+    //CalWindow CalWindow;
+    Calwindow = new CalWindow(this);
+    Calwindow->setWindowTitle("Calendar");
+    //CalWindow->setModal(true);
+    Calwindow->show();
+}

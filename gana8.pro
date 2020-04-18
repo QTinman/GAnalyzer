@@ -1,5 +1,6 @@
 QT       += core gui
 QT       += printsupport
+QT       += widgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -17,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    calwindow.cpp \
     cipherdialog.cpp \
     gcalc.cpp \
     main.cpp \
@@ -25,6 +27,7 @@ SOURCES += \
     tools.cpp
 
 HEADERS += \
+    calwindow.h \
     cipherdialog.h \
     gcalc.h \
     mainwindow.h \
@@ -32,6 +35,7 @@ HEADERS += \
     tools.h
 
 FORMS += \
+    calwindow.ui \
     cipherdialog.ui \
     inputdialog.ui \
     mainwindow.ui \

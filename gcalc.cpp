@@ -2020,7 +2020,6 @@ string char2string(char c)
 
 string totable(string str, int start, int endrow, int colum, int width)
 {
-    //QString str;
     if (start == 1) str = "<table>";
     if (endrow == 1) str = "<tr>";
     if (colum == 1) str = "<td width=\"" + to_string(width) + "\">" + str + "</td>";

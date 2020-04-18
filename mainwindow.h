@@ -5,6 +5,7 @@
 #include <QDialog>
 #include <QLabel>
 #include "gcalc.h"
+#include"calwindow.h"
 #include <QPrinter>
 #include <QPrintDialog>
 #include <QPainter>
@@ -12,7 +13,7 @@
 
 
 extern QString phrase;
-extern QString labeltext;
+extern QString labeltext,tmpstring;
 extern int year,dd,mm,ns,d2,m2,y2,filter,hmempos;
 extern bool single_r_on,francis_on,satanic_on,jewish_on,sumerian_on,rev_sumerian_on;
 
@@ -23,7 +24,7 @@ extern QString hmem[10];
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
-
+//class CalWindow;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -96,11 +97,17 @@ private slots:
     void on_action_Print_triggered();
     void doPrint(QPrinter * printer);
 
+    void on_actionList_History_triggered();
+
+    void on_actionCalendar_triggered();
+
 private:
     Ui::MainWindow *ui;
    // QLabel *Statlabel;
     bool eudate=true;
     //int year,dd,mm;
+    CalWindow *Calwindow;
+
 
 
 protected:
