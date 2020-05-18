@@ -7,6 +7,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <QString>
+#include <vector>
 
 
 
@@ -43,6 +44,12 @@
     QString readSettings(std::string file, std::string entry);
     void writeSettings(char file[], std::string entry,std::string settings);
     QString Qformattext(std::string line, int color, int bold);
+    bool is_number(const std::string& s);
+    QString numberproperties(QString number);
+    QString numberseat(char type, int number);
+    int a_seconddate(QString output_type);
+    int monthbeetween(int m_from, int m_to, int daysbeetween,QChar type);
+
 
 
 

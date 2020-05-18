@@ -10,6 +10,7 @@
 #include <QString>
 #include <QDate>
 #include <QDebug>
+#include <QDir>
 
 
 #define BUFFERSIZE 256
@@ -98,7 +99,7 @@ QString Qformattext(string line, int color, int bold)
 
 string formattext(string line, int color, int bold)
 {
-
+    bool isnumber = is_number(line);
     string formatedcolor;
     string formatedtag;
     int i;
@@ -137,6 +138,12 @@ string formattext(string line, int color, int bold)
     if (color == 10) for (i=1;i<bold;i++) formatedtag=formatedtag+"&emsp;"; //tab after
     if (color == 20) for (i=1;i<bold;i++) formatedtag="&emsp;"+formatedtag; //tab before
     // html == "#include &lt;QtCore&gt;"
+
+    if (isnumber) {
+        string nrprop = numberproperties(QString::fromStdString(line)).toUtf8().constData();
+        formatedtag =  "<span title=\""+nrprop+"\">"+formatedtag+"</span>";
+    }
+    //writetmpfile("<span title=\"them's hoverin' words\">hover me</span>");
     return formatedtag;
 }
 
@@ -191,6 +198,7 @@ std::string dayname(int day) {
               return "Saturday";
               break;
        }
+       return "day";
 }
 
 /*
@@ -219,6 +227,53 @@ std::string getMonthName(int monthNumber)
                       };
 
     return (months[monthNumber]);
+}
+
+bool is_number(const std::string& s)
+{
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isdigit(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
+QString numberproperties(QString number)
+{
+    int str2num = 100000+number.toInt();
+    QString retstr = "";
+    if (str2num > 100000) {
+    retstr = "Prime:"+QString::fromStdString(isprime(str2num))+"<br>";
+    retstr += "Triangular:"+QString::fromStdString(istriangular(str2num))+"<br>";
+    retstr += "Prime related:"+numberseat('P',str2num-100000)+"<br>";
+    retstr += "Triangular related:"+numberseat('T',str2num-100000);
+    }
+    return retstr;
+
+    /*QString pwd = QDir::currentPath() + "/" + nrfile + ".htm";
+    QFile *file = new QFile(pwd);
+    if ( !file->open(QIODevice::ReadWrite) )
+    {
+        qDebug() << "tmp.htm not open";
+    } else file->close();
+    if (file->open(QIODevice::WriteOnly | QIODevice::Append))
+    {
+        QTextStream stream( file );
+        //stream << html;
+        file->close();
+    }*/
+}
+
+
+
+QString numberseat(char type, int number) {
+    int sum=0;
+    QString result="";
+        if (type == 'T' && number > 0){
+            for (int i=1; i <= number; i++) sum += i;
+            result = QString::number(sum);
+        }
+        if (type == 'P' && number > 0) result = QString::number(primes[number-1]);
+
+    return result;
 }
 
 /* A Function to return the number of days in
@@ -296,6 +351,7 @@ int numberOfDays (int monthNumber, int year)
     // December
     if (monthNumber == 11)
         return (31);
+    return 0;
 }
 
 int spanofdate(int d2, int m2, int y2, int dd, int mm, int year) {
@@ -372,7 +428,8 @@ int reverse(int sum){
 
 int getnprime(int prime)
 {
-    {
+    if ( prime % 2 == 0 && prime != 2) return 0;
+    else {
       int i,i2, nprime = 3;
       bool isPrime = true;
       for(i = 2; i <= prime / 2; ++i)
@@ -581,7 +638,39 @@ void logtime() {
 
 std::string isprime(int prime)
 {
-    {
+   /* bool primetrue=true;
+    bool noformat = false;
+    int i;
+    std::stringstream ss;
+    if (prime >= 100000) {
+        noformat = true;
+        prime -= 100000;
+    }
+    if ( prime % 2 == 0 && prime != 2) primetrue=false;
+    if ( prime % 3 == 0) primetrue=false;
+    if ( prime % 5 == 0) primetrue=false;
+    if ( prime % 7 == 0) primetrue=false;
+    if (primetrue) {
+        qDebug() << prime;
+    i=prime;
+    do {
+        i--;
+    }
+    while (prime != primes[i-1]) ;
+    }
+    if (primetrue) {
+    ss << "Yes-" << i;
+    if (noformat) return ss.str();
+    else return formattext(ss.str(),2,2);
+    } else return "No";*/
+
+    bool noformat = false;
+    if (prime >= 100000) {
+        noformat = true;
+        prime -= 100000;
+    }
+    if ( prime % 2 == 0 && prime != 2) return "No";
+    else {
       std::stringstream ss;
       int i,i2, nprime = 3;
       bool isPrime = true;
@@ -605,13 +694,13 @@ std::string isprime(int prime)
                   }
               if (isPrime) nprime ++;
           }
-         // if (nprime-3 <10)ss << "Yes-" << nprime-3 << "th&emsp;";
-         // else ss << "Yes-" << nprime-3 << "th&emsp;";
-          ss << "Yes-" << nprime-3 << "th&emsp;";
-          return formattext(ss.str(),2,2);
+          ss << "Yes-" << nprime-3;
+
+          if (noformat) return ss.str();
+          else return formattext(ss.str(),2,2);
       }
       else
-          return "No&emsp;";
+          return "No";
     }
 }
 
@@ -628,7 +717,7 @@ QString deletelastline() {
     std::fstream outputStream("history.txt", ios::out | ios::trunc);
     if (outputStream.is_open())
     {
-        for (int i=0; i < lines.size()-1; i++)
+        for (ulong i=0; i < lines.size()-1; i++)
         {
             //cout << i << " " << lines.size() << " " << lines[i] << " " << line << "<br>";
            outputStream << lines[i] << "\n";
@@ -639,11 +728,16 @@ QString deletelastline() {
         outputStream.close();
 
     }
-
+    return "not found";
 }
 
 std::string istriangular(int tri)
 {
+    bool noformat = false;
+    if (tri >= 100000) {
+        noformat = true;
+        tri -= 100000;
+    }
     int i, ntri = 0;
     std::stringstream ss;
     bool isTri = true;
@@ -651,11 +745,12 @@ std::string istriangular(int tri)
     if (isTri) {
         for(i = 1; i <= tri; ++i)
             if (floor(sqrt(8*i+1)) == sqrt(8*i+1)) ntri++;
-        ss << "Yes-" << ntri << "th&emsp;";
-        return formattext(ss.str(),2,2);
+        ss << "Yes-" << ntri;
+        if (noformat) return ss.str();
+        else return formattext(ss.str(),2,2);
     }
     else
-        return "No&emsp;";
+        return "No";
 
 }
 
@@ -818,10 +913,10 @@ void writeSettings(char file[], string entry,string settings)
     filein.close();
     fileout.close();
     remove(file);
-    if (rename("settings.txt.tmp","settings.txt") ==0)
-        cout<<"file renamed successfully.";
-     else
-        cout<<"error remaining file.";
+    if (rename("settings.txt.tmp","settings.txt") !=0)
+       // cout<<"file renamed successfully.";
+     //else
+        cout<<"error renaming file.";
 }
 
 
@@ -852,4 +947,145 @@ if (myfile.is_open())
 myfile.close();
 }
 return buffer;
+}
+
+int monthbeetween(int m_from, int m_to, int daysbeetween,QChar type)
+{
+    int returnnum, nm2, nm1=0,mm1,i,year1,year2;
+    nm2=daysbeetween; //monster begins
+    if (m_from > m_to) mm1 = m_to+12;
+    else mm1 = m_to;
+    QDate c_date(year, mm, dd);
+    int days_year = c_date.daysInYear();
+    if (daysbeetween < days_year) {
+      for (i=m_from;i<mm1;i++){
+        //nm1++;
+        if (i > 12) {
+            if (nm2 >= numberOfDays(i-13,year)) {
+                nm2 -= numberOfDays(i-13,year);
+                nm1++;
+            }
+        } else {
+            if (nm2 >= numberOfDays(i-1,year)) {
+                nm2 -= numberOfDays(i-1,year);
+                nm1++;
+            }
+        }
+        //if (i > 12) qDebug() << numberOfDays(i-13,year) << " " << nm1 << " " << nm2 << " " << daysbeetween << " " << i << " " << mm1;
+        //       else qDebug() << numberOfDays(i-1,year) << " " << nm1 << " " << nm2 << " " << daysbeetween << " " << i << " " << mm1;
+      }
+    } else {
+        if (year > y2) {
+            year1 = y2;
+            year2 = year;
+        } else {
+            year1 = year;
+            year2 = y2;
+        }
+        i=m_from;
+        if (m_to > 12) m_to -=12;
+        do {
+            nm2 -= numberOfDays(i-1,year1);
+            nm1++;
+            i++;
+            if (i > 12){
+                year1++;
+                i=1;
+            }
+        } while (year1 < year2 || i != m_to-1);
+    }
+    if (type == 'M') returnnum = nm1;
+    else returnnum = nm2;
+    return returnnum;
+}
+
+
+int a_seconddate(QString output_type)
+{
+    int wd1, wd2, nm1=0,nm2=0,returnnum=0;
+    double w1;
+
+    if (output_type.indexOf("d_s") != -1) {
+        if (QDate(year,mm,dd) > QDate(year,m2,d2))
+        {
+            QDate c_date(year-1, mm, dd);
+            QDate s_date(year, m2, d2);
+            returnnum = c_date.daysTo(s_date);
+            nm1 = monthbeetween(mm,m2,returnnum,'M');
+            nm2 = monthbeetween(mm,m2,returnnum,'D');
+            //qDebug() << "1:d_s " << dd << "." << mm << " -> " << d2 << "." << m2 << " - " << returnnum << " days " << nm1 << " months +" << nm2 << " days";
+        } else {
+            QDate c_date(year, mm, dd);
+            QDate s_date(year, m2, d2);
+            returnnum = c_date.daysTo(s_date);
+            nm1 = monthbeetween(mm,m2,returnnum,'M');
+            nm2 = monthbeetween(mm,m2,returnnum,'D');
+            //qDebug() << "2:d_s " << dd << "." << mm << " -> " << d2 << "." << m2 << " - " << returnnum << " days " << nm1 << " months +" << nm2 << " days";
+        }
+
+    }
+    if (output_type.indexOf("s_d") != -1) {
+        if (QDate(year,mm,dd) < QDate(year,m2,d2))
+        {
+            QDate c_date(year, mm, dd);
+            QDate s_date(year-1, m2, d2);
+            returnnum = s_date.daysTo(c_date);
+            nm1 = monthbeetween(m2,mm,returnnum,'M');
+            nm2 = monthbeetween(m2,mm,returnnum,'D');
+            //qDebug() << "3:s_d " << d2 << "." << m2 << " -> " << dd << "." << mm << " - " << returnnum << " days " << nm1 << " months +" << nm2 << " days";
+        } else {
+            QDate c_date(year, mm, dd);
+            QDate s_date(year, m2, d2);
+            returnnum = s_date.daysTo(c_date);
+            nm1 = monthbeetween(m2,mm,returnnum,'M');
+            nm2 = monthbeetween(m2,mm,returnnum,'D');
+            //qDebug() << "4:s_d " << d2 << "." << m2 << " -> " << dd << "." << mm << " - " << returnnum << " days " << nm1 << " months +" << nm2 << " days";
+        }
+    }
+
+    if (output_type.indexOf("full") != -1) {
+        if (QDate(year,mm,dd) > QDate(y2,m2,d2))
+        {
+            QDate c_date(year, mm, dd);
+            QDate s_date(y2, m2, d2);
+            returnnum = s_date.daysTo(c_date);
+            nm1 = monthbeetween(m2,mm,returnnum,'M');
+            nm2 = monthbeetween(m2,mm,returnnum,'D');
+            //qDebug() << "1:d_s " << dd << "." << mm << " -> " << d2 << "." << m2 << " - " << returnnum << " days " << nm1 << " months +" << nm2 << " days";
+        } else {
+            QDate c_date(year, mm, dd);
+            QDate s_date(y2, m2, d2);
+            returnnum = c_date.daysTo(s_date);
+            nm1 = monthbeetween(mm,m2,returnnum,'M');
+            nm2 = monthbeetween(mm,m2,returnnum,'D');
+            //qDebug() << "2:d_s " << dd << "." << mm << " -> " << d2 << "." << m2 << " - " << returnnum << " days " << nm1 << " months +" << nm2 << " days";
+        }
+
+    }
+    QDate c_date(year, mm, dd);
+    int days_year = c_date.daysInYear();
+
+    if (output_type.indexOf("full") != -1 && returnnum < days_year) returnnum = 0;
+    wd1 = returnnum/7;
+    w1 = returnnum=0;
+    w1 = w1/7-wd1;
+    wd2 = round(w1*7);
+    if (wd1 == 0) wd2 = 0;
+    if (nm1 == 0) nm2 = 0;
+    if (output_type == "week_d_s" || output_type == "week_s_d" || output_type == "week_full") {
+        if (wd2 == 0)
+            returnnum = wd1;
+        else returnnum = wd1*10+wd2;
+    }
+    if (output_type == "month_d_s" || output_type == "month_s_d" || output_type == "month_full") {
+        if (nm2 == 0)
+            returnnum = nm1;
+        else {
+            //qDebug() << nm1 << " " << nm2;
+        QString numret = QString::number(nm1) + QString::number(nm2);
+        returnnum = numret.toInt();
+        }
+    }
+
+    return returnnum;
 }

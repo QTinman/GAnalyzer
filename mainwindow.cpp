@@ -6,11 +6,14 @@
 #include "cipherdialog.h"
 #include "rankdialog.h"
 #include "calwindow.h"
+#include "httpdownload.h"
+#include "headdialog.h"
 #include <QtCore>
 #include <QDate>
 #include "string.h"
 #include <QKeyEvent>
-
+#include <QUrl>
+#include <QtNetwork>
 
 #include <QLabel>
 #include <QFont>
@@ -19,17 +22,61 @@
 #include "gcalc.h"
 #include <QLocale>
 #include <QMessageBox>
+#include <QMouseEvent>
+#include <QStringList>
+//#include "textprogressbar.h"
+//#include "downloadmanager.h"
 
 using namespace std;
-
+#define MAX_SIZE 1000005
 int zerodays[8][250];
 QString hmem[10];
+vector<int> primes;
 QString phrase = "<none>";
+QString pwd = QDir::currentPath() + "/tmp.htm";
+QFile *file = new QFile(pwd);
+
+/*QFile output;
+QNetworkAccessManager manager;
+QNetworkReply *currentDownload = nullptr;
+int downloadedCount = 0;
+TextProgressBar progressBar;
+QElapsedTimer downloadTimer;*/
+QString filesource;
+QStringList List;
 QString labeltext,tmpstring;
 int year,dd,mm,ns,d2,m2,y2,filter,hmempos = -1;
 bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false,sumerian_on=false,rev_sumerian_on=false;
 
+void MainWindow::SieveOfEratosthenes(vector<int> &primes)
+{
+    // Create a boolean array "IsPrime[0..MAX_SIZE]" and
+    // initialize all entries it as true. A value in
+    // IsPrime[i] will finally be false if i is
+    // Not a IsPrime, else true.
+    bool IsPrime[MAX_SIZE];
+    memset(IsPrime, true, sizeof(IsPrime));
 
+    for (int p = 2; p * p < MAX_SIZE; p++)
+    {
+        // If IsPrime[p] is not changed, then it is a prime
+        if (IsPrime[p] == true)
+        {
+            // Update all multiples of p greater than or
+            // equal to the square of it
+            // numbers which are multiple of p and are
+            // less than p^2 are already been marked.
+            for (int i = p * p; i <  MAX_SIZE; i += p)
+                IsPrime[i] = false;
+        }
+    }
+
+    // Store all prime numbers
+    for (int p = 2; p < MAX_SIZE; p++)
+       if (IsPrime[p])
+            primes.push_back(p);
+
+}
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -42,9 +89,28 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->lineEdit->installEventFilter(this);
     ui->statusbar->installEventFilter(this);
+    //ui->textBrowser->installEventFilter(this);
+    //ui->textBrowser->setContextMenuPolicy(Qt::NoContextMenu);
+    connect(ui->textBrowser, &QTextBrowser::anchorClicked,
+            this, &MainWindow::handleAnchorClicked);
+
+    //connect(&CalWindow::buttonpressed, SIGNAL(CalWindow::buttonpressed),
+     //       this, updatestatusbar());
+
+    //connect(this,&CalWindow::on_date_clicked(),this,&MainWindow::updatestatusbar());
+
+
+    //Calwindow = new CalWindow;
+    //connect(Calwindow,SIGNAL(buttonpressed()),this,SLOT(updatestatusbar()));
+
+
+    //connect(ui->textBrowser, &QTextBrowser::sourceChanged,
+    //        this, &MainWindow::handleSourceChanged);
+    //ui->textBrowser->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    //mousePressEvent(QMouseEvent())
     if (eudate) ui->action_Eu_date->setText("Date DMY");
     else ui->action_Eu_date->setText("Date MDY");
-
+    SieveOfEratosthenes(primes);
     QString font = readSettings("settings.txt","font");
     QString DMY = readSettings("settings.txt","DMY");
     QString ciphers = readSettings("settings.txt","ciphers");
@@ -65,10 +131,17 @@ MainWindow::MainWindow(QWidget *parent)
     if (ciphers.mid(4,1) == "1") sumerian_on = true;
     if (ciphers.mid(5,1) == "1") rev_sumerian_on = true;
 
-    setCentralWidget(ui->groupBox_3);
+    setCentralWidget(ui->groupBox);
+    //setCentralWidget(ui->centralwidget);
     ui->lineEdit->focusWidget();
     ui->statusbar->showMessage(scomstr);
+    if ( !file->open(QIODevice::ReadWrite) )
+    {
+        qDebug() << "tmp.htm not open";
+    } else file->close();
 
+
+    ui->textBrowser->setSource("file:///"+pwd);
     std::setlocale(LC_ALL,"");
 
             //int curr_locale = QLocale().language();
@@ -94,8 +167,12 @@ MainWindow::~MainWindow()
     if (rev_sumerian_on) ciphers += "1";
     else ciphers += "0";
     //qDebug() << ciphers;
-    writeSettings("settings.txt","ciphers",ciphers.toUtf8().constData());
+    char filename[13] = "settings.txt";
+    writeSettings(filename,"ciphers",ciphers.toUtf8().constData());
     //qDebug()  << MainWindow::width() << " " << MainWindow::x() << " " << ui->textBrowser->width();
+    //QString pwd = QDir::currentPath() + "/tmp.htm";
+    //QFile *File = new QFile(pwd);
+    file->remove();
     delete ui;
 }
 
@@ -141,8 +218,34 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
         return false;
     }
 
-    if(obj == ui->statusbar) emit updatestatusbar(phrase,dd,mm);
+    if(obj == ui->statusbar) emit updatestatusbar();
+    //if(obj == ui->textBrowser) qDebug() << event;
     return QMainWindow::eventFilter(obj, event);
+
+}
+
+
+void MainWindow::handleAnchorClicked(const QUrl &url)
+{
+ /* QString msg = "new URL == ";
+  msg.append(url.toDisplayString());
+  msg.append("\nold URL == ");
+  msg.append(ui->textBrowser->source().toDisplayString());
+  QMessageBox::information(this, __FUNCTION__, msg);*/
+  int int1=url.toString().lastIndexOf(".");
+  int int2=url.toString().lastIndexOf("/");
+  QString number = url.toString().mid(int2+1,int1-int2-1);
+  //qDebug() << number;
+
+}
+
+void MainWindow::handleSourceChanged(const QUrl &url)
+{
+  QString msg = "new URL == ";
+  msg.append(url.toDisplayString());
+  msg.append("\nold URL == ");
+  msg.append(ui->textBrowser->source().toDisplayString());
+  QMessageBox::information(this, __FUNCTION__, msg);
 }
 
 void MainWindow::keymem(QString memstr)
@@ -166,21 +269,21 @@ void MainWindow::on_actionDate_Search_triggered() //Ctrl-S
     datesearch.exec();
     QString html = loopYear(ns,dd,mm,year,1,eudate);
     if (ns > 0) {
-    ui->textBrowser->append("<br>Searching dates for whole year starts<br>");
-    ui->textBrowser->append("<html>"+html+"</html>");
+    writetmpfile("<br>Searching dates for whole year starts<br>");
+    writetmpfile("<html>"+html+"</html>");
     }
 }
 
-void MainWindow::updatestatusbar(QString str, int dd2, int mm2)
+void MainWindow::updatestatusbar()
 {
     QString scombstr;
 
     if (d2 == 0) {
-    if (eudate) scombstr = "Active phrase : " +str+ " - Current date : " + QString::number(dd2) + "/" + QString::number(mm2) + "/" + QString::number(year);
-    else scombstr = "Active phrase : " +str+ " - Current date : " + QString::number(mm2) + "/" + QString::number(dd2) + "/" + QString::number(year);
+    if (eudate) scombstr = "Active phrase : " +phrase+ " - Current date : " + QString::number(dd) + "/" + QString::number(mm) + "/" + QString::number(year);
+    else scombstr = "Active phrase : " +phrase+ " - Current date : " + QString::number(mm) + "/" + QString::number(dd) + "/" + QString::number(year);
     } else {
-    if (eudate) scombstr = "Active phrase : " +str+ " - Current date : " + QString::number(dd2) + "/" + QString::number(mm2) + "/" + QString::number(year) + " Second date : " + QString::number(d2) + "/" + QString::number(m2) + "/" + QString::number(y2);
-    else scombstr = "Active phrase : " +str+ " - Current date : " + QString::number(mm2) + "/" + QString::number(dd2) + "/" + QString::number(year) + " Second date : " + QString::number(m2) + "/" + QString::number(d2) + "/" + QString::number(y2);
+    if (eudate) scombstr = "Active phrase : " +phrase+ " - Current date : " + QString::number(dd) + "/" + QString::number(mm) + "/" + QString::number(year) + " Second date : " + QString::number(d2) + "/" + QString::number(m2) + "/" + QString::number(y2);
+    else scombstr = "Active phrase : " +phrase+ " - Current date : " + QString::number(mm) + "/" + QString::number(dd) + "/" + QString::number(year) + " Second date : " + QString::number(m2) + "/" + QString::number(d2) + "/" + QString::number(y2);
     }
     //ui->statusbar->setStyleSheet("color: red");
     ui->menu_File->menuAction()->setStatusTip(scombstr);
@@ -305,7 +408,7 @@ void MainWindow::on_actionNew_Phrase_triggered()
     inputDialog datesearch;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
-    emit updatestatusbar(phrase,dd,mm);
+    emit updatestatusbar();
 }
 
 void MainWindow::on_actionNew_Date_triggered()
@@ -316,7 +419,7 @@ void MainWindow::on_actionNew_Date_triggered()
     datesearch.eudate = eudate;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
-    emit updatestatusbar(phrase,dd,mm);
+    emit updatestatusbar();
 }
 
 void MainWindow::on_actionSearch_History_txt_triggered() //Ctrl-H
@@ -327,9 +430,9 @@ void MainWindow::on_actionSearch_History_txt_triggered() //Ctrl-H
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
     if (ns > 0){
-    ui->textBrowser->append("<br>Search history with number starts<br>");
+    writetmpfile("<br>Search history with number starts<br>");
     QString html = searchwords(ns,true);
-    if (ns >0) ui->textBrowser->append("<html>"+html+"</html>");
+    if (ns >0) writetmpfile("<html>"+html+"</html>");
     }
 }
 
@@ -339,7 +442,7 @@ void MainWindow::on_actionSet_Year_triggered()
     inputDialog datesearch;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
-    emit updatestatusbar(phrase,dd,mm);
+    emit updatestatusbar();
 }
 
 void MainWindow::on_action_Analyze_triggered() //Ctrl-A
@@ -349,12 +452,12 @@ void MainWindow::on_action_Analyze_triggered() //Ctrl-A
      inputDialog datesearch;
      datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
      datesearch.exec();
-     emit updatestatusbar(phrase,dd,mm);
+     emit updatestatusbar();
     }
    if (phrase != "<none>") {
-       ui->textBrowser->append("<br>Analyzing phrase starts");
+       writetmpfile("<br>Analyzing phrase starts");
        QString html = analyze(dd,mm,year,phrase,false,0,eudate);
-       ui->textBrowser->append("<html>"+html+"</html>");
+       writetmpfile("<html>"+html+"</html>");
    }
 
 }
@@ -363,21 +466,72 @@ void MainWindow::on_action_Eu_date_toggled(bool arg1)
 {
     if (arg1) eudate = true;
     else eudate = false;
+    char filename[13] = "settings.txt";
     if (eudate) {
         ui->action_Eu_date->setText("Date DMY");
-        writeSettings("settings.txt","DMY","true");
+        writeSettings(filename,"DMY","true");
     } else  {
         ui->action_Eu_date->setText("Date MDY");
-        writeSettings("settings.txt","DMY","false");
+        writeSettings(filename,"DMY","false");
     }
-    emit updatestatusbar(phrase,dd,mm);
+    emit updatestatusbar();
 }
 
 void MainWindow::on_actionDate_Details_triggered() //Ctrl-D
 {
     QString html = gcalc(dd,mm,year,d2,m2,y2,eudate);
-    ui->textBrowser->append("<html>"+html+"</html>");
+    writetmpfile("<html>"+html+"</html>");
     //#include <QDebug>//qDebug() << "\n" << html;
+}
+
+void MainWindow::calc(QString calcstr)
+{
+    int result=0,ppos=0,mpos=0;
+    /*QString output="";
+
+    QStringList plusnum= calcstr.split("+");
+    for (int i=0;i<plusnum.count();i++) {
+        result += plusnum[i].toUInt();
+        if (i < plusnum.count()-1) output += plusnum[i]+"+";
+        else  output += plusnum[i]+"="+QString::number(result);
+    }*/
+
+    ppos = calcstr.indexOf("+");
+    mpos = calcstr.indexOf("-");
+    if (ppos == -1) ppos = calcstr.length();
+    if (mpos == -1) mpos = calcstr.length();
+    if (ppos==0) {
+        int ppos2 = calcstr.indexOf("+",ppos+1);
+        if (mpos < ppos2 || ppos2 == -1) result += calcstr.mid(0,mpos).toInt();
+        else result += calcstr.mid(0,ppos2).toInt();
+        ppos = calcstr.indexOf("+",ppos+1);
+    } else if (mpos==0) {
+        int mpos2 = calcstr.indexOf("-",mpos+1);
+        if (ppos < mpos2 || mpos2 == -1) result += calcstr.mid(0,ppos).toInt();
+        else result += calcstr.mid(0,mpos2).toInt();
+        mpos = calcstr.indexOf("-",mpos+1);
+    } else if ((ppos < mpos  || mpos == -1) && ppos != -1) result += calcstr.mid(0,ppos).toInt();
+    else result += calcstr.mid(0,mpos).toInt();
+    if (ppos == calcstr.length()) ppos = calcstr.indexOf("+");
+    if (mpos == calcstr.length()) mpos = calcstr.indexOf("-");
+    do {
+        if ((ppos < mpos  || mpos == -1) && ppos != -1) {
+            int ppos2 = calcstr.indexOf("+",ppos+1);
+            if (ppos2 < mpos && ppos2 != -1) result += calcstr.mid(ppos,ppos2-ppos).toInt();
+            else if (mpos == -1 && ppos2 == -1) result += calcstr.mid(ppos,calcstr.length()-ppos).toInt();
+            else if (mpos == -1 && ppos2 > ppos) result += calcstr.mid(ppos,ppos2-ppos).toInt();
+            else result += calcstr.mid(ppos,mpos-ppos).toInt();
+            ppos = calcstr.indexOf("+",ppos+1);
+        } else {
+            int mpos2 = calcstr.indexOf("-",mpos+1);
+            if (mpos2 < ppos && mpos2 != -1) result += calcstr.mid(mpos,mpos2-mpos).toInt();
+            else if (ppos == -1 && mpos2 == -1) result += calcstr.mid(mpos,calcstr.length()-mpos).toInt();
+            else if (ppos == -1 && mpos2 > mpos) result += calcstr.mid(mpos,mpos2-mpos).toInt();
+            else result += calcstr.mid(mpos,ppos-mpos).toInt();
+            mpos = calcstr.indexOf("-",mpos+1);
+        }
+    } while (ppos != -1 || mpos != -1);
+    writetmpfile(calcstr+"="+QString::number(result));
 }
 
 void MainWindow::on_lineEdit_returnPressed()
@@ -386,13 +540,20 @@ void MainWindow::on_lineEdit_returnPressed()
     QString tphrase = ui->lineEdit->text();
     std::string stdphrase = tphrase.toUtf8().constData();
     if (ui->checkBox->isChecked() && stdphrase[0] != '/') stdphrase = "/a" +stdphrase;
-    if (stdphrase == "dd" || stdphrase == "DD") {
-        QString html = printword(stdphrase,'D',true,false);
-        ui->textBrowser->append("<html>"+html+"</html>");
+    if (tphrase.indexOf("+") != -1 || tphrase.indexOf("-") != -1) {
+        calc(tphrase);
+
     }
-    else if (stdphrase [0] == '/') {
+    else if (stdphrase == "dd" || stdphrase == "DD") {
+        QString html = printword(stdphrase,'D',true,false);
+        writetmpfile("<html>"+html+"</html>");
+    }
+
+    else if (stdphrase [0] == '/' || stdphrase [0] == '.') {
         //qDebug() << QString::fromStdString(stdphrase) << "\n";
-        replaceAll(stdphrase,"/ ","/");
+        eraseAllSubStr(stdphrase," ");
+        tphrase = QString::fromStdString(stdphrase);
+        /*replaceAll(stdphrase,"/ ","/");
         replaceAll(stdphrase," /","/");
         replaceAll(stdphrase,"/a ","/a");
         replaceAll(stdphrase,"/c ","/c");
@@ -402,7 +563,7 @@ void MainWindow::on_lineEdit_returnPressed()
         replaceAll(stdphrase,"/w ","/w");
         replaceAll(stdphrase,"/e ","/e");
         replaceAll(stdphrase,"/o ","/o");
-        replaceAll(stdphrase,"/r ","/r");
+        replaceAll(stdphrase,"/r ","/r");*/
         //qDebug() << QString::fromStdString(stdphrase) << "\n";
         if (stdphrase[1] != 'a') keymem(QString::fromStdString(stdphrase));
         switch (stdphrase[1]) {
@@ -418,8 +579,8 @@ void MainWindow::on_lineEdit_returnPressed()
              phrase = QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2));
              keymem(phrase);
              QString html = analyze(dd,mm,year,phrase,false,0,eudate);
-             ui->textBrowser->append("<html>"+html+"</html>");
-             emit updatestatusbar(phrase,dd,mm);
+             writetmpfile("<html>"+html+"</html>");
+             emit updatestatusbar();
             }
             break;
         }
@@ -430,41 +591,57 @@ void MainWindow::on_lineEdit_returnPressed()
         }
         case 'n':
         {
-            if (eudate) {
-                dd = ui->lineEdit->text().mid(2,2).toInt();
-                mm = ui->lineEdit->text().mid(5,2).toInt();
-            } else {
-                mm = ui->lineEdit->text().mid(2,2).toInt();
-                dd = ui->lineEdit->text().mid(5,2).toInt();
+            QStringList dags= tphrase.mid(2,tphrase.length()-2).split("/");
+            if (dags.count() < 2) dags= tphrase.mid(2,tphrase.length()-2).split(".");
+            if (eudate && dags.count() == 2) {
+                dd = dags[0].toUInt();
+                mm = dags[1].toUInt();
+                //dd = ui->lineEdit->text().mid(2,2).toInt();
+                //mm = ui->lineEdit->text().mid(5,2).toInt();
+            } else if (dags.count() == 2){
+                mm = tphrase.mid(2,2).toInt();
+                dd = tphrase.mid(5,2).toInt();
             }
-            if (ui->lineEdit->text().mid(8,4).toInt() > 0) year = ui->lineEdit->text().mid(8,4).toInt();
-            if (valid_date(dd,mm,year) == 0) {
+            //if (ui->lineEdit->text().mid(8,4).toInt() > 0) year = ui->lineEdit->text().mid(8,4).toInt();
+            if (dags.count() > 2) {
+
+                year = dags[2].toInt();
+                if (year < 100) year += 2000;
+            }
+            if (valid_date(dd,mm,year) == 0 || dags.count() < 2) {
                 //qDebug() << ui->lineEdit->text().mid(2,2) << " " << ui->lineEdit->text().mid(5,2) << " " << year;
                 QDate cd = QDate::currentDate();
                 dd = cd.day();
                 mm = cd.month();
                 year = cd.year();
             }
-            emit updatestatusbar(phrase,dd,mm);
+            emit updatestatusbar();
             break;
         }
         case 's':
         {
-            if (eudate) {
-                d2 = ui->lineEdit->text().mid(2,2).toInt();
-                m2 = ui->lineEdit->text().mid(5,2).toInt();
-                y2 = ui->lineEdit->text().mid(8,4).toInt();
-            } else {
-                m2 = ui->lineEdit->text().mid(2,2).toInt();
-                d2 = ui->lineEdit->text().mid(5,2).toInt();
-                y2 = ui->lineEdit->text().mid(8,4).toInt();
+            QStringList dags= tphrase.mid(2,tphrase.length()-2).split("/");
+            if (dags.count() < 2) dags= tphrase.mid(2,tphrase.length()-2).split(".");
+
+            if (eudate && dags.count() == 2) {
+                d2 = dags[0].toUInt();
+                m2 = dags[1].toUInt();
+            } else if (dags.count() == 2){
+                m2 = dags[0].toUInt();
+                d2 = dags[1].toUInt();
             }
-            if (valid_date(d2,m2,y2) == 0) {
+            if (dags.count() == 3) {
+                y2 = dags[2].toInt();
+                if (y2 < 100) y2 += 2000;
+            } else y2 = year;
+
+            if (valid_date(d2,m2,y2) == 0 || dags.count() < 2) {
                 //qDebug() << ui->lineEdit->text().mid(2,2) << " " << ui->lineEdit->text().mid(5,2) << " " << y2;
                 d2 = 0;
                 m2 = 0;
                 y2 = 0;
-            } else emit updatestatusbar(phrase,dd,mm);
+            }
+            emit updatestatusbar();
             break;
         }
         case 'h':
@@ -480,10 +657,10 @@ void MainWindow::on_lineEdit_returnPressed()
 
             } else if (QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2)) != "") phrase = QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2));
              keymem(phrase);
-            emit updatestatusbar(phrase,dd,mm);
+            emit updatestatusbar();
             if (phrase != "<none>") {
                 std::string stdphrase = phrase.toUtf8().constData();
-                ui->textBrowser->append("<html>"+printallwords(stdphrase,'N',true,false)+"</html>");
+                writetmpfile("<html>"+printallwords(stdphrase,'N',true,false)+"</html>");
             }
             break;
         case 'd':
@@ -500,7 +677,7 @@ void MainWindow::on_lineEdit_returnPressed()
                 }
                 else html = gcalc(dd,mm,year,d2,m2,y2,eudate);
              }
-            ui->textBrowser->append("<html>"+html+"</html>");
+            writetmpfile("<html>"+html+"</html>");
             break;
             }
             case 'e':
@@ -524,7 +701,7 @@ void MainWindow::on_lineEdit_returnPressed()
                     }
                     else if (type > 0) html = solareclipe(dd,mm,year,1,type,eudate);
                  }
-                ui->textBrowser->append("<html>"+html+"</html>");
+                writetmpfile("<html>"+html+"</html>");
                 break;
                 }
 
@@ -537,7 +714,7 @@ void MainWindow::on_lineEdit_returnPressed()
                 }else { if (valid_date(ui->lineEdit->text().mid(7,2).toInt(),ui->lineEdit->text().mid(4,2).toInt(),year) == 1) html = date2history(ui->lineEdit->text().mid(7,2).toInt(),ui->lineEdit->text().mid(4,2).toInt(),year,true,eudate,ui->lineEdit->text().mid(2,1).toInt());
                     else html = date2history(dd,mm,year,true,eudate,ui->lineEdit->text().mid(2,1).toInt());
                  }
-                ui->textBrowser->append("<html>"+html+"</html>");
+                writetmpfile("<html>"+html+"</html>");
                 }
                 break;
                 }
@@ -566,12 +743,12 @@ void MainWindow::on_lineEdit_returnPressed()
 
               html = phraserank(phrase.toUtf8().constData(),eudate,3,true,true);
 
-              ui->textBrowser->append("<html>"+html+"</html>");
+              writetmpfile("<html>"+html+"</html>");
               break;
             }
             case 'x':
             {
-               if (stdphrase [2] == 'd') {
+               if (stdphrase [2] == 'd') { //add/subtrackt to date
                 ns = ui->lineEdit->text().length();
                 ns = ui->lineEdit->text().mid(3,ns-3).toInt();
                 int d1,m1,y1;
@@ -580,20 +757,67 @@ void MainWindow::on_lineEdit_returnPressed()
                 y1 = cd.year();
                 d1 = cd.day();
                 m1 = cd.month();
-                if (eudate) ui->textBrowser->append("<html>"+QString::number(d1)+"/"+QString::number(m1)+"/"+QString::number(y1)+"</html>");
-                else ui->textBrowser->append("<html>"+QString::number(m1)+"/"+QString::number(d1)+"/"+QString::number(y1)+"</html>");
-               } else {
+                if (eudate) writetmpfile("<html>"+QString::number(d1)+"/"+QString::number(m1)+"/"+QString::number(y1)+"</html>");
+                else writetmpfile("<html>"+QString::number(m1)+"/"+QString::number(d1)+"/"+QString::number(y1)+"</html>");
+               } else if (stdphrase [2] == 's') { // add/subtrackt to second date
                 ns = ui->lineEdit->text().length();
-                ns = ui->lineEdit->text().mid(2,ns-2).toInt();
+                ns = ui->lineEdit->text().mid(3,ns-3).toInt();
                 QDate cd(year,mm,dd);
                 cd = cd.addDays(ns);
-                year = cd.year();
-                dd = cd.day();
-                mm = cd.month();
-                emit updatestatusbar(phrase,dd,mm);
-                break;
+                y2 = cd.year();
+                d2 = cd.day();
+                m2 = cd.month();
+                emit updatestatusbar();
+               } else { // add/subtrackt to date and display only
+                   ns = ui->lineEdit->text().length();
+                   ns = ui->lineEdit->text().mid(2,ns-2).toInt();
+                   QDate cd(year,mm,dd);
+                   cd = cd.addDays(ns);
+                   year = cd.year();
+                   dd = cd.day();
+                   mm = cd.month();
+                   emit updatestatusbar();
                }
+            break;
             }
+            case 'f':
+            {
+                //Httpdownload = new HttpDownload(this);
+                //Httpdownload->setWindowTitle("Http Download");
+
+                //Httpdownload->show();
+
+                HttpDownload Httpdownload;
+                Httpdownload.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
+                Httpdownload.exec();
+                //filesource = "index.html";
+                //tmpstring = "https://www.nytimes.com/";
+                //qDebug() << filesource;
+                if (filesource != "") {
+                    List = getheadlines(filesource,20);
+                    headdialog = new headDialog(this);
+                    headdialog->setWindowTitle("Http Download");
+                    headdialog->show();
+                }
+
+                break;
+            }
+            case 't': // test
+             {
+                //qDebug() << "days d_s " << a_seconddate("day_d_s");
+                //qDebug() << "days d_s " << a_seconddate("day_s_d");
+                //qDebug() << "week d_s " << a_seconddate("week_d_s");
+                //qDebug() << "week s_d " << a_seconddate("week_s_d");
+                qDebug() << "month d_s " << a_seconddate("month_d_s");
+                qDebug() << "month s_d " << a_seconddate("month_s_d");
+                qDebug() << "day_full " << a_seconddate("day_full");
+                qDebug() << "week_full " << a_seconddate("week_full");
+                qDebug() << "month_full " << a_seconddate("month_full");
+                //qDebug() << "months_d_s " << monthbeetween(mm,m2,a_seconddate("day_d_s"),'M') << " days " << monthbeetween(mm,m2,a_seconddate("day_d_s"),'D');
+                //qDebug() << "months_s_d " << monthbeetween(m2,mm,a_seconddate("day_s_d"),'M') << " days " << monthbeetween(m2,mm,a_seconddate("day_s_d"),'D');
+                //int test = a_seconddate("week_d_s");
+                //test = a_seconddate("week_s_d");
+             }
           }
         }
 
@@ -604,59 +828,61 @@ void MainWindow::on_lineEdit_returnPressed()
         keymem(QString::fromStdString(stdphrase));
         if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
         else html = printword(stdphrase,'N',true,false);
-        ui->textBrowser->append("<html>"+html+"</html>");
+        writetmpfile("<html>"+html+"</html>");
     }
     ui->lineEdit->clear();
 }
 
 void MainWindow::shorthelp()
 {
-        ui->textBrowser->append("<br><h1>Short help</h1><br>");
-        ui->textBrowser->append("<b>All functions are available from the Menu</b>");
-        ui->textBrowser->append("<b>By shortcut following functions are available</b>");
-        ui->textBrowser->append("<font color=\"blue\">(Ctrl-S)</font> <b>Date search</b> connect number to dates spanning the active year.");
-        ui->textBrowser->append("<font color=\"blue\">(Ctrl-H)</font> <b>Search history.txt</b> searches all words connected to entered number in history.txt.");
-        ui->textBrowser->append("<font color=\"blue\">(Ctrl-A)</font> <b>Analyze</b> takes active phrase and compare it to current date displayed on the status bar.");
-        ui->textBrowser->append("<font color=\"blue\">(Ctrl-D)</font> <b>Date details</b> displays calculations for current date. Second date will extend the information.");
-        ui->textBrowser->append("<font color=\"blue\">(Ctrl-W)</font> <b>Word details</b> shows details about active phrase.");
-        ui->textBrowser->append("<font color=\"blue\">(Ctrl-E)</font> <b>Compare Solar Eclipses to History.txt</b> for current date");
-        ui->textBrowser->append("<font color=\"blue\">(Ctrl-O)</font> <b>Date compare to history</b> calculate current date and compares it to history.txt");
-        ui->textBrowser->append("<font color=\"blue\">(Ctrl-T)</font> <b>Compare phrase to history.txt</b> takes one of the base ciphers from active phrase and compares it to history.txt<br>");
+        writetmpfile("<br><h1>Short help</h1><br>");
+        writetmpfile("<b>All functions are available from the Menu</b>");
+        writetmpfile("<b>By shortcut following functions are available</b>");
+        writetmpfile("<font color=\"blue\">(Ctrl-S)</font> <b>Date search</b> connect number to dates spanning the active year.");
+        writetmpfile("<font color=\"blue\">(Ctrl-H)</font> <b>Search history.txt</b> searches all words connected to entered number in history.txt.");
+        writetmpfile("<font color=\"blue\">(Ctrl-A)</font> <b>Analyze</b> takes active phrase and compare it to current date displayed on the status bar.");
+        writetmpfile("<font color=\"blue\">(Ctrl-D)</font> <b>Date details</b> displays calculations for current date. Second date will extend the information.");
+        writetmpfile("<font color=\"blue\">(Ctrl-W)</font> <b>Word details</b> shows details about active phrase.");
+        writetmpfile("<font color=\"blue\">(Ctrl-E)</font> <b>Compare Solar Eclipses to History.txt</b> for current date");
+        writetmpfile("<font color=\"blue\">(Ctrl-O)</font> <b>Date compare to history</b> calculate current date and compares it to history.txt");
+        writetmpfile("<font color=\"blue\">(Ctrl-T)</font> <b>Compare phrase to history.txt</b> takes one of the base ciphers from active phrase and compares it to history.txt<br>");
 
 
-        ui->textBrowser->append("The input area takes phrases wich are displayed and saved to history.txt if Save is checked<br>");
-        ui->textBrowser->append("Toggle Analyze will run entered phrases through analyzer instead of word details.<br>");
-        ui->textBrowser->append("<b>The input area also takes commands:</b>");
+        writetmpfile("The input area takes phrases wich are displayed and saved to history.txt if Save is checked<br>");
+        writetmpfile("Toggle Analyze will run entered phrases through analyzer instead of word details.<br>");
+        writetmpfile("<b>The input area also takes commands:</b>");
 
-        ui->textBrowser->append("<font color=\"blue\">/a(phrase)</font> runs analyzer, (<b>Phrase</b> is optional)");
-        ui->textBrowser->append("<font color=\"blue\">/w(phrase)</font> phrase details (<b>Phrase</b> is optional)");
-        ui->textBrowser->append("<font color=\"blue\">/n##/##/####</font> New date, (Year is optional)");
-        ui->textBrowser->append("<font color=\"blue\">/s##/##/####</font> New second date");
-        ui->textBrowser->append("<font color=\"blue\">/d##/##/####</font> date details (date is optional, year is extra option)");
-        ui->textBrowser->append("<font color=\"blue\">/o#/##/##</font> Date compare to history (first number is filter 1-4, date is optional)");
-        ui->textBrowser->append("<font color=\"blue\">/e@/##/##/####</font> Last and next Solar eclipse relative to date. @ is type \"T A P H-X=for all\" (date is optional, year is extra option)");
-        ui->textBrowser->append("<font color=\"blue\">/r</font> Toggle all extra ciphers on or off");
-        ui->textBrowser->append("<font color=\"blue\">/x##</font> Add or subtract days from current date and set that date.");
-        ui->textBrowser->append("<font color=\"blue\">/xd##</font> Add or subtract days from current date and display only in output.");
-        ui->textBrowser->append("<font color=\"blue\">dd</font> deletes last line from history.txt");
-        ui->textBrowser->append("<font color=\"blue\">/h</font> shows this help");
+        writetmpfile("<font color=\"blue\">/a(phrase)</font> runs analyzer, (<b>Phrase</b> is optional)");
+        writetmpfile("<font color=\"blue\">/w(phrase)</font> phrase details (<b>Phrase</b> is optional)");
+        writetmpfile("<font color=\"blue\">/n##/##/####</font> New date, (Year is optional)");
+        writetmpfile("<font color=\"blue\">/s##/##/####</font> New second date");
+        writetmpfile("<font color=\"blue\">/d##/##/####</font> date details (date is optional, year is extra option)");
+        writetmpfile("<font color=\"blue\">/o#/##/##</font> Date compare to history (first number is filter 1-4, date is optional)");
+        writetmpfile("<font color=\"blue\">/e@/##/##/####</font> Last and next Solar eclipse relative to date. @ is type \"T A P H-X=for all\" (date is optional, year is extra option)");
+        writetmpfile("<font color=\"blue\">/r</font> Toggle all extra ciphers on or off");
+        writetmpfile("<font color=\"blue\">/x##</font> Add or subtract days from current date and set that date.");
+        writetmpfile("<font color=\"blue\">/xs##</font> Add or subtract days from current date and set that as second date.");
+        writetmpfile("<font color=\"blue\">/xd##</font> Add or subtract days from current date and display only in output.");
+        writetmpfile("<font color=\"blue\">dd</font> deletes last line from history.txt");
+        writetmpfile("<font color=\"blue\">/h</font> shows this help");
 
 
-        ui->textBrowser->append("<font color=\"blue\">/c</font> Clears output");
-        ui->textBrowser->append("Enter <b>Word Phrase</b> shows details about that phrase and saves it to history if Save is checked.");
-        ui->textBrowser->append("Change <b>Current Year</b> from The Edit menu");
-        ui->textBrowser->append("Change <b>Date Style</b> from The Edit menu");
-        ui->textBrowser->append("<br><b>© jonssofh@hotmail.com</b><br>");
+        writetmpfile("<font color=\"blue\">/c</font> Clears output");
+        writetmpfile("Enter <b>Word Phrase</b> shows details about that phrase and saves it to history if Save is checked.");
+        writetmpfile("Change <b>Current Year</b> from The Edit menu");
+        writetmpfile("Change <b>Date Style</b> from The Edit menu");
+        writetmpfile("<br><b>© jonssofh@hotmail.com</b><br>");
 
 }
 
 void MainWindow::welcome()
 {
-        ui->textBrowser->append("<h1>Welcome to Gematria Analyzer!</h1><br>");
-        ui->textBrowser->append("<h2>This program calculates Kabbalah ciphers from phrases and compares it to date numerology.</h2><br>");
-        ui->textBrowser->append("<b>For details about ciphers select <font color=\"blue\">Tables->List ciphers</font></b>");
-        ui->textBrowser->append("The program takes a phrase and date for comparison, also second date can be entered<br>");
-        ui->textBrowser->append("Select <b>Help</b> from menu or type <font color=\"blue\">/h</font> in input area<br>");
+        writetmpfile("<h1>Welcome to Gematria Analyzer!</h1><br>");
+        writetmpfile("<h2>This program calculates Kabbalah ciphers from phrases and compares it to date numerology.</h2><br>");
+        writetmpfile("<b>For details about ciphers select <font color=\"blue\">Tables->List ciphers</font></b>");
+        writetmpfile("The program takes a phrase and date for comparison, also second date can be entered<br>");
+        writetmpfile("Select <b>Help</b> from menu or type <font color=\"blue\">/h</font> in input area<br>");
+        //writetmpfile("<div title=\"them's hoverin' words\">hover me</div>");
 }
 
 void MainWindow::on_action_Word_details_triggered() //Ctrl-W
@@ -666,59 +892,59 @@ void MainWindow::on_action_Word_details_triggered() //Ctrl-W
      inputDialog datesearch;
      datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
      datesearch.exec();
-     emit updatestatusbar(phrase,dd,mm);
+     emit updatestatusbar();
     }
    if (phrase != "<none>") {
        std::string stdphrase = phrase.toUtf8().constData();
-       ui->textBrowser->append("<html>"+printallwords(stdphrase,'N',true,false)+"</html>");
+       writetmpfile("<html>"+printallwords(stdphrase,'N',true,false)+"</html>");
    }
 
 }
 
 void MainWindow::on_actionList_Ciphers_triggered()
 {
-    ui->textBrowser->append("English Ordinal");
-    ui->textBrowser->append(listciphers(0,0,0));
-    ui->textBrowser->append("Full Reduction");
-    ui->textBrowser->append(listciphers(1,0,0));
-    ui->textBrowser->append("Reverse Ordinal");
-    ui->textBrowser->append(listciphers(0,1,0));
-    ui->textBrowser->append("Reverse full Reduction");
-    ui->textBrowser->append(listciphers(1,1,0));
+    writetmpfile("English Ordinal");
+    writetmpfile(listciphers(0,0,0));
+    writetmpfile("Full Reduction");
+    writetmpfile(listciphers(1,0,0));
+    writetmpfile("Reverse Ordinal");
+    writetmpfile(listciphers(0,1,0));
+    writetmpfile("Reverse full Reduction");
+    writetmpfile(listciphers(1,1,0));
     if (single_r_on) {
-    ui->textBrowser->append("Single Reduction");
-    ui->textBrowser->append(listciphers(0,0,1));
+    writetmpfile("Single Reduction");
+    writetmpfile(listciphers(0,0,1));
     }
     if (francis_on) {
-    ui->textBrowser->append("Francis Bacon");
-    ui->textBrowser->append(listciphers(0,0,2));
+    writetmpfile("Francis Bacon");
+    writetmpfile(listciphers(0,0,2));
     }
     if (satanic_on) {
-    ui->textBrowser->append("Satanic");
-    ui->textBrowser->append(listciphers(0,0,3));
+    writetmpfile("Satanic");
+    writetmpfile(listciphers(0,0,3));
     }
     if (jewish_on) {
-    ui->textBrowser->append("Jewish");
-    ui->textBrowser->append(listciphers(0,0,4));
+    writetmpfile("Jewish");
+    writetmpfile(listciphers(0,0,4));
     }
     if (sumerian_on) {
-    ui->textBrowser->append("Sumerian");
-    ui->textBrowser->append(listciphers(0,0,5));
+    writetmpfile("Sumerian");
+    writetmpfile(listciphers(0,0,5));
     }
     if (rev_sumerian_on) {
-    ui->textBrowser->append("Reverse Sumerian");
-    ui->textBrowser->append(listciphers(0,1,5));
+    writetmpfile("Reverse Sumerian");
+    writetmpfile(listciphers(0,1,5));
     }
 }
 
 void MainWindow::on_actionList_Primenumbers_triggered()
 {
-    ui->textBrowser->append(listnumbers('P'));
+    writetmpfile(listnumbers('P'));
 }
 
 void MainWindow::on_actionList_Triangular_numbers_triggered()
 {
-    ui->textBrowser->append(listnumbers('T'));
+    writetmpfile(listnumbers('T'));
 }
 
 void MainWindow::on_actionCompare_phrase_to_history_triggered() //Ctrl-T
@@ -729,7 +955,7 @@ void MainWindow::on_actionCompare_phrase_to_history_triggered() //Ctrl-T
      inputDialog datesearch;
      datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
      datesearch.exec();
-     emit updatestatusbar(phrase,dd,mm);
+     emit updatestatusbar();
     }
     ns = 0;
     if (phrase != "<none>") {
@@ -738,19 +964,19 @@ void MainWindow::on_actionCompare_phrase_to_history_triggered() //Ctrl-T
     sDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     sDialog.exec();
     if (ns > 0) {
-    ui->textBrowser->append("<br>Search history from phrase starts<br>");
-    ui->textBrowser->append(searchhistory(ns,phrase.toUtf8().constData()));
+    writetmpfile("<br>Search history from phrase starts<br>");
+    writetmpfile(searchhistory(ns,phrase.toUtf8().constData()));
 
-    if (ns == 1) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("English ordinal",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
-    if (ns == 2) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Full Reduction",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
-    if (ns == 3) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Reverse Ordinal",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
-    if (ns == 4) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Reverse full Reduction",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
-    if (ns == 5) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Single Reduction",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
-    if (ns == 6) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Francis Bacon",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
-    if (ns == 7) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Satanic",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
-    if (ns == 8) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Jewish",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
-    if (ns == 9) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Sumerian",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
-    if (ns == 10) ui->textBrowser->append( "Calculated from " +QString::fromStdString(formattext("Reverse Sumerian",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 1) writetmpfile( "Calculated from " +QString::fromStdString(formattext("English ordinal",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 2) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Full Reduction",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 3) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Reverse Ordinal",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 4) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Reverse full Reduction",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 5) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Single Reduction",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 6) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Francis Bacon",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 7) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Satanic",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 8) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Jewish",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 9) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Sumerian",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 10) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Reverse Sumerian",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     }
     }
 }
@@ -838,7 +1064,7 @@ void MainWindow::on_action_Second_date_triggered()
     datesearch.eudate = eudate;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
-    emit updatestatusbar(phrase,dd,mm);
+    emit updatestatusbar();
 }
 
 void MainWindow::on_actionC_ompare_date_to_History_txt_triggered() // Ctrl-O
@@ -849,8 +1075,8 @@ void MainWindow::on_actionC_ompare_date_to_History_txt_triggered() // Ctrl-O
     sDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     sDialog.exec();
     if (filter > 0) {
-    ui->textBrowser->append("<br>Search history connected to current date starts");
-    ui->textBrowser->append(date2history(dd,mm,year,true,eudate,filter));
+    writetmpfile("<br>Search history connected to current date starts");
+    writetmpfile(date2history(dd,mm,year,true,eudate,filter));
     }
 }
 
@@ -867,7 +1093,7 @@ void MainWindow::on_actionSolar_Eclipses_triggered()
     sDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     sDialog.exec();
     if (filter > 0)
-    emit ui->textBrowser->append(solareclipe(dd,mm,year,1,filter,eudate)); // 1=print
+    emit writetmpfile(solareclipe(dd,mm,year,1,filter,eudate)); // 1=print
 }
 
 void MainWindow::on_actionCompare_SolarE_to_history_triggered()
@@ -879,7 +1105,7 @@ void MainWindow::on_actionCompare_SolarE_to_history_triggered()
     sDialog.exec();
 
     if (filter > 0)
-    ui->textBrowser->append(solar2history(dd,mm,year,filter,eudate));
+    writetmpfile(solar2history(dd,mm,year,filter,eudate));
 }
 
 void MainWindow::on_pushButton_clicked()
@@ -888,7 +1114,7 @@ void MainWindow::on_pushButton_clicked()
         dd = 1;
         mm ++;
     } else dd ++;
-    emit updatestatusbar(phrase,dd,mm);
+    emit updatestatusbar();
 }
 
 void MainWindow::on_pushButton_2_clicked()
@@ -897,7 +1123,7 @@ void MainWindow::on_pushButton_2_clicked()
         mm --;
         dd = numberOfDays(mm-1,year);
     } else dd --;
-    emit updatestatusbar(phrase,dd,mm);
+    emit updatestatusbar();
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -905,7 +1131,7 @@ void MainWindow::on_actionAbout_triggered()
    // QMessageBox::about(this,"About Gematria Analyzer","Version 0.2.3 <br>Gematria Analyzer is a free software created for playing with the English language. Support is most appreciated.");
     QMessageBox msgBox;
     msgBox.setWindowTitle("About Gematria Analyzer");
-    msgBox.setText(tr("Version 0.2.4 <br>Gematria Analyzer is a free software created for playing with the English language"));
+    msgBox.setText(tr("Version 0.2.7 <br>Gematria Analyzer is a free software created for playing with the English language"));
     QAbstractButton* pButtonYes = msgBox.addButton(tr("Donate!"), QMessageBox::YesRole);
     msgBox.addButton(tr("Ok"), QMessageBox::NoRole);
 
@@ -932,7 +1158,7 @@ void MainWindow::on_actionList_Solar_Eclipses_triggered()
     sDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     sDialog.exec();
 
-    ui->textBrowser->append(printzerodays(dd,mm,year,0,filter,"listsolareclipses",eudate,true));
+    writetmpfile(printzerodays(dd,mm,year,0,filter,"listsolareclipses",eudate,true));
 
 }
 
@@ -953,12 +1179,12 @@ void MainWindow::on_actionPhrase_ranking_triggered()
             ns -= 1000;
         }
     html = phraserank(phrase.toUtf8().constData(),eudate,ns,prime,triangular);
-    ui->textBrowser->append("<html>"+html+"</html>");
+    writetmpfile("<html>"+html+"</html>");
 
     QStringList myStringList = phrase.split(',').first().split(':');
     phrase = myStringList.first();
     }
-    emit updatestatusbar(phrase,dd,mm);
+    emit updatestatusbar();
 }
 
 void MainWindow::on_action_Font_triggered()
@@ -968,7 +1194,8 @@ void MainWindow::on_action_Font_triggered()
     QFont font = QFontDialog::getFont(&ok,QFont(ui->textBrowser->font()),this,"Select Font");
     if (ok) {
         //qDebug() << font;
-        writeSettings("settings.txt","font",font.toString().toUtf8().constData());
+        char filename[13] = "settings.txt";
+        writeSettings(filename,"font",font.toString().toUtf8().constData());
         ui->textBrowser->setFont(font);
     }
 }
@@ -1000,16 +1227,28 @@ void MainWindow::on_actionList_History_triggered()
     datesearch.exec();
     if (tmpstring != "<none>") {
         QString buffer = listhistory(tmpstring);
-        ui->textBrowser->append("List history starts<br>");
-        ui->textBrowser->append(buffer);
+        writetmpfile("List history starts<br>");
+        writetmpfile(buffer);
     }
 }
 
 void MainWindow::on_actionCalendar_triggered()
 {
-    //CalWindow CalWindow;
     Calwindow = new CalWindow(this);
+    connect(Calwindow,SIGNAL(buttonpressed()),this,SLOT(updatestatusbar()));
     Calwindow->setWindowTitle("Calendar");
-    //CalWindow->setModal(true);
     Calwindow->show();
 }
+
+void MainWindow::writetmpfile(QString html)
+{
+    ui->textBrowser->append(html);
+    if (file->open(QIODevice::WriteOnly | QIODevice::Append))
+    {
+        QTextStream stream( file );
+        stream << html;
+        file->close();
+    }
+}
+
+

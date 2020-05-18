@@ -6,19 +6,24 @@
 #include <QLabel>
 #include "gcalc.h"
 #include"calwindow.h"
+#include "httpdownload.h"
+#include "headdialog.h"
 #include <QPrinter>
 #include <QPrintDialog>
 #include <QPainter>
 #include <QPrintPreviewDialog>
-
+#include <QEventLoop>
+//#include "downloadmanager.h"
 
 extern QString phrase;
 extern QString labeltext,tmpstring;
 extern int year,dd,mm,ns,d2,m2,y2,filter,hmempos;
 extern bool single_r_on,francis_on,satanic_on,jewish_on,sumerian_on,rev_sumerian_on;
-
+extern vector<int> primes;
+extern QString filesource;
 extern int zerodays[8][250];
 extern QString hmem[10];
+extern QStringList List;
 
 
 QT_BEGIN_NAMESPACE
@@ -32,8 +37,12 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void updatestatusbar(QString str, int dd2, int mm2);
 
+  //  QEventLoop loop;
+
+public slots:
+  void handleAnchorClicked(const QUrl &url);
+  void handleSourceChanged(const QUrl &url);
 
 private slots:
     void on_actionDate_Search_triggered();
@@ -101,19 +110,32 @@ private slots:
 
     void on_actionCalendar_triggered();
 
+    void writetmpfile(QString html);
+    void SieveOfEratosthenes(vector<int> &primes);
+    void updatestatusbar();
+/*    QString saveFileName(const QUrl &url);
+    void downloadUrl(QUrl url);
+    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void downloadFinished();
+    void downloadReadyRead();
+    bool isHttpRedirect() const;
+    void reportRedirect();*/
+
 private:
     Ui::MainWindow *ui;
    // QLabel *Statlabel;
     bool eudate=true;
     //int year,dd,mm;
     CalWindow *Calwindow;
+   // HttpDownload *Httpdownload;
+    headDialog *headdialog;
+    void calc(QString calcstr);
 
 
 
 protected:
     //void changeEvent(QEvent *e);
     bool eventFilter(QObject *obj, QEvent *event);
-
 };
 //#endif // MAINWINDOW_H
 

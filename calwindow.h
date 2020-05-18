@@ -18,6 +18,14 @@ public:
     explicit CalWindow(QWidget *parent = nullptr);
     ~CalWindow();
 
+signals:
+    void buttonpressed();
+
+private slots:
+    void on_date_clicked();
+
+    void on_seconddate_clicked();
+
 private:
     Ui::CalWindow *ui;
 

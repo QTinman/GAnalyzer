@@ -2,7 +2,7 @@
 #define GCALC_H
 #include "tools.h"
 #include <QDate>
-
+#include <QUrl>
 using namespace std;
 
 
@@ -34,4 +34,10 @@ QString detail(int ns,int dd, int mm, int year, int i,bool eudate);
 QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool triangular);
 int getns(string phrase, int out, int pt);
 int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar, bool prime, bool triangular);
+QStringList getheadlines(QString source, int numberof);
+void eraseAllQSubStr(QString & mainStr, const QString & toErase);
+QString headline(QString content, QString pattern);
+bool isheadlines(QString content, QString pattern);
+void erasefromToQSubStr(QString & mainStr, const QString & fromErase, const QString & toErase);
+QString wordnumbericlist(QString head);
 #endif // GCALC_H
