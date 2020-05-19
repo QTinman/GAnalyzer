@@ -189,9 +189,10 @@
     <addaction name="actionNew_Phrase"/>
     <addaction name="actionNew_Date"/>
     <addaction name="separator"/>
+    <addaction name="action_Second_date"/>
     <addaction name="actionSet_Year"/>
     <addaction name="action_Eu_date"/>
-    <addaction name="action_Second_date"/>
+    <addaction name="actionSentence_split"/>
     <addaction name="separator"/>
     <addaction name="action_Font"/>
    </widget>
@@ -398,6 +399,17 @@
   <action name="actionCalendar">
    <property name="text">
     <string>Calendar</string>
+   </property>
+  </action>
+  <action name="actionSentence_split">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Sentence spli&amp;t</string>
    </property>
   </action>
  </widget>

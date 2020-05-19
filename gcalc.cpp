@@ -2139,7 +2139,7 @@ QString analyze(int dd, int mm, int year, QString Qphrase,bool hlist, int filter
         bool dogoanalize = true;
         std::string phrase = Qphrase.toUtf8().constData();
 
-        readsolarfile(dd,mm,year);
+
 
 
         QString buffer;

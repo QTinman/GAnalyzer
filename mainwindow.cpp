@@ -456,7 +456,11 @@ void MainWindow::on_action_Analyze_triggered() //Ctrl-A
     }
    if (phrase != "<none>") {
        writetmpfile("<br>Analyzing phrase starts");
-       QString html = analyze(dd,mm,year,phrase,false,0,eudate);
+       readsolarfile(dd,mm,year);
+       bool sentences = ui->actionSentence_split->isChecked();
+       QString html;
+       if (sentences) html = analyze(dd,mm,year,phrase,false,0,eudate);
+       else html = runanalyze(dd,mm,year,phrase.toUtf8().constData(),false,0,eudate);
        writetmpfile("<html>"+html+"</html>");
    }
 
@@ -487,15 +491,6 @@ void MainWindow::on_actionDate_Details_triggered() //Ctrl-D
 void MainWindow::calc(QString calcstr)
 {
     int result=0,ppos=0,mpos=0;
-    /*QString output="";
-
-    QStringList plusnum= calcstr.split("+");
-    for (int i=0;i<plusnum.count();i++) {
-        result += plusnum[i].toUInt();
-        if (i < plusnum.count()-1) output += plusnum[i]+"+";
-        else  output += plusnum[i]+"="+QString::number(result);
-    }*/
-
     ppos = calcstr.indexOf("+");
     mpos = calcstr.indexOf("-");
     if (ppos == -1) ppos = calcstr.length();
@@ -551,9 +546,9 @@ void MainWindow::on_lineEdit_returnPressed()
 
     else if (stdphrase [0] == '/' || stdphrase [0] == '.') {
         //qDebug() << QString::fromStdString(stdphrase) << "\n";
-        eraseAllSubStr(stdphrase," ");
+        //eraseAllSubStr(stdphrase," ");
         tphrase = QString::fromStdString(stdphrase);
-        /*replaceAll(stdphrase,"/ ","/");
+        replaceAll(stdphrase,"/ ","/");
         replaceAll(stdphrase," /","/");
         replaceAll(stdphrase,"/a ","/a");
         replaceAll(stdphrase,"/c ","/c");
@@ -563,7 +558,7 @@ void MainWindow::on_lineEdit_returnPressed()
         replaceAll(stdphrase,"/w ","/w");
         replaceAll(stdphrase,"/e ","/e");
         replaceAll(stdphrase,"/o ","/o");
-        replaceAll(stdphrase,"/r ","/r");*/
+        replaceAll(stdphrase,"/r ","/r");
         //qDebug() << QString::fromStdString(stdphrase) << "\n";
         if (stdphrase[1] != 'a') keymem(QString::fromStdString(stdphrase));
         switch (stdphrase[1]) {
@@ -578,7 +573,11 @@ void MainWindow::on_lineEdit_returnPressed()
 
              phrase = QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2));
              keymem(phrase);
-             QString html = analyze(dd,mm,year,phrase,false,0,eudate);
+             readsolarfile(dd,mm,year);
+             bool sentences = ui->actionSentence_split->isChecked();
+             QString html;
+             if (sentences) html = analyze(dd,mm,year,phrase,false,0,eudate);
+             else html = runanalyze(dd,mm,year,phrase.toUtf8().constData(),false,0,eudate);
              writetmpfile("<html>"+html+"</html>");
              emit updatestatusbar();
             }
@@ -660,7 +659,9 @@ void MainWindow::on_lineEdit_returnPressed()
             emit updatestatusbar();
             if (phrase != "<none>") {
                 std::string stdphrase = phrase.toUtf8().constData();
-                writetmpfile("<html>"+printallwords(stdphrase,'N',true,false)+"</html>");
+                bool sentences = ui->actionSentence_split->isChecked();
+                if (sentences) writetmpfile("<html>"+printallwords(stdphrase,'N',true,false)+"</html>");
+                else writetmpfile("<html>"+printword(stdphrase,'N',true,false)+"</html>");
             }
             break;
         case 'd':
@@ -846,6 +847,7 @@ void MainWindow::shorthelp()
         writetmpfile("<font color=\"blue\">(Ctrl-E)</font> <b>Compare Solar Eclipses to History.txt</b> for current date");
         writetmpfile("<font color=\"blue\">(Ctrl-O)</font> <b>Date compare to history</b> calculate current date and compares it to history.txt");
         writetmpfile("<font color=\"blue\">(Ctrl-T)</font> <b>Compare phrase to history.txt</b> takes one of the base ciphers from active phrase and compares it to history.txt<br>");
+        writetmpfile("<b>Sentence split</b> When unchecked analyze and word print will not split sentences<br>");
 
 
         writetmpfile("The input area takes phrases wich are displayed and saved to history.txt if Save is checked<br>");
@@ -896,7 +898,10 @@ void MainWindow::on_action_Word_details_triggered() //Ctrl-W
     }
    if (phrase != "<none>") {
        std::string stdphrase = phrase.toUtf8().constData();
-       writetmpfile("<html>"+printallwords(stdphrase,'N',true,false)+"</html>");
+       bool sentences = ui->actionSentence_split->isChecked();
+       if (sentences) writetmpfile("<html>"+printallwords(stdphrase,'N',true,false)+"</html>");
+       else writetmpfile("<html>"+printword(stdphrase,'N',true,false)+"</html>");
+
    }
 
 }
