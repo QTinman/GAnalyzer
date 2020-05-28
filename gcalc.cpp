@@ -1572,8 +1572,8 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
            savelog(logline.str());
            break;
        case 32 :
-           md1 = monthbeetween(m2,mm,a_seconddate("day_d_s"),'M');
-           md2 = monthbeetween(m2,mm,a_seconddate("day_d_s"),'D');
+           md1 = monthbeetween(m2,mm,a_seconddate("day_s_d"),'M');
+           md2 = monthbeetween(m2,mm,a_seconddate("day_s_d"),'D');
            if (md2 == 0) logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(md1).toUtf8().constData(),1,0) << " Months from second date to date within year - " << Qns.toUtf8().constData() << detail << "<br>";
            else logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(md1).toUtf8().constData(),1,0) << " Months and "  << formattext(QString::number(md2).toUtf8().constData(),1,0) << " days from second date to date within year - " << Qns.toUtf8().constData() << detail << "<br>";
            buffer += QString::fromStdString(logline.str());
@@ -2068,10 +2068,10 @@ QString detail(int ns, int dd, int mm, int year, int i,bool eudate) {
      //if (ns == solareclipe(dd,mm,year,2,"T").toInt()) return true; //output whole weeks before of type Total
      break;
    case 27 :
-     if (ns == a_seconddate("day_d_s")) return " " + Qformattext(QString::number(a_seconddate("day_d_s")).toUtf8().constData(),1,0) + " Days from date to second date within year";
+     if (ns == a_seconddate("day_d_s")) return " " + Qformattext(QString::number(a_seconddate("day_d_s")),1,0) + " Days from date to second date within year";
      break;
    case 28 :
-       if (ns == a_seconddate("day_s_d")) return " " + Qformattext(QString::number(a_seconddate("day_s_d")).toUtf8().constData(),1,0) + " Days from second date to date within year";
+       if (ns == a_seconddate("day_s_d")) return " " + Qformattext(QString::number(a_seconddate("day_s_d")),1,0) + " Days from second date to date within year";
        break;
    case 29 :
        days = a_seconddate("day_d_s");
@@ -2079,8 +2079,8 @@ QString detail(int ns, int dd, int mm, int year, int i,bool eudate) {
        w1 = days;
        w1 = w1/7-wd1;
        wd2 = round(w1*7);
-       if (ns == a_seconddate("week_d_s") && wd2 == 0) return " " + Qformattext(QString::number(wd1).toUtf8().constData(),1,0) + " Weeks from date to second date within year";
-       if (ns == a_seconddate("week_d_s") && wd2 > 0) return " " + Qformattext(QString::number(wd1).toUtf8().constData(),1,0) + " Weeks and "  + Qformattext(QString::number(wd2).toUtf8().constData(),1,0) +" days from date to second date within year";
+       if (ns == a_seconddate("week_d_s") && wd2 == 0) return " " + Qformattext(QString::number(wd1),1,0) + " Weeks from date to second date within year";
+       if (ns == a_seconddate("week_d_s") && wd2 > 0) return " " + Qformattext(QString::number(wd1),1,0) + " Weeks and "  + Qformattext(QString::number(wd2),1,0) +" days from date to second date within year";
        break;
    case 30 :
        days = a_seconddate("day_s_d");
@@ -2088,23 +2088,23 @@ QString detail(int ns, int dd, int mm, int year, int i,bool eudate) {
        w1 = days;
        w1 = w1/7-wd1;
        wd2 = round(w1*7);
-       if (ns == a_seconddate("week_s_d") && wd2 == 0) return " " + Qformattext(QString::number(wd1).toUtf8().constData(),1,0) + " Weeks from second date to date within year";
-       if (ns == a_seconddate("week_s_d") && wd2 > 0) return " " + Qformattext(QString::number(wd1).toUtf8().constData(),1,0) + " Weeks and "  + Qformattext(QString::number(wd2).toUtf8().constData(),1,0) +" days from second date to date within year";
+       if (ns == a_seconddate("week_s_d") && wd2 == 0) return " " + Qformattext(QString::number(wd1),1,0) + " Weeks from second date to date within year";
+       if (ns == a_seconddate("week_s_d") && wd2 > 0) return " " + Qformattext(QString::number(wd1),1,0) + " Weeks and "  + Qformattext(QString::number(wd2),1,0) +" days from second date to date within year";
        break;
    case 31 :
        md1 = monthbeetween(mm,m2,a_seconddate("days_d_s"),'M');
        md2 = monthbeetween(mm,m2,a_seconddate("days_d_s"),'D');
-       if (ns == a_seconddate("month_d_s") && md2 == 0) return " " + Qformattext(QString::number(md1).toUtf8().constData(),1,0) + " Months from date to second date within year";
-       if (ns == a_seconddate("month_d_s") && md2 > 0) return " " + Qformattext(QString::number(md1).toUtf8().constData(),1,0) + " Months and "  + Qformattext(QString::number(md2).toUtf8().constData(),1,0) +" days from date to second date within year";
+       if (ns == a_seconddate("month_d_s") && md2 == 0) return " " + Qformattext(QString::number(md1),1,0) + " Months from date to second date within year";
+       if (ns == a_seconddate("month_d_s") && md2 > 0) return " " + Qformattext(QString::number(md1),1,0) + " Months and "  + Qformattext(QString::number(md2),1,0) +" days from date to second date within year";
        break;
    case 32 :
        md1 = monthbeetween(mm,m2,a_seconddate("days_s_d"),'M');
        md2 = monthbeetween(mm,m2,a_seconddate("days_s_d"),'D');
-       if (ns == a_seconddate("month_s_d") && md2 == 0) return " " + Qformattext(QString::number(md1).toUtf8().constData(),1,0) + " Months from second date to date within year";
-       if (ns == a_seconddate("month_s_d") && md2 > 0) return " " + Qformattext(QString::number(md1).toUtf8().constData(),1,0) + " Months and "  + Qformattext(QString::number(md2).toUtf8().constData(),1,0) +" days from second date to date within year";
+       if (ns == a_seconddate("month_s_d") && md2 == 0) return " " + Qformattext(QString::number(md1),1,0) + " Months from second date to date within year";
+       if (ns == a_seconddate("month_s_d") && md2 > 0) return " " + Qformattext(QString::number(md1),1,0) + " Months and "  + Qformattext(QString::number(md2),1,0) +" days from second date to date within year";
        break;
    case 33 :
-     if (ns == a_seconddate("days_full")) return " " + Qformattext(QString::number(a_seconddate("days_full")).toUtf8().constData(),1,0) + " days between dates";
+     if (ns == a_seconddate("days_full")) return " " + Qformattext(QString::number(a_seconddate("days_full")),1,0) + " days between dates";
      break;
    case 34 :
        days = a_seconddate("days_full");
@@ -2702,7 +2702,7 @@ QString headline(QString content, QString pattern)
     QString head,pattern2;
     int pos1,pos2=0;
     pattern.remove(QRegExp("[\\n\\t\\r]"));
-    pos1 = pattern.indexOf(" ");
+    pos1 = pattern.indexOf("|");
     if (pos1 != -1) {
         pattern2 = pattern.mid(0,pos1);
         pattern = pattern.mid(pos1+1,pattern.length()-pos1-1);
@@ -2713,14 +2713,14 @@ QString headline(QString content, QString pattern)
 
          if (pos2 != -1){
            pos1 = content.lastIndexOf(">",pos2-3);
-           head = content.mid(pos1+1,pos2-pos1-1);
+           head = content.mid(pos1+1,pos2-pos1-1).trimmed();
         }
        } else {
          pos2 = content.indexOf(pattern2,pos);
 
          if (pos2 != -1){
            pos1 = content.indexOf(pattern,pos2);
-           head = content.mid(pos2+pattern2.length(),pos1-pos2-pattern2.length());
+           head = content.mid(pos2+pattern2.length(),pos1-pos2-pattern2.length()).trimmed();
          }
        }
     }
@@ -2745,15 +2745,15 @@ QStringList getheadlines(QString source, int numberof)
             //qDebug() << infile.size() << in.readAll();
     }
     QFile sources;
-    sources.setFileName("sources.txt");
+    sources.setFileName("newssources.txt");
     if (sources.open(QIODevice::ReadOnly)) {
         while(!sources.atEnd()) {
             QString line = sources.readLine();
-            //QStringList fields = line.split(",");
+            //QStringList fields = line.split("|");
             int pos1 = line.indexOf(tmpstring);
             if (pos1 != -1) {
                 line = line.trimmed();
-                pos1 = line.indexOf(" ");
+                pos1 = line.indexOf("|");
                 if (pos1 != -1) pattern = line.mid(pos1+1,line.length()-pos1);
                 pattern = pattern.trimmed();
                 break;
@@ -2762,6 +2762,14 @@ QStringList getheadlines(QString source, int numberof)
         sources.close();
             //qDebug() << infile.size() << in.readAll();
     }
+    /*QStringList fields = pattern1.split("|");
+    int i = 0;
+    for ( const auto& l : fields  ){
+        if (fields.size() > 1 && i == 0) content = l;
+        if (fields.size() > 1 && i == 1) pattern1 = l;
+        if (fields.size() > 1 && i == 2) pattern2 = l;
+        i++;
+    }*/
         if (pattern.indexOf("<span>") == -1) eraseAllQSubStr(content,"<span>");
         if (pattern.indexOf("</span>") == -1) eraseAllQSubStr(content,"</span>");
     if (pattern == "") {
@@ -2777,7 +2785,7 @@ QStringList getheadlines(QString source, int numberof)
     head = headline(content,pattern);
     if (head != "" && head.length() < 100){
         list << head;
-        list << wordnumbericlist(head);
+        //list << wordnumbericlist(head);
     }
     //qDebug() << head << " " << count;
     count++;

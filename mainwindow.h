@@ -5,7 +5,7 @@
 #include <QDialog>
 #include <QLabel>
 #include "gcalc.h"
-#include"calwindow.h"
+#include "calwindow.h"
 #include "httpdownload.h"
 #include "headdialog.h"
 #include <QPrinter>
@@ -23,7 +23,6 @@ extern vector<int> primes;
 extern QString filesource;
 extern int zerodays[8][250];
 extern QString hmem[10];
-extern QStringList List;
 
 
 QT_BEGIN_NAMESPACE
@@ -113,21 +112,15 @@ private slots:
     void writetmpfile(QString html);
     void SieveOfEratosthenes(vector<int> &primes);
     void updatestatusbar();
-/*    QString saveFileName(const QUrl &url);
-    void downloadUrl(QUrl url);
-    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-    void downloadFinished();
-    void downloadReadyRead();
-    bool isHttpRedirect() const;
-    void reportRedirect();*/
+    void show_news(const QString& source);
+
+    void on_action_News_headlines_exp_triggered();
 
 private:
     Ui::MainWindow *ui;
-   // QLabel *Statlabel;
     bool eudate=true;
-    //int year,dd,mm;
     CalWindow *Calwindow;
-   // HttpDownload *Httpdownload;
+    HttpDownload *Httpdownload;
     headDialog *headdialog;
     void calc(QString calcstr);
 

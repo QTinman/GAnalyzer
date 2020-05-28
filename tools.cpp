@@ -53,11 +53,11 @@ int valid_date(int dd, int mm, int yy) {
     return 1;
 }
 
-QString Qformattext(string line, int color, int bold)
+QString Qformattext(QString line, int color, int bold)
 {
 
-    string formatedcolor;
-    string formatedtag;
+    QString formatedcolor;
+    QString formatedtag;
     int i;
     if (color != 10 && color != 20) {
     switch (color) {
@@ -94,7 +94,7 @@ QString Qformattext(string line, int color, int bold)
     if (color == 10) for (i=1;i<bold;i++) formatedtag=formatedtag+"&emsp;"; //tab after
     if (color == 20) for (i=1;i<bold;i++) formatedtag="&emsp;"+formatedtag; //tab before
     // html == "#include &lt;QtCore&gt;"
-    return QString::fromStdString(formatedtag);
+    return formatedtag;
 }
 
 string formattext(string line, int color, int bold)
@@ -904,8 +904,10 @@ void writeSettings(char file[], string entry,string settings)
             //qDebug() << QString::fromStdString(strTemp);
             //found = true;
         }
-        strTemp += "\n";
-        fileout << strTemp;
+        if (strTemp != "") {
+            strTemp += "\n";
+            fileout << strTemp;
+        }
         //if(found) break;
     }
 
@@ -922,10 +924,38 @@ void writeSettings(char file[], string entry,string settings)
 
 QString listhistory(QString filter)
 {
+    QFile infile;
+    QString buffer;
+    QString content="";
+    QStringList history;
+    int i = 1;
+    double t1;
+    infile.setFileName("history.txt");
+    //outfile.setFileName("headlines.txt");
+    if (infile.open(QIODevice::ReadOnly)) {
+        QTextStream in(&infile);
+        content = in.readAll();
+        infile.close();
+    }
+    history = content.split("\n");
+    history.sort();
+    buffer = Qtotable("",1,1,0,70);
+    for ( const auto& l : history  )
+    {
+        if (l.contains(filter, Qt::CaseInsensitive) && l.trimmed() != "")
+        {
+            t1 = i;
+            buffer += Qtotable(Qformattext(l,2,2),0,0,1,350);
+            if (floor(i/2) == t1/2) buffer += "</tr><tr>";
+            i++;
+        }
+    }
+
+/*
 ifstream myfile;
-QString buffer;
-int i = 1;
-double t1;
+
+//int i = 1;
+//double t1;
 string line;
 myfile.open("history.txt");
 buffer = Qtotable("",1,1,0,70);
@@ -945,7 +975,7 @@ if (myfile.is_open())
         }
 
 myfile.close();
-}
+}*/
 return buffer;
 }
 
@@ -1067,7 +1097,7 @@ int a_seconddate(QString output_type)
 
     if (output_type.indexOf("full") != -1 && returnnum < days_year) returnnum = 0;
     wd1 = returnnum/7;
-    w1 = returnnum=0;
+    w1 = returnnum;
     w1 = w1/7-wd1;
     wd2 = round(w1*7);
     if (wd1 == 0) wd2 = 0;

@@ -206,6 +206,7 @@
     <addaction name="actionList_Solar_Eclipses"/>
     <addaction name="actionList_History"/>
     <addaction name="actionCalendar"/>
+    <addaction name="action_News_headlines_exp"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -410,6 +411,11 @@
    </property>
    <property name="text">
     <string>Sentence spli&amp;t</string>
+   </property>
+  </action>
+  <action name="action_News_headlines_exp">
+   <property name="text">
+    <string>&amp;News headlines (exp)</string>
    </property>
   </action>
  </widget>

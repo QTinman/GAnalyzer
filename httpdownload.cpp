@@ -10,13 +10,13 @@ HttpDownload::HttpDownload(QWidget *parent) :
     ui->setupUi(this);
     //ui->urlEdit->setText("https://nchc.dl.sourceforge.net/project/hplip/hplip/3.20.3/hplip-3.20.3.run");
     QFile sources;
-    sources.setFileName("sources.txt");
+    sources.setFileName("newssources.txt");
     if (sources.open(QIODevice::ReadOnly)) {
         while(!sources.atEnd()) {
             QString line = sources.readLine();
             //QStringList fields = line.split(",");
             line = line.trimmed();
-            int pos1 = line.indexOf(" ");
+            int pos1 = line.indexOf("|");
             if (pos1 != -1) ui->urlList->addItem(line.mid(0,pos1));
             else ui->urlList->addItem(line);
         }
@@ -60,7 +60,7 @@ void HttpDownload::on_downloadButton_clicked()
     QString fileName = fileInfo.fileName();
     fileName.remove(QRegExp("[\\n\\t\\r]"));
     if (fileName.isEmpty())
-        fileName = "index.html";
+        fileName = "headnews.html";
     filesource = fileName;
     if (QFile::exists(fileName)) {
         //if (QMessageBox::question(this, tr("HTTP"),
@@ -194,6 +194,7 @@ void HttpDownload::httpDownloadFinished()
     delete file;
     file = 0;
     manager = 0;
+    emit dl_ready(ui->urlList->itemText(ui->urlList->currentIndex()));
 }
 
 // This will be called when download button is clicked

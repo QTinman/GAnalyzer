@@ -43,7 +43,7 @@ int downloadedCount = 0;
 TextProgressBar progressBar;
 QElapsedTimer downloadTimer;*/
 QString filesource;
-QStringList List;
+//QStringList List;
 QString labeltext,tmpstring;
 int year,dd,mm,ns,d2,m2,y2,filter,hmempos = -1;
 bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false,sumerian_on=false,rev_sumerian_on=false;
@@ -94,26 +94,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->textBrowser, &QTextBrowser::anchorClicked,
             this, &MainWindow::handleAnchorClicked);
 
-    //connect(&CalWindow::buttonpressed, SIGNAL(CalWindow::buttonpressed),
-     //       this, updatestatusbar());
 
-    //connect(this,&CalWindow::on_date_clicked(),this,&MainWindow::updatestatusbar());
-
-
-    //Calwindow = new CalWindow;
-    //connect(Calwindow,SIGNAL(buttonpressed()),this,SLOT(updatestatusbar()));
-
-
-    //connect(ui->textBrowser, &QTextBrowser::sourceChanged,
-    //        this, &MainWindow::handleSourceChanged);
-    //ui->textBrowser->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    //mousePressEvent(QMouseEvent())
     if (eudate) ui->action_Eu_date->setText("Date DMY");
     else ui->action_Eu_date->setText("Date MDY");
     SieveOfEratosthenes(primes);
     QString font = readSettings("settings.txt","font");
     QString DMY = readSettings("settings.txt","DMY");
     QString ciphers = readSettings("settings.txt","ciphers");
+    QString ssplit = readSettings("settings.txt","ssplit");
+    if (ssplit == "false") ui->actionSentence_split->setChecked(false);
     if (DMY == "false") {
         eudate = false;
         ui->action_Eu_date->setText("Date MDY");
@@ -169,6 +158,10 @@ MainWindow::~MainWindow()
     //qDebug() << ciphers;
     char filename[13] = "settings.txt";
     writeSettings(filename,"ciphers",ciphers.toUtf8().constData());
+    string ssplit="";
+    if (ui->actionSentence_split->isChecked()) ssplit = "true";
+    else ssplit = "false";
+    writeSettings(filename,"ssplit",ssplit);
     //qDebug()  << MainWindow::width() << " " << MainWindow::x() << " " << ui->textBrowser->width();
     //QString pwd = QDir::currentPath() + "/tmp.htm";
     //QFile *File = new QFile(pwd);
@@ -402,7 +395,7 @@ void inputDialog::on_lineEdit_returnPressed()
     emit displaydialog();
 }
 
-void MainWindow::on_actionNew_Phrase_triggered()
+void MainWindow::on_actionNew_Phrase_triggered()  //Ctrl-P
 {
     labeltext = "New phrase :";
     inputDialog datesearch;
@@ -535,7 +528,14 @@ void MainWindow::on_lineEdit_returnPressed()
     QString tphrase = ui->lineEdit->text();
     std::string stdphrase = tphrase.toUtf8().constData();
     if (ui->checkBox->isChecked() && stdphrase[0] != '/') stdphrase = "/a" +stdphrase;
-    if (tphrase.indexOf("+") != -1 || tphrase.indexOf("-") != -1) {
+    bool forcalc=true;
+    for(size_t i=0; i<stdphrase.size(); ++i){
+        if ((int(stdphrase[i]) > 57 || int(stdphrase[i]) < 48) && int(stdphrase[i]) != 43 && int(stdphrase[i]) != 45 && int(stdphrase[i]) != 32) forcalc=false;
+        // || int(stdphrase[i]) != 43 || int(stdphrase[i]) != 45
+    }
+    //if (tphrase.indexOf("+") != -1 || tphrase.indexOf("-") != -1) {
+    if (forcalc) {
+        eraseAllQSubStr(tphrase," ");
         calc(tphrase);
 
     }
@@ -783,32 +783,28 @@ void MainWindow::on_lineEdit_returnPressed()
             }
             case 'f':
             {
-                //Httpdownload = new HttpDownload(this);
-                //Httpdownload->setWindowTitle("Http Download");
+                Httpdownload = new HttpDownload(this);
+                Httpdownload->setWindowTitle("News Download");
 
-                //Httpdownload->show();
-
-                HttpDownload Httpdownload;
-                Httpdownload.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
-                Httpdownload.exec();
+                Httpdownload->show();
+                connect(Httpdownload, SIGNAL(dl_ready(const QString)),
+                        this, SLOT(show_news(const QString)));
+                //HttpDownload Httpdownload;
+                //Httpdownload.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
+                //Httpdownload.exec();
                 //filesource = "index.html";
                 //tmpstring = "https://www.nytimes.com/";
                 //qDebug() << filesource;
-                if (filesource != "") {
-                    List = getheadlines(filesource,20);
-                    headdialog = new headDialog(this);
-                    headdialog->setWindowTitle("Http Download");
-                    headdialog->show();
-                }
+
 
                 break;
             }
             case 't': // test
              {
-                //qDebug() << "days d_s " << a_seconddate("day_d_s");
-                //qDebug() << "days d_s " << a_seconddate("day_s_d");
-                //qDebug() << "week d_s " << a_seconddate("week_d_s");
-                //qDebug() << "week s_d " << a_seconddate("week_s_d");
+                qDebug() << "days d_s " << a_seconddate("day_d_s");
+                qDebug() << "days s_d " << a_seconddate("day_s_d");
+                qDebug() << "week d_s " << a_seconddate("week_d_s");
+                qDebug() << "week s_d " << a_seconddate("week_s_d");
                 qDebug() << "month d_s " << a_seconddate("month_d_s");
                 qDebug() << "month s_d " << a_seconddate("month_s_d");
                 qDebug() << "day_full " << a_seconddate("day_full");
@@ -1257,3 +1253,22 @@ void MainWindow::writetmpfile(QString html)
 }
 
 
+void MainWindow::show_news(const QString& source)
+{
+    if (filesource != "") {
+        //qDebug() << source;
+        headdialog = new headDialog(this);
+        headdialog->setWindowTitle("News Headlines - "+source);
+        headdialog->show();
+    }
+}
+
+void MainWindow::on_action_News_headlines_exp_triggered()
+{
+    Httpdownload = new HttpDownload(this);
+    Httpdownload->setWindowTitle("News Download");
+
+    Httpdownload->show();
+    connect(Httpdownload, SIGNAL(dl_ready(const QString)),
+            this, SLOT(show_news(const QString)));
+}

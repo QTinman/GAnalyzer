@@ -43,7 +43,7 @@
     void createSettings(std::string file, std:: string entry);
     QString readSettings(std::string file, std::string entry);
     void writeSettings(char file[], std::string entry,std::string settings);
-    QString Qformattext(std::string line, int color, int bold);
+    QString Qformattext(QString line, int color, int bold);
     bool is_number(const std::string& s);
     QString numberproperties(QString number);
     QString numberseat(char type, int number);

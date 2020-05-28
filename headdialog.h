@@ -5,6 +5,7 @@
 #include <QStringListModel>
 //#include "mainwindow.h"
 
+
 namespace Ui {
 class headDialog;
 }
@@ -17,9 +18,13 @@ public:
     explicit headDialog(QWidget *parent = nullptr);
     ~headDialog();
 
+private slots:
+    void on_lineEdit_returnPressed();
+
 private:
     Ui::headDialog *ui;
     QStringListModel *model;
+    QStringList List;
 };
 
 #endif // HEADDIALOG_H

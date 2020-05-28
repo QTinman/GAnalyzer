@@ -20,26 +20,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     calwindow.cpp \
     cipherdialog.cpp \
-    downloadmanager.cpp \
     gcalc.cpp \
     headdialog.cpp \
     httpdownload.cpp \
     main.cpp \
     mainwindow.cpp \
     rankdialog.cpp \
-    textprogressbar.cpp \
     tools.cpp
 
 HEADERS += \
     calwindow.h \
     cipherdialog.h \
-    downloadmanager.h \
     gcalc.h \
     headdialog.h \
     httpdownload.h \
     mainwindow.h \
     rankdialog.h \
-    textprogressbar.h \
     tools.h
 
 FORMS += \

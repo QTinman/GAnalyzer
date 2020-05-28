@@ -26,6 +26,10 @@ public:
 
 public:
     void startRequest(QUrl url);
+
+signals:
+    void dl_ready(const QString);
+
 private slots:
     void on_downloadButton_clicked();
 
