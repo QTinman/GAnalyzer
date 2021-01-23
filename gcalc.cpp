@@ -88,14 +88,16 @@ QString loopYear(int ns,int dd, int mm, int year, int printcal, bool eudate)
              yy = "("+QString::fromStdString(formattext(QString::number((y3*10)+y4).toUtf8().constData(),1,0))+")";
              y_y = QString::fromStdString(formattext(QString::number(y3).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(y4).toUtf8().constData(),1,0));
             buffer += Qtotable("",1,0,0,0);
+            if (d1>0) {
              if (ns == (d1*10)+d2+(m1*10)+m2+(y1*10)+y2+(y3*10)+y4) buffer += Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) + Qtotable(dd_mm + "+" + YY_yy + "= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
              if (ns == (d1*10)+d2+(m1*10)+m2+y1+y2+y3+y4) buffer += Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) + Qtotable(dd_mm+ "+" +Y_Y_y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == d1+d2+m1+m2+y1+y2+y3+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(d_d_m_m+" + "+Y_Y_y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == (d1*10)+d2+(m1*10)+m2+(y3*10)+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) + Qtotable(dd_mm + "+" + yy+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == d1+d2+m1+m2+y3+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(d_d_m_m+" + "+y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == (d1*10)+d2+(m1*10)+m2) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) + Qtotable(dd_mm +"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == d1+d2+m1+m2+(y1*10)+y2+(y3*10)+y4) buffer += Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(d_d_m_m+ " + " +YY_yy+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
              if (ns == (d1*10)+d2+(m1*10)+m2+y3+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) +Qtotable(dd_mm+"+"+y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == (d1*10)+d2+(m1*10)+m2+(y3*10)+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) + Qtotable(dd_mm + "+" + yy+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == (d1*10)+d2+(m1*10)+m2) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110) + Qtotable(dd_mm +"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+            }
+             if (ns == d1+d2+m1+m2+y1+y2+y3+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(d_d_m_m+" + "+Y_Y_y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == d1+d2+m1+m2+y3+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(d_d_m_m+" + "+y_y+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == d1+d2+m1+m2+(y1*10)+y2+(y3*10)+y4) buffer += Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(d_d_m_m+ " + " +YY_yy+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
              if (ns == d1+d2+m1+m2+(y3*10)+y4) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(d_d_m_m+" + "+yy+"= "+Qns,0,0,1,300)+Qtotable("",0,2,0,0);
              if (ns == daynr((d1*10)+d2,(m1*10)+m2,year)) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(" It is the "+Qns+"th day of the year",0,0,1,300)+Qtotable("",0,2,0,0);
              if (ns == daynrleft((d1*10)+d2,(m1*10)+m2,year)) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable("There are "+Qns+" days left of the year",0,0,1,300)+Qtotable("",0,2,0,0);
@@ -334,11 +336,13 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
+              if (wd2>0) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
+              else logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
+              if(nm2>0) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
+              else logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
@@ -347,11 +351,13 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
+              if (wd2>0) logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
+              else logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");
-              logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
+              if (nm2 >0) logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
+              else logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               logline.str("");}
@@ -2519,7 +2525,8 @@ string firstletterupper(string line)
 QString searchwords(int pattern, bool simpleprint) //Ctrl-H
 {
     string line;
-    QString buffer,qs5="",qs6="",qs7="",qs8="",qs9="",qs10="";
+    QString buffer1,buffer2,qs5="",qs6="",qs7="",qs8="",qs9="",qs10="";
+    QStringList histfound;
     bool header=true;
     stringstream logline;
     int c1, lines = 0;
@@ -2530,7 +2537,7 @@ QString searchwords(int pattern, bool simpleprint) //Ctrl-H
     if (jewish_on) qs8 = " - Jewish";
     if (sumerian_on) qs9 = " - Sumerian";
     if (rev_sumerian_on) qs10 = " - Reverse Sumerian";
-    if (simpleprint) buffer += "&emsp;&emsp;&emsp;Englis Ordinal - Full Reduction - Reverse Ordinal - Reverse Full Reduction" + qs5 + qs6 + qs7 + qs8 + qs9 + qs10;
+    if (simpleprint) buffer1 += "&emsp;&emsp;&emsp;Englis Ordinal - Full Reduction - Reverse Ordinal - Reverse Full Reduction" + qs5 + qs6 + qs7 + qs8 + qs9 + qs10;
     myfile.open("history.txt");
     if (myfile.is_open())
           {
@@ -2538,24 +2545,26 @@ QString searchwords(int pattern, bool simpleprint) //Ctrl-H
           while ( getline (myfile,line) )
             {
                   if (findword(c1,line)) {
-                      buffer += printword(line,0,header,simpleprint);
+                      histfound.append(printword(line,0,header,simpleprint));
                       lines++;
                       header = false;
 
                   }
                  // savetotemp(firstletterupper(line));
             }
-
+    //histfound = buffer.split("\n");
+    histfound.sort();
+    //buffer1 = histfound.join("\n");
     logline << "<br>" << formattext(std::to_string(lines),1,1) << " words found matching number " << formattext(std::to_string(c1),1,1) << "<br>";
-      buffer += QString::fromStdString(logline.str());
+      buffer2 += QString::fromStdString(logline.str());
       savelog(logline.str());
 
     myfile.close();
     //buffer += "</table>";
   }
 
-  else buffer += "Unable to open file";
-  return buffer;
+  else buffer1 += "Unable to open file";
+  return buffer1+histfound.join("\n")+buffer2;
 }
 
 

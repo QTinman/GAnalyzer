@@ -193,6 +193,7 @@
     <addaction name="actionSet_Year"/>
     <addaction name="action_Eu_date"/>
     <addaction name="actionSentence_split"/>
+    <addaction name="actionNightmode"/>
     <addaction name="separator"/>
     <addaction name="action_Font"/>
    </widget>
@@ -416,6 +417,14 @@
   <action name="action_News_headlines_exp">
    <property name="text">
     <string>&amp;News headlines (exp)</string>
+   </property>
+  </action>
+  <action name="actionNightmode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Nightmode</string>
    </property>
   </action>
  </widget>

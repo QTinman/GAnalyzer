@@ -35,6 +35,7 @@ vector<int> primes;
 QString phrase = "<none>";
 QString pwd = QDir::currentPath() + "/tmp.htm";
 QFile *file = new QFile(pwd);
+bool nightmode=true;
 
 /*QFile output;
 QNetworkAccessManager manager;
@@ -102,6 +103,7 @@ MainWindow::MainWindow(QWidget *parent)
     QString DMY = readSettings("settings.txt","DMY");
     QString ciphers = readSettings("settings.txt","ciphers");
     QString ssplit = readSettings("settings.txt","ssplit");
+    QString nightm = readSettings("settings.txt","nightmode");
     if (ssplit == "false") ui->actionSentence_split->setChecked(false);
     if (DMY == "false") {
         eudate = false;
@@ -119,7 +121,15 @@ MainWindow::MainWindow(QWidget *parent)
     if (ciphers.mid(3,1) == "1") jewish_on = true;
     if (ciphers.mid(4,1) == "1") sumerian_on = true;
     if (ciphers.mid(5,1) == "1") rev_sumerian_on = true;
-
+    if (nightm == "true") {
+        nightmode = true;
+        ui->actionNightmode->setChecked(true);
+    } else {
+        nightmode = false;
+        ui->actionNightmode->setChecked(false);
+    }
+    if (nightmode) ui->textBrowser->setStyleSheet("background-color: #1a1a1a; color: lightgrey");
+    if (nightmode) ui->lineEdit->setStyleSheet("background-color: #1a1a1a; color: white");
     setCentralWidget(ui->groupBox);
     //setCentralWidget(ui->centralwidget);
     ui->lineEdit->focusWidget();
@@ -592,14 +602,14 @@ void MainWindow::on_lineEdit_returnPressed()
         {
             QStringList dags= tphrase.mid(2,tphrase.length()-2).split("/");
             if (dags.count() < 2) dags= tphrase.mid(2,tphrase.length()-2).split(".");
-            if (eudate && dags.count() == 2) {
+            if (eudate && dags.count() >= 2) {
                 dd = dags[0].toUInt();
                 mm = dags[1].toUInt();
                 //dd = ui->lineEdit->text().mid(2,2).toInt();
                 //mm = ui->lineEdit->text().mid(5,2).toInt();
-            } else if (dags.count() == 2){
-                mm = tphrase.mid(2,2).toInt();
-                dd = tphrase.mid(5,2).toInt();
+            } else if (dags.count() >= 2){
+                mm = dags[0].toUInt();
+                dd = dags[1].toUInt();
             }
             //if (ui->lineEdit->text().mid(8,4).toInt() > 0) year = ui->lineEdit->text().mid(8,4).toInt();
             if (dags.count() > 2) {
@@ -622,14 +632,14 @@ void MainWindow::on_lineEdit_returnPressed()
             QStringList dags= tphrase.mid(2,tphrase.length()-2).split("/");
             if (dags.count() < 2) dags= tphrase.mid(2,tphrase.length()-2).split(".");
 
-            if (eudate && dags.count() == 2) {
+            if (eudate && dags.count() >= 2) {
                 d2 = dags[0].toUInt();
                 m2 = dags[1].toUInt();
-            } else if (dags.count() == 2){
+            } else if (dags.count() >= 2){
                 m2 = dags[0].toUInt();
                 d2 = dags[1].toUInt();
             }
-            if (dags.count() == 3) {
+            if (dags.count() > 2) {
                 y2 = dags[2].toInt();
                 if (y2 < 100) y2 += 2000;
             } else y2 = year;
@@ -685,11 +695,11 @@ void MainWindow::on_lineEdit_returnPressed()
                 {
                 QString html;
                 int type=5;
-                if (ui->lineEdit->text().mid(2,1) == "T") type = 1;
-                if (ui->lineEdit->text().mid(2,1) == "A") type = 2;
-                if (ui->lineEdit->text().mid(2,1) == "P") type = 3;
-                if (ui->lineEdit->text().mid(2,1) == "H") type = 4;
-                if (ui->lineEdit->text().mid(2,1) == "X") type = 5;
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "T") type = 1;
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "A") type = 2;
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "P") type = 3;
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "H") type = 4;
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "X") type = 5;
                 //qDebug() << ui->lineEdit->text().mid(2,1) << " " << ui->lineEdit->text().mid(4,2) << " " << ui->lineEdit->text().mid(7,2) << " " << ui->lineEdit->text().mid(10,4);
                 if (eudate) {if (valid_date(ui->lineEdit->text().mid(4,2).toInt(),ui->lineEdit->text().mid(7,2).toInt(),year) == 1) {
                         if (ui->lineEdit->text().mid(10,4).toInt() > 0) html = solareclipe(ui->lineEdit->text().mid(4,2).toInt(),ui->lineEdit->text().mid(7,2).toInt(),ui->lineEdit->text().mid(10,4).toInt(),1,type,eudate);
@@ -741,11 +751,12 @@ void MainWindow::on_lineEdit_returnPressed()
            case 'y':
             {
                 QString html;
-
-              html = phraserank(phrase.toUtf8().constData(),eudate,3,true,true);
-
-              writetmpfile("<html>"+html+"</html>");
-              break;
+                if (phrase == "<none>") phrase = tphrase.mid(2,tphrase.length()-2);
+                if (phrase != "") {
+                    html = phraserank(phrase.toUtf8().constData(),eudate,3,true,true);
+                    writetmpfile("<html>"+html+"</html>");
+                }
+                break;
             }
             case 'x':
             {
@@ -846,12 +857,13 @@ void MainWindow::shorthelp()
         writetmpfile("<b>Sentence split</b> When unchecked analyze and word print will not split sentences<br>");
 
 
-        writetmpfile("The input area takes phrases wich are displayed and saved to history.txt if Save is checked<br>");
+        writetmpfile("The input area takes phrases which are displayed and saved to history.txt if Save is checked<br>");
         writetmpfile("Toggle Analyze will run entered phrases through analyzer instead of word details.<br>");
         writetmpfile("<b>The input area also takes commands:</b>");
 
         writetmpfile("<font color=\"blue\">/a(phrase)</font> runs analyzer, (<b>Phrase</b> is optional)");
         writetmpfile("<font color=\"blue\">/w(phrase)</font> phrase details (<b>Phrase</b> is optional)");
+        writetmpfile("<font color=\"blue\">/y(phrase)</font> phrase rank (<b>Phrase</b> active or passed in command.)");
         writetmpfile("<font color=\"blue\">/n##/##/####</font> New date, (Year is optional)");
         writetmpfile("<font color=\"blue\">/s##/##/####</font> New second date");
         writetmpfile("<font color=\"blue\">/d##/##/####</font> date details (date is optional, year is extra option)");
@@ -1139,7 +1151,7 @@ void MainWindow::on_actionAbout_triggered()
     msgBox.exec();
 
     if (msgBox.clickedButton()==pButtonYes) {
-        QMessageBox::about(this,"Donate","Donations can be done by Paypal to jonssofh@hotmail.com or cryptocurrency BTC 3F8BM7RLiYp5j8k47JKSFqqpcru1pBbA9s , Support is most appreciated.");
+        QMessageBox::about(this,"Donate","Donations can be done by Paypal to jonssofh@hotmail.com or cryptocurrency BTC 1HJ5xJmePkfrYwixbZJaMUcXosiJhYRLbo, Support is most appreciated.");
     }
 }
 
@@ -1272,3 +1284,20 @@ void MainWindow::on_action_News_headlines_exp_triggered()
     connect(Httpdownload, SIGNAL(dl_ready(const QString)),
             this, SLOT(show_news(const QString)));
 }
+
+void MainWindow::on_actionNightmode_triggered(bool arg1)
+{
+    if (arg1) nightmode = true;
+    else nightmode = false;
+    if (nightmode) {
+        writeSettings("settings.txt","nightmode","true");
+        ui->textBrowser->setStyleSheet("background-color: #1a1a1a; color: lightgrey");
+        ui->lineEdit->setStyleSheet("background-color: #1a1a1a; color: white");
+    } else  {
+        writeSettings("settings.txt","nightmode","false");
+        ui->textBrowser->setStyleSheet("");
+        ui->lineEdit->setStyleSheet("");
+    }
+}
+
+

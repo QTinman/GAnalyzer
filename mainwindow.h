@@ -116,6 +116,9 @@ private slots:
 
     void on_action_News_headlines_exp_triggered();
 
+
+    void on_actionNightmode_triggered(bool checked);
+
 private:
     Ui::MainWindow *ui;
     bool eudate=true;
