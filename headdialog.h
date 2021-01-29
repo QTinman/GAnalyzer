@@ -21,6 +21,18 @@ public:
 private slots:
     void on_lineEdit_returnPressed();
 
+    void on_englisordinal_toggled(bool checked);
+
+    void on_fullreduction_toggled(bool checked);
+
+    void on_reverseordinal_toggled(bool checked);
+
+    void on_reversefull_toggled(bool checked);
+
+    void on_Adjust_clicked();
+
+    void on_SaveNewsFilter_clicked();
+
 private:
     Ui::headDialog *ui;
     QStringListModel *model;

@@ -31,13 +31,14 @@ string totable(string str, int start, int endrow, int colum, int width);
 QString Qtotable(QString str, int start, int endrow, int colum, int width);
 string char2string(char *c);
 QString detail(int ns,int dd, int mm, int year, int i,bool eudate);
-QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool triangular);
+QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool triangular, bool dates, bool chipers);
 int getns(string phrase, int out, int pt);
-int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar, bool prime, bool triangular);
+int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar, bool prime, bool triangular, bool dates, bool chipers);
 QStringList getheadlines(QString source, int numberof);
 void eraseAllQSubStr(QString & mainStr, const QString & toErase);
 QString headline(QString content, QString pattern);
 bool isheadlines(QString content, QString pattern);
 void erasefromToQSubStr(QString & mainStr, const QString & fromErase, const QString & toErase);
 QString wordnumbericlist(QString head);
+QString clean_news_content(QString content, QString pattern);
 #endif // GCALC_H

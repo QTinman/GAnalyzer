@@ -192,6 +192,8 @@
     <addaction name="action_Second_date"/>
     <addaction name="actionSet_Year"/>
     <addaction name="action_Eu_date"/>
+    <addaction name="actionSwap_dates"/>
+    <addaction name="separator"/>
     <addaction name="actionSentence_split"/>
     <addaction name="actionNightmode"/>
     <addaction name="separator"/>
@@ -425,6 +427,11 @@
    </property>
    <property name="text">
     <string>Nightmode</string>
+   </property>
+  </action>
+  <action name="actionSwap_dates">
+   <property name="text">
+    <string>Swap dates</string>
    </property>
   </action>
  </widget>

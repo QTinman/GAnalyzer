@@ -1,6 +1,7 @@
 #include "httpdownload.h"
 #include "ui_httpdownload.h"
 #include "mainwindow.h"
+//#include "inputdialog.h"
 
 HttpDownload::HttpDownload(QWidget *parent) :
     QDialog(parent),
@@ -21,6 +22,7 @@ HttpDownload::HttpDownload(QWidget *parent) :
             else ui->urlList->addItem(line);
         }
         sources.close();
+        ui->urlList->addItem("");
             //qDebug() << infile.size() << in.readAll();
     }
 
@@ -43,13 +45,23 @@ HttpDownload::~HttpDownload()
 
 void HttpDownload::on_downloadButton_clicked()
 {
+    QString data = ui->urlList->itemText(ui->urlList->currentIndex());
+    if (data == "") {
+        tmpstring = "";
+        labeltext = "Enter URL :";
+        inputDialog addurl;
+        addurl.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
+        addurl.exec();
+        data = tmpstring;
+    }
+    if (data != "") {
     manager = new QNetworkAccessManager(this);
     progressDialog = new QProgressDialog(this);
 
     connect(progressDialog, SIGNAL(canceled()), this, SLOT(cancelDownload()));
     // get url
     //url = (ui->urlEdit->text());
-    QString data = ui->urlList->itemText(ui->urlList->currentIndex());
+
     tmpstring = data;
     data.remove(QRegExp("[\\n\\t\\r]"));
     //qDebug() << data;
@@ -93,6 +105,7 @@ void HttpDownload::on_downloadButton_clicked()
     ui->downloadButton->setEnabled(false);
 
     startRequest(url);
+    }
 }
 
 void HttpDownload::httpReadyRead()

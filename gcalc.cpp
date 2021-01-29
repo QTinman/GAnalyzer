@@ -102,7 +102,7 @@ QString loopYear(int ns,int dd, int mm, int year, int printcal, bool eudate)
              if (ns == daynr((d1*10)+d2,(m1*10)+m2,year)) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(" It is the "+Qns+"th day of the year",0,0,1,300)+Qtotable("",0,2,0,0);
              if (ns == daynrleft((d1*10)+d2,(m1*10)+m2,year)) buffer +=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable("There are "+Qns+" days left of the year",0,0,1,300)+Qtotable("",0,2,0,0);
              if (ns == eu_amdate(2, d1, d2, m1, m2, ns)) buffer+=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(Qns+" fits Europian style of date of dd/mm",0,0,1,300)+Qtotable("",0,2,0,0);
-             if (ns == eu_amdate(1, d1, d2, m1, m2, ns)) buffer+=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(Qns+" fits American style of date of mm/dd",0,0,1,300)+Qtotable("",0,2,0,0);
+             if (ns == eu_amdate(1, d1, d2, m1, m2, ns)) buffer+=Qtotable("",0,1,0,0)+Qtotable(Qdate,0,0,1,110)+Qtotable(Qns+" fits MDY style of date of mm/dd",0,0,1,300)+Qtotable("",0,2,0,0);
             buffer += Qtotable("",2,0,0,0);
              if (searchzerodays(ns,1,(d1*10)+d2,(m1*10)+m2,year) == ns) {
                  //qDebug() << ns;
@@ -1037,10 +1037,14 @@ QString printzerodays(int dd, int mm, int year, int ns, int type, string detail,
         }
     }
     if (printbuffer) {
-        buffer += Qtotable("",1,0,0,0);
+
+        if (eudate) buffer += se7 + solartype + " Solar Eclipse " + se3 + se2 + se4 + "/" + se5 + "/" + se6 + QString::fromStdString(detail)+"<br>";
+        else buffer += se7 + solartype + " Solar Eclipse " + se3 + se2 + se5 + "/" + se4 + "/" + se6 + QString::fromStdString(detail)+"<br>";
+
+        /*buffer += Qtotable("",1,0,0,0);
         if (eudate) buffer += Qtotable("",0,1,0,0)+Qtotable(se7,0,0,1,110) + Qtotable(solartype + " Solar Eclipse " + se3 + se2 + se4 + "/" + se5 + "/" + se6 + QString::fromStdString(detail),0,0,1,1000)+Qtotable("",0,2,0,0);
         else buffer += Qtotable("",0,1,0,0)+Qtotable(se7,0,0,1,110) + Qtotable(solartype + " Solar Eclipse " + se3 + se2 + se5 + "/" + se4 + "/" + se6 + QString::fromStdString(detail),0,0,1,1000)+Qtotable("",0,2,0,0);
-        buffer += Qtotable("",2,0,0,0);
+        buffer += Qtotable("",2,0,0,0);*/
     }
     return buffer;
 }
@@ -1087,13 +1091,17 @@ int getns(string phrase, int out, int pt)
 }
 
 
-int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar, bool prime, bool triangular)
+int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar, bool prime, bool triangular, bool dates, bool chipers)
 {
-    int rank=0, i, nrns,ns;
-
-    for(nrns=1;nrns<=8;nrns++){
-        for(i=1;i<=21;i++){
-           if (getns(phrase,nrns,0) > 0) if (phrasetodate(getns(phrase,nrns,0),dd,mm,year,i)) rank += 1;
+    int rank=0, i, nrns,ns=0,for_start=1,for_end=22;
+    if (dates) {
+        for_start=10;
+        for_end=14;
+        if (!chipers & !prime & !triangular) chipers=true;
+    }
+    for(nrns=1;nrns<=10;nrns++){
+        for(i=for_start;i<=for_end;i++){
+           if (chipers) if (getns(phrase,nrns,0) > 0) if (phrasetodate(getns(phrase,nrns,0),dd,mm,year,i)) rank += 1;
            if (prime) if (getns(phrase,nrns,1) > 0) if (phrasetodate(getns(phrase,nrns,1),dd,mm,year,i)) rank += 1;
            if (triangular) if (getns(phrase,nrns,2) > 0) if (phrasetodate(getns(phrase,nrns,2),dd,mm,year,i)) rank += 1;
         }
@@ -1112,7 +1120,7 @@ int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar, b
 }
 
 
-QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool triangular)
+QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool triangular, bool dates, bool chipers)
 {
     QString buffer="";
     int year_rank[5][500];
@@ -1139,9 +1147,9 @@ QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool tri
         for (int j = 1; j <= days; j++)
         {
             if (j == dd2 && i == mm2) break;
-            rank = counter(s1,j,i+1,year,minimum,runsolar, prime, triangular);
+            rank = counter(s1,j,i+1,year,minimum,runsolar, prime, triangular,dates,chipers);
 
-            if (found < phrase.length() && counter(s2,j,i+1,year,minimum,runsolar, prime, triangular) > 0 && rank > 0) rank+=counter(s2,j,i+1,year, minimum,runsolar, prime, triangular);
+            if (found < phrase.length() && counter(s2,j,i+1,year,minimum,runsolar, prime, triangular,dates,chipers) > 0 && rank > 0) rank+=counter(s2,j,i+1,year, minimum,runsolar, prime, triangular,dates,chipers);
             if (rank >= 100) {
                 rank -= 100;
                 solar = "T";
@@ -1165,10 +1173,12 @@ QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool tri
     }
     //for (int t=top;t>=minimum;t--){
     for (int t=minimum;t<=top;t++){
-        if (s2 =="") buffer += "<br>" + QString::fromStdString(formattext(QString::number(t).toUtf8().constData(),1,0)) + " Hits found on phrase " +QString::fromStdString(formattext(s1,1,0)) + "<br><br>";
-        else buffer += "<br>" + QString::fromStdString(formattext(QString::number(t).toUtf8().constData(),1,0)) + " Hits found on phrase " +QString::fromStdString(formattext(s1,1,0)) + " & " +QString::fromStdString(formattext(s2,1,0))+"<br><br>";
+        int dfound=0;
+        if (s2 =="") buffer += "<br>" + QString::fromStdString(formattext(QString::number(t).toUtf8().constData(),1,0)) + " Hits found on phrase " +QString::fromStdString(formattext(s1,1,0)) + "<br>";
+        else buffer += "<br>" +  QString::fromStdString(formattext(QString::number(t).toUtf8().constData(),1,0)) + " Hits found on phrase " +QString::fromStdString(formattext(s1,1,0)) + " & " +QString::fromStdString(formattext(s2,1,0))+"<br>";
     for (int i=0;i<=pos;i++) {
         if (year_rank[0][i] == t) {
+            dfound++;
             if (year_rank[4][i] == 1) solar = "T";
             else solar = "";
 
@@ -1178,6 +1188,8 @@ QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool tri
         }
         //qDebug() << t << " " << i << " " << year_rank[0][i] << " " << buffer.length();
     }
+    buffer += QString::fromStdString(formattext(QString::number(dfound).toUtf8().constData(),1,0)) + " dates found.<br>";
+    dfound=0;
 }
     return buffer;
 }
@@ -1266,7 +1278,7 @@ bool phrasetodate(int ns, int dd, int mm, int year, int i) {
         if (ns == MDY) return true;
         break;
       case 14 :
-        if (ns == getnprime(daynumb)) return true;
+        if (ns == dd) return true;
         break;
       case 15 :
         if (ns == getnprime(dayleft)) return true;
@@ -1278,7 +1290,7 @@ bool phrasetodate(int ns, int dd, int mm, int year, int i) {
         if (ns == getnprime(MDY)) return true;
         break;
       case 18 :
-        if (ns == getntriangular(daynumb)) return true;
+        if (ns == getnprime(daynumb)) return true;
         break;
       case 19 :
         if (ns == getntriangular(dayleft)) return true;
@@ -1290,7 +1302,7 @@ bool phrasetodate(int ns, int dd, int mm, int year, int i) {
         if (ns == getntriangular(MDY)) return true;
         break;
       case 22 :
-        if (ns == dd) return true;
+        if (ns == getntriangular(daynumb)) return true;
         break;
    case 23 :
      if (searchzerodays(ns,1,0,0,0) > 0) return true;
@@ -1399,47 +1411,47 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
             y_y = QString::fromStdString(formattext(QString::number(y3).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(y4).toUtf8().constData(),1,0));
        switch(i) {
           case 1 :
-              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << ")&emsp;= " << Qns.toUtf8().constData() << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << ")&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 2 :
-              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << Y_Y_y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << Y_Y_y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 3 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << Y_Y_y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << Y_Y_y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 4 :
-              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << yy.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << yy.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 5 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 6 :
-              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 7 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << ")&emsp;= " << Qns.toUtf8().constData() << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << ")&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 8 :
-              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 9 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << yy.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << yy.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
@@ -1456,20 +1468,19 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
               savelog(logline.str());
               break;
           case 12 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" <<  "Matches European style date as " << Qns.toUtf8().constData() << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << " &emsp;" <<  "Matches DMY style date as " << Qns.toUtf8().constData() << " - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 13 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" << "Matches American style date as " << Qns.toUtf8().constData() << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << " &emsp;" << "Matches MDY style date as " << Qns.toUtf8().constData() << " - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 14 :
-              eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;Day of the year is " << Qns.toUtf8().constData() << "th prime number - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
-              savelog(logline.str());
+           logline << Qdate.toUtf8().constData() << " &emsp;" <<  "Matches date as " << Qns.toUtf8().constData() << " - " << detail << "<br>";
+           buffer += QString::fromStdString(logline.str());
+           savelog(logline.str());
               break;
           case 15 :
               eraseAllSubStr(detail,"th ");
@@ -1479,21 +1490,21 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
               break;
           case 16 :
               eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(2, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th prime number from European style date - " << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(2, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th prime number from DMY style date - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 17 :
               eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(1, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th prime number from American style date - " << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(1, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th prime number from MDY style date - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 18 :
-              eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;Day of the year is " << Qns.toUtf8().constData() << "th triangular number - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
-              savelog(logline.str());
+           eraseAllSubStr(detail,"th ");
+           logline << Qdate.toUtf8().constData() << " &emsp;Day of the year is " << Qns.toUtf8().constData() << "th prime number - " << detail << "<br>";
+           buffer += QString::fromStdString(logline.str());
+           savelog(logline.str());
               break;
           case 19 :
               eraseAllSubStr(detail,"th ");
@@ -1503,20 +1514,21 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
               break;
           case 20 :
               eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(2, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th triangular number from European style date - " << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(2, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th triangular number from DMY style date - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 21 :
               eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(1, d1, dd2, m1, mm2, ns)),1,1) << " is " << Qns.toUtf8().constData() << "th triangular number from American style date - " << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(1, d1, dd2, m1, mm2, ns)),1,1) << " is " << Qns.toUtf8().constData() << "th triangular number from MDY style date - " << detail << "<br>";
               buffer += QString::fromStdString(logline.str());
               savelog(logline.str());
               break;
           case 22 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" <<  "Matches date as " << Qns.toUtf8().constData() << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
-              savelog(logline.str());
+           eraseAllSubStr(detail,"th ");
+           logline << Qdate.toUtf8().constData() << " &emsp;Day of the year is " << Qns.toUtf8().constData() << "th triangular number - " << detail << "<br>";
+           buffer += QString::fromStdString(logline.str());
+           savelog(logline.str());
               break;
        case 23 :
            //logline << printzerodays(dd,mm,year,ns,1);
@@ -2030,7 +2042,7 @@ QString detail(int ns, int dd, int mm, int year, int i,bool eudate) {
         if (ns == MDY) return "Fits MD";
         break;
       case 14 :
-        if (ns == getnprime(daynumb)) return " prime from day of the year";
+        if (ns == dd) return "Equal date";
         break;
       case 15 :
         if (ns == getnprime(dayleft)) return " prime from days left";
@@ -2042,7 +2054,7 @@ QString detail(int ns, int dd, int mm, int year, int i,bool eudate) {
         if (ns == getnprime(MDY)) return " prime from MD";
         break;
       case 18 :
-        if (ns == getntriangular(daynumb)) return " triangular from day of the year";
+        if (ns == getnprime(daynumb)) return " prime from day of the year";
         break;
       case 19 :
         if (ns == getntriangular(dayleft)) return " triangular from days left";
@@ -2054,7 +2066,7 @@ QString detail(int ns, int dd, int mm, int year, int i,bool eudate) {
         if (ns == getntriangular(MDY)) return " triangular from MD";
         break;
       case 22 :
-        if (ns == dd) return "Equal date";
+        if (ns == getntriangular(daynumb)) return " triangular from day of the year";
         break;
 
    case 23 :
@@ -2685,6 +2697,23 @@ QString wordnumbericlist(QString head)
     }*/
 }
 
+QString clean_news_content(QString content, QString pattern)
+{
+
+    if (pattern.indexOf("<span>") == -1) eraseAllQSubStr(content,"<span>");
+    if (pattern.indexOf("</span>") == -1) eraseAllQSubStr(content,"</span>");
+    erasefromToQSubStr(content,"<a href",">");
+    eraseAllQSubStr(content,"\n");
+    eraseAllQSubStr(content,"  ");
+    if (pattern == "") {
+        eraseAllQSubStr(content,"<a>");
+        eraseAllQSubStr(content,"</a>");
+        erasefromToQSubStr(content,"<span",">");
+
+    }
+return content;
+}
+
 bool isheadlines(QString content, QString pattern)
 {
     QString head;
@@ -2734,6 +2763,8 @@ QString headline(QString content, QString pattern)
        }
     }
     pos = pos2+1;
+    head.replace("\n"," ");
+
    return head;
 }
 
@@ -2754,37 +2785,27 @@ QStringList getheadlines(QString source, int numberof)
             //qDebug() << infile.size() << in.readAll();
     }
     QFile sources;
+    QString line;
+    int pos1;
     sources.setFileName("newssources.txt");
     if (sources.open(QIODevice::ReadOnly)) {
         while(!sources.atEnd()) {
-            QString line = sources.readLine();
+            line = sources.readLine().trimmed();
             //QStringList fields = line.split("|");
-            int pos1 = line.indexOf(tmpstring);
-            if (pos1 != -1) {
-                line = line.trimmed();
-                pos1 = line.indexOf("|");
-                if (pos1 != -1) pattern = line.mid(pos1+1,line.length()-pos1);
-                pattern = pattern.trimmed();
-                break;
-            }
+            pos1 = line.indexOf(tmpstring);
+            if (pos1 != -1) break;
+
         }
         sources.close();
+
             //qDebug() << infile.size() << in.readAll();
     }
-    /*QStringList fields = pattern1.split("|");
-    int i = 0;
-    for ( const auto& l : fields  ){
-        if (fields.size() > 1 && i == 0) content = l;
-        if (fields.size() > 1 && i == 1) pattern1 = l;
-        if (fields.size() > 1 && i == 2) pattern2 = l;
-        i++;
-    }*/
-        if (pattern.indexOf("<span>") == -1) eraseAllQSubStr(content,"<span>");
-        if (pattern.indexOf("</span>") == -1) eraseAllQSubStr(content,"</span>");
+    if (tmpstring.indexOf("|") != -1) line = tmpstring;
+    pos1 = line.indexOf("|");
+    if (pos1 != -1) pattern = line.mid(pos1+1,line.length()-pos1).trimmed();
+
+    content = clean_news_content(content,pattern);
     if (pattern == "") {
-        eraseAllQSubStr(content,"<a>");
-        eraseAllQSubStr(content,"</a>");
-        erasefromToQSubStr(content,"<span",">");
         if (isheadlines(content,"</h1>")) pattern = "</h1>";
         if (isheadlines(content,"</h2>")) pattern = "</h2>";
         if (isheadlines(content,"</h3>")) pattern = "</h3>";
@@ -2792,7 +2813,8 @@ QStringList getheadlines(QString source, int numberof)
     //qDebug() << pattern;
     do {
     head = headline(content,pattern);
-    if (head != "" && head.length() < 100){
+
+    if ((head != "" && head.length() < 100) && (tmpstring.toLower().indexOf(head.toLower()) == -1)){
         list << head;
         //list << wordnumbericlist(head);
     }

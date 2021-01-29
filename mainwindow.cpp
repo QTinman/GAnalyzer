@@ -95,7 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->textBrowser, &QTextBrowser::anchorClicked,
             this, &MainWindow::handleAnchorClicked);
 
-
+    ui->actionSwap_dates->setDisabled(true);
     if (eudate) ui->action_Eu_date->setText("Date DMY");
     else ui->action_Eu_date->setText("Date MDY");
     SieveOfEratosthenes(primes);
@@ -290,6 +290,7 @@ void MainWindow::updatestatusbar()
     }
     //ui->statusbar->setStyleSheet("color: red");
     ui->menu_File->menuAction()->setStatusTip(scombstr);
+    if (d2 != 0) ui->actionSwap_dates->setDisabled(false);
     ui->statusbar->showMessage(scombstr);
 }
 
@@ -306,6 +307,10 @@ inputDialog::inputDialog(QWidget *parent) :
     if (labeltext == "Enter second date :") {
         inputDialog::setWindowTitle("Enter second date for extended date details");
         ui->lineEdit->setInputMask("00-00-0000");
+    }
+    if (labeltext == "Enter URL :") {
+        inputDialog::setWindowTitle("Add newssource");
+        //ui->lineEdit->setInputMask("00-00");
     }
 
     if (labeltext == "Search number :") {
@@ -343,6 +348,7 @@ void inputDialog::displaydialog()
     if (labeltext == "Enter Year:") year = ui->lineEdit->text().mid(0,4).toInt();
     if (labeltext == "Enter Cipher nr. :") ns = ui->lineEdit->text().mid(0,4).toInt();
     if (labeltext == "Filter history :") tmpstring = ui->lineEdit->text();
+    if (labeltext == "Enter URL :") tmpstring = ui->lineEdit->text();
     if (eudate) {
     if (labeltext == "New date :") {
         dd = ui->lineEdit->text().mid(0,2).toInt();
@@ -649,7 +655,7 @@ void MainWindow::on_lineEdit_returnPressed()
                 d2 = 0;
                 m2 = 0;
                 y2 = 0;
-            }
+            } else ui->actionSwap_dates->setDisabled(false);
             emit updatestatusbar();
             break;
         }
@@ -753,7 +759,7 @@ void MainWindow::on_lineEdit_returnPressed()
                 QString html;
                 if (phrase == "<none>") phrase = tphrase.mid(2,tphrase.length()-2);
                 if (phrase != "") {
-                    html = phraserank(phrase.toUtf8().constData(),eudate,3,true,true);
+                    html = phraserank(phrase.toUtf8().constData(),eudate,3,true,true,true,true);
                     writetmpfile("<html>"+html+"</html>");
                 }
                 break;
@@ -850,6 +856,7 @@ void MainWindow::shorthelp()
         writetmpfile("<font color=\"blue\">(Ctrl-H)</font> <b>Search history.txt</b> searches all words connected to entered number in history.txt.");
         writetmpfile("<font color=\"blue\">(Ctrl-A)</font> <b>Analyze</b> takes active phrase and compare it to current date displayed on the status bar.");
         writetmpfile("<font color=\"blue\">(Ctrl-D)</font> <b>Date details</b> displays calculations for current date. Second date will extend the information.");
+        writetmpfile("<font color=\"blue\">(Ctrl-R)</font> <b>Phrase ranking</b> search through the year and displays number of hits pr. date.");
         writetmpfile("<font color=\"blue\">(Ctrl-W)</font> <b>Word details</b> shows details about active phrase.");
         writetmpfile("<font color=\"blue\">(Ctrl-E)</font> <b>Compare Solar Eclipses to History.txt</b> for current date");
         writetmpfile("<font color=\"blue\">(Ctrl-O)</font> <b>Date compare to history</b> calculate current date and compares it to history.txt");
@@ -1077,6 +1084,7 @@ void MainWindow::on_action_Second_date_triggered()
     datesearch.eudate = eudate;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
+    if (d2 != 0) ui->actionSwap_dates->setDisabled(false);
     emit updatestatusbar();
 }
 
@@ -1177,12 +1185,20 @@ void MainWindow::on_actionList_Solar_Eclipses_triggered()
 
 void MainWindow::on_actionPhrase_ranking_triggered()
 {
-    bool prime=false,triangular=false;
+    bool chiper=false,dates=false,prime=false,triangular=false;
     rankDialog rDialog;
     rDialog.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     rDialog.exec();
     QString html;
     if (phrase != "<none>") {
+        if (ns>=1000000){
+            chiper = true;
+            ns -= 1000000;
+        }
+        if (ns>=100000){
+            dates = true;
+            ns -= 100000;
+        }
         if (ns>=10000){
             triangular = true;
             ns -= 10000;
@@ -1191,11 +1207,11 @@ void MainWindow::on_actionPhrase_ranking_triggered()
             prime = true;
             ns -= 1000;
         }
-    html = phraserank(phrase.toUtf8().constData(),eudate,ns,prime,triangular);
+    html = phraserank(phrase.toUtf8().constData(),eudate,ns,prime,triangular,dates,chiper);
     writetmpfile("<html>"+html+"</html>");
 
-    QStringList myStringList = phrase.split(',').first().split(':');
-    phrase = myStringList.first();
+    //QStringList myStringList = phrase.split(',').first().split(':');
+    //phrase = myStringList.first();
     }
     emit updatestatusbar();
 }
@@ -1301,3 +1317,18 @@ void MainWindow::on_actionNightmode_triggered(bool arg1)
 }
 
 
+
+void MainWindow::on_actionSwap_dates_triggered()
+{
+    int dd3,mm3,yy3;
+    dd3 = dd;
+    mm3 = mm;
+    yy3 = year;
+    dd = d2;
+    mm = m2;
+    year = y2;
+    d2 = dd3;
+    m2 = mm3;
+    y2 = yy3;
+    emit updatestatusbar();
+}

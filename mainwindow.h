@@ -13,6 +13,9 @@
 #include <QPainter>
 #include <QPrintPreviewDialog>
 #include <QEventLoop>
+//#include </home/john/workspace/ohmyarch/feed_parser/feed//date_time/tz.h>
+//#include </home/john/workspace/ohmyarch/feed_parser/feed//rss_parser.h>
+//#include </home/john/workspace/ohmyarch/feed_parser/feed//utilities.h>
 //#include "downloadmanager.h"
 
 extern QString phrase;
@@ -118,6 +121,8 @@ private slots:
 
 
     void on_actionNightmode_triggered(bool checked);
+
+    void on_actionSwap_dates_triggered();
 
 private:
     Ui::MainWindow *ui;

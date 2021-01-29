@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>352</width>
-    <height>163</height>
+    <height>215</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>9</x>
      <y>9</y>
-     <width>334</width>
-     <height>16</height>
+     <width>285</width>
+     <height>18</height>
     </rect>
    </property>
    <property name="text">
@@ -30,9 +30,9 @@
    <property name="geometry">
     <rect>
      <x>9</x>
-     <y>31</y>
-     <width>334</width>
-     <height>21</height>
+     <y>33</y>
+     <width>174</width>
+     <height>26</height>
     </rect>
    </property>
    <property name="orientation">
@@ -51,10 +51,10 @@
   <widget class="QSplitter" name="splitter">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>60</y>
-     <width>334</width>
-     <height>21</height>
+     <x>9</x>
+     <y>65</y>
+     <width>172</width>
+     <height>27</height>
     </rect>
    </property>
    <property name="orientation">
@@ -73,10 +73,10 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>130</y>
-     <width>334</width>
-     <height>21</height>
+     <x>180</x>
+     <y>180</y>
+     <width>166</width>
+     <height>26</height>
     </rect>
    </property>
    <property name="orientation">
@@ -86,46 +86,56 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QSplitter" name="splitter_3">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>90</y>
-     <width>181</width>
-     <height>61</height>
+     <width>179</width>
+     <height>120</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QCheckBox" name="checkBox">
-      <property name="text">
-       <string>Total Solar eclipses (slow)</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QCheckBox" name="checkBox_3">
-      <property name="text">
-       <string>Prime</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QCheckBox" name="checkBox_2">
-      <property name="text">
-       <string>Triangular</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
+   </property>
+   <widget class="QSplitter" name="splitter_4">
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+    <widget class="QCheckBox" name="Chipers">
+     <property name="text">
+      <string>Chipers</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="Dates">
+     <property name="text">
+      <string>Limit to Day related</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="Solar">
+     <property name="text">
+      <string>Total Solar eclipses (slow)</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="Prime">
+     <property name="text">
+      <string>Prime</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="Triangular">
+     <property name="text">
+      <string>Triangular</string>
+     </property>
+    </widget>
+   </widget>
   </widget>
  </widget>
  <tabstops>
   <tabstop>phrases</tabstop>
   <tabstop>min</tabstop>
-  <tabstop>checkBox</tabstop>
-  <tabstop>checkBox_3</tabstop>
-  <tabstop>checkBox_2</tabstop>
+  <tabstop>Solar</tabstop>
+  <tabstop>Prime</tabstop>
+  <tabstop>Triangular</tabstop>
  </tabstops>
  <resources/>
  <connections>

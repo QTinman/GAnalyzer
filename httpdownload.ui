@@ -32,7 +32,7 @@
      <item>
       <widget class="QLabel" name="statusLabel">
        <property name="text">
-        <string>Type URL of a file</string>
+        <string>Select newssource or emty to add.</string>
        </property>
       </widget>
      </item>
