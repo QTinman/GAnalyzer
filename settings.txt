@@ -1,0 +1,5 @@
+font=Noto Sans,11,-1,5,50,0,0,0,0,0
+DMY=true
+ciphers=111111
+ssplit=false
+nightmode=true
