@@ -63,14 +63,14 @@ void HttpDownload::on_downloadButton_clicked()
     //url = (ui->urlEdit->text());
 
     tmpstring = data;
-    data.remove(QRegExp("[\\n\\t\\r]"));
+    data.remove(QRegularExpression("[\\n\\t\\r]"));
     //qDebug() << data;
     //url = (ui->urlList->itemText(ui->urlList->currentIndex()));
     url = (data);
     //qDebug() << url;
     QFileInfo fileInfo(url.path());
     QString fileName = fileInfo.fileName();
-    fileName.remove(QRegExp("[\\n\\t\\r]"));
+    fileName.remove(QRegularExpression("[\\n\\t\\r]"));
     if (fileName.isEmpty())
         fileName = "headnews.html";
     filesource = fileName;

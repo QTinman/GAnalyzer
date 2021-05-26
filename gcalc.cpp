@@ -217,7 +217,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         if (eudate) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;(" << formattext(std::to_string(d1*10+d2),1,0) << ")+(" << formattext(std::to_string(m1*10+m2),1,0) << ") + (" << formattext(std::to_string((y1*10)+y2),1,0) << ")+(" << formattext(std::to_string((y3*10)+y4),1,0) << ")&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
         else logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << " - &emsp;(" << formattext(std::to_string(m1*10+m2),1,0) << ")+(" << formattext(std::to_string(d1*10+d2),1,0) << ") + (" << formattext(std::to_string((y1*10)+y2),1,0) << ")+(" << formattext(std::to_string((y3*10)+y4),1,0) << ")&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
         //buffer += formattext(QString::fromStdString(logline.str()),0,1);
-        buffer += QString::fromStdString(logline.str());
+        buffer += tobuffer(QString::fromStdString(logline.str()));
         savelog(logline.str());
 
         ns = (d1*10)+d2+(m1*10)+m2+y1+y2+y3+y4;
@@ -228,7 +228,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         logline.str("");
         if (eudate) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;(" << formattext(std::to_string(d1*10+d2),1,0) << ")+(" << formattext(std::to_string(m1*10+m2),1,0) << ") + " << formattext(std::to_string(y1),1,0) << "+" << formattext(std::to_string(y2),1,0) <<"+" << formattext(std::to_string(y3),1,0) << "+" << formattext(std::to_string(y4),1,0) << "&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
         else logline << getMonthName (mm-1).c_str() << " "  << d1 << d2 << " - &emsp;(" << formattext(std::to_string(m1*10+m2),1,0) << ")+(" << formattext(std::to_string(d1*10+d2),1,0) << ") + " << formattext(std::to_string(y1),1,0) << "+" << formattext(std::to_string(y2),1,0) <<"+" << formattext(std::to_string(y3),1,0) << "+" << formattext(std::to_string(y4),1,0) << "&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
-        buffer += QString::fromStdString(logline.str());
+        buffer += tobuffer(QString::fromStdString(logline.str()));
         savelog(logline.str());
 
         ns = d1+d2+m1+m2+y1+y2+y3+y4;
@@ -239,7 +239,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         logline.str("");
         if (eudate) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;" << formattext(std::to_string(d1),1,0) << "+" << formattext(std::to_string(d2),1,0) << " + " << formattext(std::to_string(m1),1,0) << "+" << formattext(std::to_string(m2),1,0) << " + " << formattext(std::to_string(y1),1,0) << "+" << formattext(std::to_string(y2),1,0) <<"+" << formattext(std::to_string(y3),1,0) << "+" << formattext(std::to_string(y4),1,0) << "&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
         else logline << getMonthName (mm-1).c_str() << " "  << d1 << d2 << " - &emsp;" << formattext(std::to_string(m1),1,0) << "+" << formattext(std::to_string(m2),1,0) << " + " << formattext(std::to_string(d1),1,0) << "+" << formattext(std::to_string(d2),1,0) << " + " << formattext(std::to_string(y1),1,0) << "+" << formattext(std::to_string(y2),1,0) <<"+" << formattext(std::to_string(y3),1,0) << "+" << formattext(std::to_string(y4),1,0) << "&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
-        buffer += QString::fromStdString(logline.str());
+        buffer += tobuffer(QString::fromStdString(logline.str()));
         savelog(logline.str());
 
         ns = (d1*10)+d2+(m1*10)+m2+(y3*10)+y4;
@@ -250,7 +250,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         logline.str("");
         if (eudate) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;(" << formattext(std::to_string(d1*10+d2),1,0) << ")+(" << formattext(std::to_string(m1*10+m2),1,0) << ") + (" << formattext(std::to_string((y3*10)+y4),1,0) << ")&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
         else logline << getMonthName (mm-1).c_str() << " "  << d1 << d2 << " - &emsp;(" << formattext(std::to_string(m1*10+m2),1,0) << ")+(" << formattext(std::to_string(d1*10+d2),1,0) << ") + (" << formattext(std::to_string((y3*10)+y4),1,0) << ")&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
-        buffer += QString::fromStdString(logline.str());
+        buffer += tobuffer(QString::fromStdString(logline.str()));
         savelog(logline.str());
 
         ns = d1+d2+m1+m2+y3+y4;
@@ -261,7 +261,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         logline.str("");
         if (eudate) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;" << formattext(std::to_string(d1),1,0) << "+" << formattext(std::to_string(d2),1,0) << " + " << formattext(std::to_string(m1),1,0) << "+" << formattext(std::to_string(m2),1,0) << " + " << formattext(std::to_string(y3),1,0) << "+" << formattext(std::to_string(y4),1,0) << "&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
         else logline << getMonthName (mm-1).c_str() << " "  << d1 << d2 << " - &emsp;" << formattext(std::to_string(m1),1,0) << "+" << formattext(std::to_string(m2),1,0) << " + " << formattext(std::to_string(d1),1,0) << "+" << formattext(std::to_string(d2),1,0) << " + " << formattext(std::to_string(y3),1,0) << "+" << formattext(std::to_string(y4),1,0) << "&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
-        buffer += QString::fromStdString(logline.str());
+        buffer += tobuffer(QString::fromStdString(logline.str()));
         savelog(logline.str());
 
         ns = (d1*10)+d2+(m1*10)+m2;
@@ -272,7 +272,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         logline.str("");
         if (eudate) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;(" << formattext(std::to_string(d1*10+d2),1,0) << ")+(" << formattext(std::to_string(m1*10+m2),1,0) << ")&emsp;&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
         else logline << getMonthName (mm-1).c_str() << " "  << d1 << d2 << " - &emsp;(" << formattext(std::to_string(m1*10+m2),1,0) << ")+(" << formattext(std::to_string(d1*10+d2),1,0) << ")&emsp;&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
-        buffer += QString::fromStdString(logline.str());
+        buffer += tobuffer(QString::fromStdString(logline.str()));
         savelog(logline.str());
 
         ns = d1+d2+m1+m2+20+(y3*10)+y4;
@@ -283,7 +283,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         logline.str("");
         if (eudate) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;" << formattext(std::to_string(d1),1,0) << "+" << formattext(std::to_string(d2),1,0) << " + " << formattext(std::to_string(m1),1,0) << "+" << formattext(std::to_string(m2),1,0) << " + (" << formattext(std::to_string((y1*10)+y2),1,0) << ")+(" << formattext(std::to_string((y3*10)+y4),1,0) << ")&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
         else logline << getMonthName (mm-1).c_str() << " "  << d1 << d2 << " - &emsp;" << formattext(std::to_string(m1),1,0) << "+" << formattext(std::to_string(m2),1,0) << " + " << formattext(std::to_string(d1),1,0) << "+" << formattext(std::to_string(d2),1,0) << " + (" << formattext(std::to_string((y1*10)+y2),1,0) << ")+(" << formattext(std::to_string((y3*10)+y4),1,0) << ")&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
-        buffer += QString::fromStdString(logline.str());
+        buffer += tobuffer(QString::fromStdString(logline.str()));
         savelog(logline.str());
 
         ns = (d1*10)+d2+(m1*10)+m2+y3+y4;
@@ -294,7 +294,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         logline.str("");
         if (eudate) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;(" << formattext(std::to_string(d1*10+d2),1,0) << ")+(" << formattext(std::to_string(m1*10+m2),1,0) << ") + " << formattext(std::to_string(y3),1,0) << "+" << formattext(std::to_string(y4),1,0) << "&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
         else logline << getMonthName (mm-1).c_str() << " "  << d1 << d2 << " - &emsp;(" << formattext(std::to_string(m1*10+m2),1,0) << ")+(" << formattext(std::to_string(d1*10+d2),1,0) << ") + " << formattext(std::to_string(y3),1,0) << "+" << formattext(std::to_string(y4),1,0) << "&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
-        buffer += QString::fromStdString(logline.str());
+        buffer += tobuffer(QString::fromStdString(logline.str()));
         savelog(logline.str());
 
         ns = d1+d2+m1+m2+(y3*10)+y4;
@@ -305,7 +305,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         logline.str("");
         if (eudate) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;" << formattext(std::to_string(d1),1,0) << "+" << formattext(std::to_string(d2),1,0) << " + " << formattext(std::to_string(m1),1,0) << "+" << formattext(std::to_string(m2),1,0) << " + (" << formattext(std::to_string((y3*10)+y4),1,0) << ")&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
         else logline << getMonthName (mm-1).c_str() << " "  << d1 << d2 << " - &emsp;" << formattext(std::to_string(m1),1,0) << "+" << formattext(std::to_string(m2),1,0) << " + " << formattext(std::to_string(d1),1,0) << "+" << formattext(std::to_string(d2),1,0) << " + (" << formattext(std::to_string((y3*10)+y4),1,0) << ")&emsp;= " << formattext(std::to_string(ns),1,1) << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
-        buffer += QString::fromStdString(logline.str());
+        buffer += tobuffer(QString::fromStdString(logline.str()));
         savelog(logline.str());
 
         logline.str("");
@@ -313,7 +313,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
 
         if (eudate) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;It is the " << formattext(std::to_string(daynumb),1,1) << "th day in the year" << " Prime? " << isprime(daynumb) << " Triangular? " << istriangular(daynumb) << "<br>";
         else logline << getMonthName (mm-1).c_str() << " "  << d1 << d2 << " - &emsp;Is the " << formattext(std::to_string(daynumb),1,1) << "th day of the year - " << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
-        buffer += QString::fromStdString(logline.str());
+        buffer += tobuffer(QString::fromStdString(logline.str()));
         if (searchzerodays(daynumb,1,0,0,0) > 0) buffer += printzerodays(dd,mm,year,daynumb,1,"",eudate,true);
         if (searchzerodays(daynumb,2,0,0,0) > 0) buffer += printzerodays(dd,mm,year,daynumb,2,"",eudate,true);
         if (searchzerodays(daynumb,3,0,0,0) > 0) buffer += printzerodays(dd,mm,year,daynumb,3,"",eudate,true);
@@ -323,7 +323,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         logline.str("");
         if (eudate) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << " - &emsp;There are " << formattext(std::to_string(dayleft),1,1) << " days left in the year" << " Prime? " << isprime(dayleft) << " Triangular? " << istriangular(dayleft) << "<br>";
         else logline << getMonthName (mm-1).c_str() << " "  << d1 << d2 << " - &emsp;There is " << formattext(std::to_string(dayleft),1,1) << " days left in the year - " << " Prime? " << isprime(ns) << " Triangular? " << istriangular(ns) << "<br>";
-        buffer += QString::fromStdString(logline.str());
+        buffer += tobuffer(QString::fromStdString(logline.str()));
         if (searchzerodays(dayleft,1,0,0,0) > 0) buffer += printzerodays(dd,mm,year,dayleft,1,"",eudate,true);
         if (searchzerodays(dayleft,2,0,0,0) > 0) buffer += printzerodays(dd,mm,year,dayleft,2,"",eudate,true);
         if (searchzerodays(dayleft,3,0,0,0) > 0) buffer += printzerodays(dd,mm,year,dayleft,3,"",eudate,true);
@@ -332,53 +332,53 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
         logline.str("");
         if (dd2 != 0){
           if (eudate) {
-              logline << "<br>" << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
+              buffer += "<br>" + tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               logline.str("");
               if (wd2>0) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
               else logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks<br>";
-              buffer += QString::fromStdString(logline.str());
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               logline.str("");
               if(nm2>0) logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
               else logline << d1 << d2 << " " << getMonthName (mm-1).c_str() << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months<br>";
-              buffer += QString::fromStdString(logline.str());
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               logline.str("");
               } else {
-              logline << "<br>" << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(days),1,1) << " days<br>";
+              buffer += "<br>" + tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               logline.str("");
               if (wd2>0) logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks +" << formattext(std::to_string(wd2),1,1) << " days<br>";
               else logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(wd1),1,1) << " weeks<br>";
-              buffer += QString::fromStdString(logline.str());
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               logline.str("");
               if (nm2 >0) logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months +" << formattext(std::to_string(nm2),1,1) << " days<br>";
               else logline << getMonthName (mm-1).c_str() << " " << d1 << d2 << s1 << dd2 << "/" << mm2 << "/" << yy2 << " there are " << formattext(std::to_string(nm1),1,1) << " months<br>";
-              buffer += QString::fromStdString(logline.str());
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               logline.str("");}
                 daynumb = daynr(dd2,mm2,year);
                 dayleft = daynrleft(dd2,mm2,year);
                 if (eudate) {
                     logline << dd2 << " " << getMonthName (mm2-1).c_str() << " - &emsp;It is the " << formattext(std::to_string(daynumb),1,1) << "th day in the year<br>";
-                    buffer += QString::fromStdString(logline.str());
+                    buffer += tobuffer(QString::fromStdString(logline.str()));
                     savelog(logline.str());
                     logline.str("");
                     logline << dd2 << " " << getMonthName (mm2-1).c_str() << " - &emsp;There are " << formattext(std::to_string(dayleft),1,1) << " days left in the year<br>";
-                    buffer += QString::fromStdString(logline.str());
+                    buffer += tobuffer(QString::fromStdString(logline.str()));
                     savelog(logline.str());
                     logline.str("");
                     } else {
                     logline << getMonthName (mm2-1).c_str() << " " << dd2 << " - &emsp;It is the " << formattext(std::to_string(daynumb),1,1) << "th day in the year<br>";
-                    buffer += QString::fromStdString(logline.str());
+                    buffer += tobuffer(QString::fromStdString(logline.str()));
                     savelog(logline.str());
                     logline.str("");
                     logline << getMonthName (mm2-1).c_str() << " " << dd2 << " - &emsp;There are " << formattext(std::to_string(dayleft),1,1) << " days left in the year<br>";
-                    buffer += QString::fromStdString(logline.str());
+                    buffer += tobuffer(QString::fromStdString(logline.str()));
                     savelog(logline.str());
                     logline.str("");}
                 dayleft = daynr(dd,mm,year);
@@ -413,18 +413,19 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate) {
                        << formattext(std::to_string(daysbeetween),1,1) << " days <b>or</b> " << formattext(std::to_string(wd1),1,1) << " weeks+" << formattext(std::to_string(wd2),1,1)
                        << " days <b>or</b> " << formattext(std::to_string(nm1),1,1) << " months+" << formattext(std::to_string(nm2),1,1) << " days<br>";
                     else logline << "From " << dd << " " << getMonthName (mm-1).c_str() << " to " << dd2 << " " << getMonthName (mm2-1).c_str() << " are " << formattext(std::to_string(daysbeetween),1,1) << " days <b>or</b> " << formattext(std::to_string(wd1),1,1) << " weeks+" << formattext(std::to_string(wd2),1,1) << " days <b>or</b> " << formattext(std::to_string(nm1),1,1) << " months+" << formattext(std::to_string(nm2),1,1) << " days<br>";
-                    buffer += QString::fromStdString(logline.str());
+                    buffer += tobuffer(QString::fromStdString(logline.str()));
                     savelog(logline.str());
                     logline.str("");
                     } else {
                     if (dayleft > daynumb) logline << "From " << getMonthName (mm2-1).c_str() << " " << dd2 << " to " << getMonthName (mm-1).c_str() << " " << dd << " are " << formattext(std::to_string(daysbeetween),1,1) << " days <b>or</b> " << formattext(std::to_string(wd1),1,1) << " weeks+" << formattext(std::to_string(wd2),1,1) << " days or " << formattext(std::to_string(nm1),1,1) << " months+" << formattext(std::to_string(nm2),1,1) << " days<br>";
                     else logline << "From " << getMonthName (mm-1).c_str() << " " << dd << " to " << getMonthName (mm2-1).c_str() << " " << dd2 << " are " << formattext(std::to_string(daysbeetween),1,1) << " days <b>or</b> " << formattext(std::to_string(wd1),1,1) << " weeks+" << formattext(std::to_string(wd2),1,1) << " days <b>or</b> " << formattext(std::to_string(nm1),1,1) << " months+" << formattext(std::to_string(nm2),1,1) << " days<br>";
-                    buffer += QString::fromStdString(logline.str());
+                    buffer += tobuffer(QString::fromStdString(logline.str()));
                     savelog(logline.str());
                     logline.str("");
                 }
         }
         //qDebug() << buffer;
+
     return buffer;
 }
 
@@ -443,10 +444,11 @@ int weeks_months(QDate startDate, QDate endDate, bool months, bool days)
 {
     int wd1,wd2,nm1,nm2=0,y,m,startmonth=startDate.month(),endmonth=endDate.month();
     double w1;
-    QDateTime qstartDate(startDate);
-    QDateTime qendDate(endDate);
-    if (!qstartDate.isValid()) qDebug() << " invalid start date ";
-    if (!qendDate.isValid()) qDebug() << " invalid end date ";
+    QDateTime qstartDate(QDate startDate);
+    QDateTime qendDate(QDate endDate);
+
+    //if (!qstartDate.isValid()) qDebug() << " invalid start date ";
+    //if (!qendDate.isValid()) qDebug() << " invalid end date ";
     nm1 = startDate.daysTo(endDate);
     for (y=startDate.year();y<=endDate.year();y++){
         if (y>startDate.year()) {
@@ -677,13 +679,13 @@ QString solareclipe(int dd,int mm,int year, int output, int type,bool eudate)
     if (type == 3) typetmp = "Partial";
     if (type == 4) typetmp = "Hybrid";
     if (type == 5) typetmp = "Any";
-    QDateTime startDate(QDate(syear1, smm1, sdd1));
-    QDateTime currentDate(QDate(year, mm, dd));
-    QDateTime endDate(QDate(syear2, smm2, sdd2));
-    QDateTime startDateweeksbefore(QDate(yearweeksbeforezero, mmweeksbeforezero, ddweeksbeforezero));
-    QDateTime startDateweeksafter(QDate(yearweeksafterzero, mmweeksafterzero, ddweeksafterzero));
-    QDateTime startDatemonthsbefore(QDate(yearmonthsbeforezero, mmmonthsbeforezero, ddmonthsbeforezero));
-    QDateTime startDatemonthsafter(QDate(yearmonthsafterzero, mmmonthsafterzero, ddmonthsafterzero));
+    QDateTime startDate(QDate(syear1, smm1, sdd1),QTime(0, 0, 0));
+    QDateTime currentDate(QDate(year, mm, dd),QTime(0, 0, 0));
+    QDateTime endDate(QDate(syear2, smm2, sdd2),QTime(0, 0, 0));
+    QDateTime startDateweeksbefore(QDate(yearweeksbeforezero, mmweeksbeforezero, ddweeksbeforezero),QTime(0, 0, 0));
+    QDateTime startDateweeksafter(QDate(yearweeksafterzero, mmweeksafterzero, ddweeksafterzero),QTime(0, 0, 0));
+    QDateTime startDatemonthsbefore(QDate(yearmonthsbeforezero, mmmonthsbeforezero, ddmonthsbeforezero),QTime(0, 0, 0));
+    QDateTime startDatemonthsafter(QDate(yearmonthsafterzero, mmmonthsafterzero, ddmonthsafterzero),QTime(0, 0, 0));
 
     if (eudate) {
         eudd = dd;
@@ -898,7 +900,7 @@ QString solar2history(int dd, int mm, int year, int type, bool eudate)
           if (type == 4) solartype = "Hybrid";
           if (type == 5) solartype = "";
      buffer += "<br>" + QString::fromStdString(formattext(std::to_string(lines),1,1)) + " words found matching "+solartype+" Solar Eclipses <br><br>";
-     // buffer += QString::fromStdString(logline.str());
+     // buffer += tobuffer(QString::fromStdString(logline.str()));
       logline << buffer.toStdString();
       logtime();
       savelog(logline.str());
@@ -1174,8 +1176,8 @@ QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool tri
     //for (int t=top;t>=minimum;t--){
     for (int t=minimum;t<=top;t++){
         int dfound=0;
-        if (s2 =="") buffer += "<br>" + QString::fromStdString(formattext(QString::number(t).toUtf8().constData(),1,0)) + " Hits found on phrase " +QString::fromStdString(formattext(s1,1,0)) + "<br>";
-        else buffer += "<br>" +  QString::fromStdString(formattext(QString::number(t).toUtf8().constData(),1,0)) + " Hits found on phrase " +QString::fromStdString(formattext(s1,1,0)) + " & " +QString::fromStdString(formattext(s2,1,0))+"<br>";
+        if (s2 =="") buffer += "<br>" + QString::fromStdString(formattext(QString::number(t).toUtf8().constData(),1,0)) + " Hits found on phrase " +QString::fromStdString(formattext(s1,2,0)) + "<br>";
+        else buffer += "<br>" +  QString::fromStdString(formattext(QString::number(t).toUtf8().constData(),1,0)) + " Hits found on phrase " +QString::fromStdString(formattext(s1,1,0)) + " & " +QString::fromStdString(formattext(s2,2,0))+"<br>";
     for (int i=0;i<=pos;i++) {
         if (year_rank[0][i] == t) {
             dfound++;
@@ -1409,154 +1411,159 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
             Y_Y_y_y = QString::fromStdString(formattext(QString::number(y1).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(yy2).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(y3).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(y4).toUtf8().constData(),1,0));
             yy = "("+QString::fromStdString(formattext(QString::number((y3*10)+y4).toUtf8().constData(),1,0))+")";
             y_y = QString::fromStdString(formattext(QString::number(y3).toUtf8().constData(),1,0))+"+"+QString::fromStdString(formattext(QString::number(y4).toUtf8().constData(),1,0));
+            if (detail.find("th")) detail = " - " + detail;
        switch(i) {
           case 1 :
-              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << ")&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << ")&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 2 :
-              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << Y_Y_y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << Y_Y_y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 3 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << Y_Y_y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << Y_Y_y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 4 :
-              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << yy.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << yy.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 5 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 6 :
-              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 7 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << ")&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << ")&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 8 :
-              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << y_y.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 9 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << yy.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << yy.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 10 :
               eraseAllSubStr(detail,"th ");
               logline << Qdate.toUtf8().constData() << " &emsp;Is the " << Qns.toUtf8().constData() << "th day of the year - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 11 :
               eraseAllSubStr(detail,"th ");
               logline << Qdate.toUtf8().constData() << " &emsp;There is " << Qns.toUtf8().constData() << " days left of the year - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 12 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" <<  "Matches DMY style date as " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;" <<  "Matches DMY style date as " << Qns.toUtf8().constData()  << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 13 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" << "Matches MDY style date as " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;" << "Matches MDY style date as " << Qns.toUtf8().constData()  << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 14 :
-           logline << Qdate.toUtf8().constData() << " &emsp;" <<  "Matches date as " << Qns.toUtf8().constData() << " - " << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           logline << Qdate.toUtf8().constData() << " &emsp;" <<  "Matches date as " << Qns.toUtf8().constData()  << detail << "<br>";
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
               break;
           case 15 :
               eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;Days left in the year is " << Qns.toUtf8().constData() << "th prime number - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;Days left in the year is " << Qns.toUtf8().constData() << "th prime number " << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 16 :
               eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(2, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th prime number from DMY style date - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(2, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th prime number from DMY style date " << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 17 :
               eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(1, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th prime number from MDY style date - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(1, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th prime number from MDY style date " << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 18 :
            eraseAllSubStr(detail,"th ");
-           logline << Qdate.toUtf8().constData() << " &emsp;Day of the year is " << Qns.toUtf8().constData() << "th prime number - " << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           logline << Qdate.toUtf8().constData() << " &emsp;Day of the year is " << Qns.toUtf8().constData() << "th prime number " << detail << "<br>";
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
               break;
           case 19 :
               eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;Days left in the year is " << Qns.toUtf8().constData() << "th triangular number - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;Days left in the year is " << Qns.toUtf8().constData() << "th triangular number " << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 20 :
               eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(2, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th triangular number from DMY style date - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(2, d1, dd2, m1, mm2,ns)),1,1) << " is " << Qns.toUtf8().constData() << "th triangular number from DMY style date " << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 21 :
               eraseAllSubStr(detail,"th ");
-              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(1, d1, dd2, m1, mm2, ns)),1,1) << " is " << Qns.toUtf8().constData() << "th triangular number from MDY style date - " << detail << "<br>";
-              buffer += QString::fromStdString(logline.str());
+              logline << Qdate.toUtf8().constData() << " &emsp;" << formattext(std::to_string(eu_amdate(1, d1, dd2, m1, mm2, ns)),1,1) << " is " << Qns.toUtf8().constData() << "th triangular number from MDY style date " << detail << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
           case 22 :
            eraseAllSubStr(detail,"th ");
-           logline << Qdate.toUtf8().constData() << " &emsp;Day of the year is " << Qns.toUtf8().constData() << "th triangular number - " << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           logline << Qdate.toUtf8().constData() << " &emsp;Day of the year is " << Qns.toUtf8().constData() << "th triangular number " << detail << "<br>";
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
               break;
        case 23 :
            //logline << printzerodays(dd,mm,year,ns,1);
-           buffer += printzerodays(dd,mm,year,ns,1," - " + detail,eudate,true); // printing of phrase compare to solar eclipse
+           //buffer += printzerodays(dd,mm,year,ns,1,detail,eudate,true); // printing of phrase compare to solar eclipse
+           buffer += tobuffer(printzerodays(dd,mm,year,ns,1,detail,eudate,true));
            savelog(logline.str());
            break;
        case 24 :
            //logline << searchzerodays(ns,2);
-           buffer += printzerodays(dd,mm,year,ns,2," - " + detail,eudate,true);
+           //buffer += printzerodays(dd,mm,year,ns,2,detail,eudate,true);
+           buffer += tobuffer(printzerodays(dd,mm,year,ns,2,detail,eudate,true));
            savelog(logline.str());
            break;
        case 25 :
            //logline << searchzerodays(ns,3);
-           buffer += printzerodays(dd,mm,year,ns,3," - " + detail,eudate,true);
+           //buffer += printzerodays(dd,mm,year,ns,3,detail,eudate,true);
+           buffer += tobuffer(printzerodays(dd,mm,year,ns,3,detail,eudate,true));
            savelog(logline.str());
            break;
        case 26 :
-           buffer += printzerodays(dd,mm,year,ns,4," - " + detail,eudate,true);
+           //buffer += printzerodays(dd,mm,year,ns,4,detail,eudate,true);
+           buffer += tobuffer(printzerodays(dd,mm,year,ns,4,detail,eudate,true));
            savelog(logline.str());
            break;
        case 27 :
            logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(a_seconddate("day_d_s")).toUtf8().constData(),1,0) << " Days from date to second date within year - " << Qns.toUtf8().constData() << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
            break;
        case 28 :
            logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(a_seconddate("day_s_d")).toUtf8().constData(),1,0) << " Days from second date to date within year - " << Qns.toUtf8().constData() << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
            break;
        case 29 :
@@ -1567,7 +1574,7 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
            wd2 = round(w1*7);
            if (wd2 == 0) logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(wd1).toUtf8().constData(),1,0) << " Weeks from date to second date within year - " << Qns.toUtf8().constData() << detail << "<br>";
            else logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(wd1).toUtf8().constData(),1,0) << " Weeks and "  << formattext(QString::number(wd2).toUtf8().constData(),1,0) << " days from date to second date within year - " << Qns.toUtf8().constData() << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
            break;
        case 30 :
@@ -1578,7 +1585,7 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
            wd2 = round(w1*7);
            if (wd2 == 0) logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(wd1).toUtf8().constData(),1,0) << " Weeks from second date to date within year - " << Qns.toUtf8().constData() << detail << "<br>";
            else logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(wd1).toUtf8().constData(),1,0) << " Weeks and "  << formattext(QString::number(wd2).toUtf8().constData(),1,0) << " days from second date to date within year - " << Qns.toUtf8().constData() << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
            break;
        case 31 :
@@ -1586,7 +1593,7 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
            md2 = monthbeetween(mm,m2,a_seconddate("day_d_s"),'D');
            if (md2 == 0) logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(md1).toUtf8().constData(),1,0) << " Months from date to second date within year - " << Qns.toUtf8().constData() << detail << "<br>";
            else  logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(md1).toUtf8().constData(),1,0) << " Months and "  << formattext(QString::number(md2).toUtf8().constData(),1,0) << " days from date to second date within year - " << Qns.toUtf8().constData() << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
            break;
        case 32 :
@@ -1594,12 +1601,12 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
            md2 = monthbeetween(m2,mm,a_seconddate("day_s_d"),'D');
            if (md2 == 0) logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(md1).toUtf8().constData(),1,0) << " Months from second date to date within year - " << Qns.toUtf8().constData() << detail << "<br>";
            else logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(md1).toUtf8().constData(),1,0) << " Months and "  << formattext(QString::number(md2).toUtf8().constData(),1,0) << " days from second date to date within year - " << Qns.toUtf8().constData() << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
            break;
        case 33 :
            logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(a_seconddate("days_full")).toUtf8().constData(),1,0) << " Days between dates - " << Qns.toUtf8().constData() << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
            break;
        case 34 :
@@ -1610,7 +1617,7 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
            wd2 = round(w1*7);
            if (wd2 == 0) logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(wd1).toUtf8().constData(),1,0) << " Weeks between dates - " << Qns.toUtf8().constData() << detail << "<br>";
            else logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(wd1).toUtf8().constData(),1,0) << " Weeks and "  << formattext(QString::number(wd2).toUtf8().constData(),1,0) << " days between dates - " << Qns.toUtf8().constData() << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
            break;
        case 35 :
@@ -1626,7 +1633,7 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
            md2 = monthbeetween(mt1,mt2,a_seconddate("days_full"),'D');
            if (md2 == 0) logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(md1).toUtf8().constData(),1,0) << " Months between dates - " << Qns.toUtf8().constData() << detail << "<br>";
            else logline << Qdate.toUtf8().constData() << " " << formattext(QString::number(md1).toUtf8().constData(),1,0) << " Months and "  << formattext(QString::number(md2).toUtf8().constData(),1,0) << " days between dates - " << Qns.toUtf8().constData() << detail << "<br>";
-           buffer += QString::fromStdString(logline.str());
+           buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
            break;
        }
@@ -2186,6 +2193,7 @@ QString date2history(int dd, int mm, int year,bool hlist, bool eudate,int filter
     stringstream logline;
     QString buffer;
     int d1,d2;
+    readsolarfile(dd,mm,year);
     if (eudate) {d1=dd;d2=mm;}
     else {d1=mm;d2=dd;}
     switch(filter) {
@@ -2373,6 +2381,17 @@ string charnumeric(int reduced, int reversed, string phrase, int type) {
     return ss.str();
 }
 
+QString tobuffer(QString html)
+{
+    QString ret;
+    if (linenumbers > 0) {
+        ret = Qformattext(QString::number(linenumbers)+" : " ,2,1) +html;
+        linenumbers++;
+    }
+    else ret = html;
+    return ret;
+}
+
 QString printallwords(string line, char save, bool header, bool simpleprint)
 {
     bool dogoanalize = true;
@@ -2428,56 +2447,56 @@ QString printword(string line, char save, bool header, bool simpleprint)
     savelog(logline.str());
     logline.str("");
     logline << "English Ordinal : &emsp;" << charnumeric(0,0,line,0) << formattext(std::to_string(ns1),1,1) << " Prime? "<< isprime(ns1) << " Triangular? " << istriangular(ns1) << "<br>";
-    buffer += QString::fromStdString(logline.str());
+    buffer += tobuffer(QString::fromStdString(logline.str()));
     savelog(logline.str());
     logline.str("");
     logline << "Full Reduction : &emsp;" << charnumeric(1,0,line,0) << formattext(std::to_string(ns2),1,1) << " Prime? "<< isprime(ns2) << " Triangular? " << istriangular(ns2) << "<br>";
     //logline << "Prime number&emsp;&emsp;" << isprime(ns1) << "" << isprime(ns2) << "" << isprime(ns3) << "" << isprime(ns4) << "<br>";
-      buffer += QString::fromStdString(logline.str());
+      buffer += tobuffer(QString::fromStdString(logline.str()));
       savelog(logline.str());
       logline.str("");
     //logline << "Triangular number&emsp;&emsp;" << istriangular(ns1) << "" << istriangular(ns2) << "" << istriangular(ns3) << "" << istriangular(ns4) << "<br><br>";
       logline << "Reverse Ordinal :&emsp; " << charnumeric(0,1,line,0) << formattext(std::to_string(ns3),1,1) << " Prime? "<< isprime(ns3) << " Triangular? " << istriangular(ns3) << "<br>";
-      buffer += QString::fromStdString(logline.str());
+      buffer += tobuffer(QString::fromStdString(logline.str()));
       savelog(logline.str());
       logline.str("");
       logline << "Reverse Full Reduction : " << charnumeric(1,1,line,0) << formattext(std::to_string(ns4),1,1) << " Prime? "<< isprime(ns4) << " Triangular? " << istriangular(ns4) << "<br>";
-      buffer += QString::fromStdString(logline.str());
+      buffer += tobuffer(QString::fromStdString(logline.str()));
       savelog(logline.str());
       if (single_r_on) {
           logline.str("");
           logline << "Single Reduction : &emsp;" << charnumeric(0,0,line,1) << formattext(std::to_string(ns5),1,1) << " Prime? "<< isprime(ns5) << " Triangular? " << istriangular(ns5) << "<br>";
-          buffer += QString::fromStdString(logline.str());
+          buffer += tobuffer(QString::fromStdString(logline.str()));
           savelog(logline.str());
       }
       if (francis_on) {
           logline.str("");
           logline << "Francis Bacon : &emsp;" << charnumeric(0,0,line,2) << formattext(std::to_string(ns6),1,1) << " Prime? "<< isprime(ns6) << " Triangular? " << istriangular(ns6) << "<br>";
-          buffer += QString::fromStdString(logline.str());
+          buffer += tobuffer(QString::fromStdString(logline.str()));
           savelog(logline.str());
       }
       if (satanic_on) {
           logline.str("");
           logline << "Satanic : &emsp;" << charnumeric(0,0,line,3) << formattext(std::to_string(ns7),1,1) << " Prime? "<< isprime(ns7) << " Triangular? " << istriangular(ns7) << "<br>";
-          buffer += QString::fromStdString(logline.str());
+          buffer += tobuffer(QString::fromStdString(logline.str()));
           savelog(logline.str());
       }
       if (jewish_on) {
           logline.str("");
           logline << "Jewish : &emsp;" << charnumeric(0,0,line,4) << formattext(std::to_string(ns8),1,1) << " Prime? "<< isprime(ns8) << " Triangular? " << istriangular(ns8) << "<br>";
-          buffer += QString::fromStdString(logline.str());
+          buffer += tobuffer(QString::fromStdString(logline.str()));
           savelog(logline.str());
       }
       if (sumerian_on) {
           logline.str("");
           logline << "Sumerian : &emsp;" << charnumeric(0,0,line,5) << formattext(std::to_string(ns9),1,1) << " Prime? "<< isprime(ns9) << " Triangular? " << istriangular(ns9) << "<br>";
-          buffer += QString::fromStdString(logline.str());
+          buffer += tobuffer(QString::fromStdString(logline.str()));
           savelog(logline.str());
       }
       if (rev_sumerian_on) {
           logline.str("");
           logline << "Reverse Sumerian : &emsp;" << charnumeric(0,1,line,5) << formattext(std::to_string(ns10),1,1) << " Prime? "<< isprime(ns10) << " Triangular? " << istriangular(ns10) << "<br>";
-          buffer += QString::fromStdString(logline.str());
+          buffer += tobuffer(QString::fromStdString(logline.str()));
           savelog(logline.str());
       }
     }
@@ -2739,7 +2758,7 @@ QString headline(QString content, QString pattern)
 {
     QString head,pattern2;
     int pos1,pos2=0;
-    pattern.remove(QRegExp("[\\n\\t\\r]"));
+    pattern.remove(QRegularExpression("[\\n\\t\\r]"));
     pos1 = pattern.indexOf("|");
     if (pos1 != -1) {
         pattern2 = pattern.mid(0,pos1);

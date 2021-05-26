@@ -10,6 +10,7 @@
 #include "headdialog.h"
 #include <QtCore>
 #include <QDate>
+#include </usr/local/include/QtSpell-qt5/QtSpell.hpp>
 #include "string.h"
 #include <QKeyEvent>
 #include <QUrl>
@@ -19,17 +20,16 @@
 #include <QFont>
 #include <QFontDialog>
 #include <QDateTime>
+#include <QFileDialog>
 #include "gcalc.h"
 #include <QLocale>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QStringList>
-//#include "textprogressbar.h"
-//#include "downloadmanager.h"
 
 using namespace std;
 #define MAX_SIZE 1000005
-int zerodays[8][250];
+int zerodays[8][250], linenumbers=0;
 QString hmem[10];
 vector<int> primes;
 QString phrase = "<none>";
@@ -37,14 +37,7 @@ QString pwd = QDir::currentPath() + "/tmp.htm";
 QFile *file = new QFile(pwd);
 bool nightmode=true;
 
-/*QFile output;
-QNetworkAccessManager manager;
-QNetworkReply *currentDownload = nullptr;
-int downloadedCount = 0;
-TextProgressBar progressBar;
-QElapsedTimer downloadTimer;*/
 QString filesource;
-//QStringList List;
 QString labeltext,tmpstring;
 int year,dd,mm,ns,d2,m2,y2,filter,hmempos = -1;
 bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false,sumerian_on=false,rev_sumerian_on=false;
@@ -90,21 +83,37 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->lineEdit->installEventFilter(this);
     ui->statusbar->installEventFilter(this);
-    //ui->textBrowser->installEventFilter(this);
-    //ui->textBrowser->setContextMenuPolicy(Qt::NoContextMenu);
-    connect(ui->textBrowser, &QTextBrowser::anchorClicked,
-            this, &MainWindow::handleAnchorClicked);
+
+    //connect(ui->textBrowser, &QTextBrowser::anchorClicked,
+    //        this, &MainWindow::handleAnchorClicked);
 
     ui->actionSwap_dates->setDisabled(true);
     if (eudate) ui->action_Eu_date->setText("Date DMY");
     else ui->action_Eu_date->setText("Date MDY");
     SieveOfEratosthenes(primes);
+    //QtSpell::TextEditChecker checker;
+    //m_checker = new QtSpell::TextEditChecker(this);
+    //checker.setLanguage("en_CH");
+    //checker.setTextEdit(ui->textBrowser);
+
     QString font = readSettings("settings.txt","font");
     QString DMY = readSettings("settings.txt","DMY");
     QString ciphers = readSettings("settings.txt","ciphers");
     QString ssplit = readSettings("settings.txt","ssplit");
     QString nightm = readSettings("settings.txt","nightmode");
+    QString DW = readSettings("settings.txt","DW"); //true
+    QString HistX = readSettings("settings.txt","HistX");
+    QString LNs = readSettings("settings.txt","LNs"); //false
     if (ssplit == "false") ui->actionSentence_split->setChecked(false);
+    if (DW == "none") DW="true";
+    if (HistX == "none") HistX="true";
+    if (LNs == "none") LNs="false";
+    if (DW == "false") ui->actionDisplay_Welcome->setChecked(false);
+    if (HistX == "false") ui->actionRemove_view_history_on_exit->setChecked(false);
+    if (LNs == "true") {
+        ui->actionLine_numbers_in_view->setChecked(true);
+        linenumbers=1;
+    }
     if (DMY == "false") {
         eudate = false;
         ui->action_Eu_date->setText("Date MDY");
@@ -142,10 +151,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->textBrowser->setSource("file:///"+pwd);
     std::setlocale(LC_ALL,"");
-
+    //QAbstractScrollArea(ui->textBrowser).scroll(60,60);
+    ui->textBrowser->scroll(0,6000);
             //int curr_locale = QLocale().language();
             //qDebug() << " String ="<< curr_locale << endl;
-    emit welcome();
+    if (DW=="true") welcome();
 
     //qDebug() << MainWindow::width() << " " << MainWindow::x() << " " << ui->textBrowser->width();
 }
@@ -169,13 +179,23 @@ MainWindow::~MainWindow()
     char filename[13] = "settings.txt";
     writeSettings(filename,"ciphers",ciphers.toUtf8().constData());
     string ssplit="";
+    if (ui->actionDisplay_Welcome->isChecked()) writeSettings(filename,"DW","true");
+    else writeSettings(filename,"DW","false");
+
+    if (ui->actionLine_numbers_in_view->isChecked()) writeSettings(filename,"LNs","true");
+    else writeSettings(filename,"LNs","false");
     if (ui->actionSentence_split->isChecked()) ssplit = "true";
     else ssplit = "false";
     writeSettings(filename,"ssplit",ssplit);
     //qDebug()  << MainWindow::width() << " " << MainWindow::x() << " " << ui->textBrowser->width();
     //QString pwd = QDir::currentPath() + "/tmp.htm";
     //QFile *File = new QFile(pwd);
-    file->remove();
+    if (ui->actionRemove_view_history_on_exit->isChecked()) {
+        writeSettings(filename,"HistX","true");
+        file->remove();
+    }
+    else writeSettings(filename,"HistX","false");
+
     delete ui;
 }
 
@@ -221,7 +241,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
         return false;
     }
 
-    if(obj == ui->statusbar) emit updatestatusbar();
+    if(obj == ui->statusbar) updatestatusbar();
     //if(obj == ui->textBrowser) qDebug() << event;
     return QMainWindow::eventFilter(obj, event);
 
@@ -417,7 +437,7 @@ void MainWindow::on_actionNew_Phrase_triggered()  //Ctrl-P
     inputDialog datesearch;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
-    emit updatestatusbar();
+    updatestatusbar();
 }
 
 void MainWindow::on_actionNew_Date_triggered()
@@ -428,7 +448,7 @@ void MainWindow::on_actionNew_Date_triggered()
     datesearch.eudate = eudate;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
-    emit updatestatusbar();
+    updatestatusbar();
 }
 
 void MainWindow::on_actionSearch_History_txt_triggered() //Ctrl-H
@@ -451,7 +471,7 @@ void MainWindow::on_actionSet_Year_triggered()
     inputDialog datesearch;
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
-    emit updatestatusbar();
+    updatestatusbar();
 }
 
 void MainWindow::on_action_Analyze_triggered() //Ctrl-A
@@ -461,7 +481,7 @@ void MainWindow::on_action_Analyze_triggered() //Ctrl-A
      inputDialog datesearch;
      datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
      datesearch.exec();
-     emit updatestatusbar();
+     updatestatusbar();
     }
    if (phrase != "<none>") {
        writetmpfile("<br>Analyzing phrase starts");
@@ -487,7 +507,7 @@ void MainWindow::on_action_Eu_date_toggled(bool arg1)
         ui->action_Eu_date->setText("Date MDY");
         writeSettings(filename,"DMY","false");
     }
-    emit updatestatusbar();
+    updatestatusbar();
 }
 
 void MainWindow::on_actionDate_Details_triggered() //Ctrl-D
@@ -595,13 +615,18 @@ void MainWindow::on_lineEdit_returnPressed()
              if (sentences) html = analyze(dd,mm,year,phrase,false,0,eudate);
              else html = runanalyze(dd,mm,year,phrase.toUtf8().constData(),false,0,eudate);
              writetmpfile("<html>"+html+"</html>");
-             emit updatestatusbar();
+             updatestatusbar();
             }
             break;
         }
         case 'c':
         {
             ui->textBrowser->clear();
+            file->remove();
+            if ( !file->open(QIODevice::ReadWrite) )
+            {
+                qDebug() << "tmp.htm not open";
+            } else file->close();
             break;
         }
         case 'n':
@@ -630,7 +655,7 @@ void MainWindow::on_lineEdit_returnPressed()
                 mm = cd.month();
                 year = cd.year();
             }
-            emit updatestatusbar();
+            updatestatusbar();
             break;
         }
         case 's':
@@ -656,7 +681,7 @@ void MainWindow::on_lineEdit_returnPressed()
                 m2 = 0;
                 y2 = 0;
             } else ui->actionSwap_dates->setDisabled(false);
-            emit updatestatusbar();
+            updatestatusbar();
             break;
         }
         case 'h':
@@ -672,7 +697,7 @@ void MainWindow::on_lineEdit_returnPressed()
 
             } else if (QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2)) != "") phrase = QString::fromStdString(stdphrase.substr(2,stdphrase.length()-2));
              keymem(phrase);
-            emit updatestatusbar();
+            updatestatusbar();
             if (phrase != "<none>") {
                 std::string stdphrase = phrase.toUtf8().constData();
                 bool sentences = ui->actionSentence_split->isChecked();
@@ -785,7 +810,7 @@ void MainWindow::on_lineEdit_returnPressed()
                 y2 = cd.year();
                 d2 = cd.day();
                 m2 = cd.month();
-                emit updatestatusbar();
+                updatestatusbar();
                } else { // add/subtrackt to date and display only
                    ns = ui->lineEdit->text().length();
                    ns = ui->lineEdit->text().mid(2,ns-2).toInt();
@@ -794,7 +819,7 @@ void MainWindow::on_lineEdit_returnPressed()
                    year = cd.year();
                    dd = cd.day();
                    mm = cd.month();
-                   emit updatestatusbar();
+                   updatestatusbar();
                }
             break;
             }
@@ -804,8 +829,8 @@ void MainWindow::on_lineEdit_returnPressed()
                 Httpdownload->setWindowTitle("News Download");
 
                 Httpdownload->show();
-                connect(Httpdownload, SIGNAL(dl_ready(const QString)),
-                        this, SLOT(show_news(const QString)));
+                connect(Httpdownload, SIGNAL(dl_ready(QString)),
+                        this, SLOT(show_news(QString)));
                 //HttpDownload Httpdownload;
                 //Httpdownload.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
                 //Httpdownload.exec();
@@ -909,7 +934,7 @@ void MainWindow::on_action_Word_details_triggered() //Ctrl-W
      inputDialog datesearch;
      datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
      datesearch.exec();
-     emit updatestatusbar();
+     updatestatusbar();
     }
    if (phrase != "<none>") {
        std::string stdphrase = phrase.toUtf8().constData();
@@ -969,13 +994,13 @@ void MainWindow::on_actionList_Triangular_numbers_triggered()
 
 void MainWindow::on_actionCompare_phrase_to_history_triggered() //Ctrl-T
 {
-    QString str2;
+    //QString str2;
     if (phrase == "<none>") {
      labeltext = "New Phrase :";
      inputDialog datesearch;
      datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
      datesearch.exec();
-     emit updatestatusbar();
+     updatestatusbar();
     }
     ns = 0;
     if (phrase != "<none>") {
@@ -1074,7 +1099,7 @@ void selectDialog::displaydialog()
 
 void selectDialog::on_pushButton_clicked()
 {
-    emit displaydialog();
+    displaydialog();
 }
 
 void MainWindow::on_action_Second_date_triggered()
@@ -1085,7 +1110,7 @@ void MainWindow::on_action_Second_date_triggered()
     datesearch.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
     datesearch.exec();
     if (d2 != 0) ui->actionSwap_dates->setDisabled(false);
-    emit updatestatusbar();
+    updatestatusbar();
 }
 
 void MainWindow::on_actionC_ompare_date_to_History_txt_triggered() // Ctrl-O
@@ -1103,7 +1128,7 @@ void MainWindow::on_actionC_ompare_date_to_History_txt_triggered() // Ctrl-O
 
 void MainWindow::on_actionHelp_triggered()
 {
-    emit MainWindow::shorthelp();
+    MainWindow::shorthelp();
 }
 
 void MainWindow::on_actionSolar_Eclipses_triggered()
@@ -1135,7 +1160,7 @@ void MainWindow::on_pushButton_clicked()
         dd = 1;
         mm ++;
     } else dd ++;
-    emit updatestatusbar();
+    updatestatusbar();
 }
 
 void MainWindow::on_pushButton_2_clicked()
@@ -1144,7 +1169,7 @@ void MainWindow::on_pushButton_2_clicked()
         mm --;
         dd = numberOfDays(mm-1,year);
     } else dd --;
-    emit updatestatusbar();
+    updatestatusbar();
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -1213,7 +1238,7 @@ void MainWindow::on_actionPhrase_ranking_triggered()
     //QStringList myStringList = phrase.split(',').first().split(':');
     //phrase = myStringList.first();
     }
-    emit updatestatusbar();
+    updatestatusbar();
 }
 
 void MainWindow::on_action_Font_triggered()
@@ -1243,7 +1268,7 @@ void MainWindow::on_action_Print_triggered()
 
 
     QPrintPreviewDialog * printPreview = new QPrintPreviewDialog(this);
-    connect(printPreview, SIGNAL(paintRequested(QPrinter *)), this, SLOT(doPrint(QPrinter *)));
+    connect(printPreview, SIGNAL(paintRequested(QPrinter*)), this, SLOT(doPrint(QPrinter *)));
     printPreview->exec();
 }
 
@@ -1271,7 +1296,12 @@ void MainWindow::on_actionCalendar_triggered()
 
 void MainWindow::writetmpfile(QString html)
 {
+    //string temp=html.toUtf8().constData();
+    //if (ui->actionLine_numbers_in_view->isChecked()) replaceAllQ(html,"<br>","linenumbers");
+    //if (ui->actionLine_numbers_in_view->isChecked()) replaceAll(temp,"<br>","linenumbers");
+    //html = QString::fromStdString(temp);
     ui->textBrowser->append(html);
+
     if (file->open(QIODevice::WriteOnly | QIODevice::Append))
     {
         QTextStream stream( file );
@@ -1297,8 +1327,8 @@ void MainWindow::on_action_News_headlines_exp_triggered()
     Httpdownload->setWindowTitle("News Download");
 
     Httpdownload->show();
-    connect(Httpdownload, SIGNAL(dl_ready(const QString)),
-            this, SLOT(show_news(const QString)));
+    connect(Httpdownload, SIGNAL(dl_ready(QString)),
+            this, SLOT(show_news(QString)));
 }
 
 void MainWindow::on_actionNightmode_triggered(bool arg1)
@@ -1330,5 +1360,43 @@ void MainWindow::on_actionSwap_dates_triggered()
     d2 = dd3;
     m2 = mm3;
     y2 = yy3;
-    emit updatestatusbar();
+    updatestatusbar();
+}
+
+void MainWindow::on_actionSave_as_triggered()
+{
+    const QString format = "htm";
+    QString initialPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    if (initialPath.isEmpty())
+        initialPath = QDir::currentPath();
+    initialPath += tr("/untitled.") + format;
+
+    QFileDialog fileDialog(this, tr("Save Output As"), initialPath);
+    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
+    fileDialog.setFileMode(QFileDialog::AnyFile);
+    fileDialog.setDirectory(initialPath);
+    if (fileDialog.exec() != QDialog::Accepted)
+        return;
+    const QString fileName = fileDialog.selectedFiles().first();
+
+     savelog(ui->textBrowser->toHtml(),fileName);
+}
+
+void MainWindow::savelog(QString line, QString filename)
+{
+    std::ofstream fout;  // Create Object of Ofstream
+    std::ifstream fin;
+    fout.open (filename.toUtf8().constData(),ios::app); // Append mode
+    fin.open(filename.toUtf8().constData());
+    if(fin.is_open())
+        fout<< line.toUtf8().constData(); // Writing data to file
+    fin.close();
+    fout.close(); // Closing the file
+    line = "";
+}
+
+void MainWindow::on_actionLine_numbers_in_view_toggled(bool arg1)
+{
+    if (arg1) linenumbers=1;
+    else linenumbers=0;
 }

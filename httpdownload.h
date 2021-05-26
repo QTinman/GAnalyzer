@@ -11,6 +11,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMessageBox>
+#include <QRegularExpression>
 
 namespace Ui {
 class HttpDownload;

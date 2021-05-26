@@ -13,10 +13,6 @@
 #include <QPainter>
 #include <QPrintPreviewDialog>
 #include <QEventLoop>
-//#include </home/john/workspace/ohmyarch/feed_parser/feed//date_time/tz.h>
-//#include </home/john/workspace/ohmyarch/feed_parser/feed//rss_parser.h>
-//#include </home/john/workspace/ohmyarch/feed_parser/feed//utilities.h>
-//#include "downloadmanager.h"
 
 extern QString phrase;
 extern QString labeltext,tmpstring;
@@ -24,7 +20,7 @@ extern int year,dd,mm,ns,d2,m2,y2,filter,hmempos;
 extern bool single_r_on,francis_on,satanic_on,jewish_on,sumerian_on,rev_sumerian_on;
 extern vector<int> primes;
 extern QString filesource;
-extern int zerodays[8][250];
+extern int zerodays[8][250],linenumbers;
 extern QString hmem[10];
 
 
@@ -123,6 +119,11 @@ private slots:
     void on_actionNightmode_triggered(bool checked);
 
     void on_actionSwap_dates_triggered();
+
+    void on_actionSave_as_triggered();
+     void savelog(QString line, QString filename);
+
+     void on_actionLine_numbers_in_view_toggled(bool arg1);
 
 private:
     Ui::MainWindow *ui;

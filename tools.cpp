@@ -603,6 +603,7 @@ QString savetext(string line)
 
 //string replacesubstr(string str,string pattern, string replacement)
 void replaceAll( string &s, const string &search, const string &replace ) { // replace in "s" the "replace" for "search"
+    //string rep;
     for( size_t pos = 0; ; pos += replace.length() ) {
         // Locate the substring to replace
         pos = s.find( search, pos );
@@ -611,6 +612,23 @@ void replaceAll( string &s, const string &search, const string &replace ) { // r
         s.erase( pos, search.length() );
         s.insert( pos, replace );
     }
+}
+
+void replaceAllQ( QString &s, const QString &search, const QString &replace ) { // replace in "s" the "replace" for "search"
+    QString rep;
+    //for( size_t pos = 0; ; pos += replace.length() ) {
+        // Locate the substring to replace
+    if (replace == "linenumbers") {
+        rep = search+QString::number(linenumbers);
+        linenumbers++;
+    }
+        s.replace(search,rep);
+        //pos = s.find( search, pos );
+        //if( pos == string::npos ) break;
+        // Replace by erasing and inserting
+        //s.erase( pos, search.length() );
+        //s.insert( pos, replace );
+    //}
 }
 
 void logtime() {
@@ -836,7 +854,7 @@ void createSettings(string file, string entry)
        fout.open (file,ios::app); // Append mode
        if(!fout)
        {
-           qDebug() << "Error opening files!" << endl;
+           qDebug() << "Error opening files!\n";
            //return 1;
        }
        //qDebug() << QString::fromStdString(file);

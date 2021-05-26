@@ -41,4 +41,5 @@ bool isheadlines(QString content, QString pattern);
 void erasefromToQSubStr(QString & mainStr, const QString & fromErase, const QString & toErase);
 QString wordnumbericlist(QString head);
 QString clean_news_content(QString content, QString pattern);
+QString tobuffer(QString html);
 #endif // GCALC_H

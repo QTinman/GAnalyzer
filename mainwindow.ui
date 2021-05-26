@@ -179,6 +179,7 @@
     <addaction name="actionCompare_SolarE_to_history"/>
     <addaction name="actionSolar_Eclipses"/>
     <addaction name="separator"/>
+    <addaction name="actionSave_as"/>
     <addaction name="action_Print"/>
     <addaction name="action_Quit"/>
    </widget>
@@ -186,6 +187,16 @@
     <property name="title">
      <string>&amp;Edit</string>
     </property>
+    <widget class="QMenu" name="menu_View">
+     <property name="title">
+      <string>&amp;View</string>
+     </property>
+     <addaction name="actionNightmode"/>
+     <addaction name="actionSentence_split"/>
+     <addaction name="actionLine_numbers_in_view"/>
+     <addaction name="actionRemove_view_history_on_exit"/>
+     <addaction name="actionDisplay_Welcome"/>
+    </widget>
     <addaction name="actionNew_Phrase"/>
     <addaction name="actionNew_Date"/>
     <addaction name="separator"/>
@@ -194,8 +205,7 @@
     <addaction name="action_Eu_date"/>
     <addaction name="actionSwap_dates"/>
     <addaction name="separator"/>
-    <addaction name="actionSentence_split"/>
-    <addaction name="actionNightmode"/>
+    <addaction name="menu_View"/>
     <addaction name="separator"/>
     <addaction name="action_Font"/>
    </widget>
@@ -432,6 +442,41 @@
   <action name="actionSwap_dates">
    <property name="text">
     <string>Swap dates</string>
+   </property>
+  </action>
+  <action name="actionSave_as">
+   <property name="text">
+    <string>Save as</string>
+   </property>
+  </action>
+  <action name="actionLine_numbers_in_view">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Line numbers in view</string>
+   </property>
+  </action>
+  <action name="actionRemove_view_history_on_exit">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Remove view-history on exit</string>
+   </property>
+  </action>
+  <action name="actionDisplay_Welcome">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Display Welcome</string>
    </property>
   </action>
  </widget>

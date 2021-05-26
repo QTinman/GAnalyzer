@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Phrase ranking over a year.</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/new/icon/g_black.png</normaloff>:/new/icon/g_black.png</iconset>
+  </property>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
@@ -133,11 +137,15 @@
  <tabstops>
   <tabstop>phrases</tabstop>
   <tabstop>min</tabstop>
+  <tabstop>Chipers</tabstop>
+  <tabstop>Dates</tabstop>
   <tabstop>Solar</tabstop>
   <tabstop>Prime</tabstop>
   <tabstop>Triangular</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

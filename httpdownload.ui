@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>HttpDownload</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/new/icon/g_black.png</normaloff>:/new/icon/g_black.png</iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0" colspan="3">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -69,14 +73,14 @@
      <item>
       <widget class="QPushButton" name="downloadButton">
        <property name="text">
-        <string>Downlaod</string>
+        <string>Download</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="quitButton">
        <property name="text">
-        <string>Quit</string>
+        <string>Close</string>
        </property>
       </widget>
      </item>
@@ -115,6 +119,8 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
