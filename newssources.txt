@@ -1,0 +1,13 @@
+https://www.dv.is/feed/|<title>|</title
+https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml|<title>|</title
+https://www.vg.no/rss/feed/forsiden/|<title>|</titl
+https://www.mbl.is/feeds/fp/|<title>|</title
+https://feeds.a.dj.com/rss/RSSWorldNews.xml|<title>|</title
+http://rss.cnn.com/rss/edition.rss|[CDATA[|]]></ti
+https://www.wsj.com/
+https://eu.usatoday.com/|ass=p1-title-spacer>|</div></div><div cla
+https://www.nytimes.com/
+https://www.aftenposten.no/|pulse-teaser-title="|"data-pulse-newsroom
+https://www.mbl.is|mb-0">|</h4>
+https://en-volve.com/feed/|<title>|</title
+http://feeds.foxnews.com/foxnews/latest|<title>|</title
