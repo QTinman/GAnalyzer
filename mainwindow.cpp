@@ -10,22 +10,16 @@
 #include "headdialog.h"
 #include <QtCore>
 #include <QDate>
-#include </usr/local/include/QtSpell-qt5/QtSpell.hpp>
-#include "string.h"
+
 #include <QKeyEvent>
 #include <QUrl>
 #include <QtNetwork>
 
-#include <QLabel>
-#include <QFont>
 #include <QFontDialog>
-#include <QDateTime>
+
 #include <QFileDialog>
-#include "gcalc.h"
-#include <QLocale>
-#include <QMessageBox>
-#include <QMouseEvent>
-#include <QStringList>
+//#include "gcalc.h"
+
 
 using namespace std;
 #define MAX_SIZE 1000005
