@@ -1126,6 +1126,7 @@ QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool tri
 {
     QString buffer="";
     int year_rank[5][500];
+    QDate cd(year,1,1);
     string s1="",s2="",solar="";
     bool runsolar=false;
     if (minimum > 100) {
@@ -1143,7 +1144,8 @@ QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool tri
     for (int i = 0; i < mm2; i++)
     {
         //days = numberOfDays (i, year);
-        QDate cd(year,i+1,1);
+
+        cd.setDate(year,i+1,1);
         days = cd.daysInMonth();
 
         for (int j = 1; j <= days; j++)
@@ -1181,12 +1183,13 @@ QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool tri
     for (int i=0;i<=pos;i++) {
         if (year_rank[0][i] == t) {
             dfound++;
+            cd.setDate(year,year_rank[2][i]-1,year_rank[1][i]);
             if (year_rank[4][i] == 1) solar = "T";
             else solar = "";
-
+            if (cd>QDate::currentDate()) solar+=" future.";
             if (eudate)
             buffer += QString::number(year_rank[1][i])+" "+QString::fromStdString(getMonthName (year_rank[2][i]-1).c_str()) + " " + QString::fromStdString(formattext(solar,1,1)) +"<br>";
-            else buffer += QString::fromStdString(getMonthName (year_rank[2][i]-1).c_str()) + " " + QString::number(year_rank[1][i])+ "<br>";
+            else buffer += QString::fromStdString(getMonthName (year_rank[2][i]-1).c_str()) + " " + QString::number(year_rank[1][i]) + " " + QString::fromStdString(formattext(solar,1,1)) + "<br>";
         }
         //qDebug() << t << " " << i << " " << year_rank[0][i] << " " << buffer.length();
     }
@@ -1414,7 +1417,7 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
             if (detail.find("th")) detail = " - " + detail;
        switch(i) {
           case 1 :
-              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << ")&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << dd_mm.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
               buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;
@@ -1444,7 +1447,7 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
               savelog(logline.str());
               break;
           case 7 :
-              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << ")&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
+              logline << Qdate.toUtf8().constData() << " &emsp;" << d_d_m_m.toUtf8().constData() << " + " << YY_yy.toUtf8().constData() << "&emsp;= " << Qns.toUtf8().constData()  << detail << "<br>";
               buffer += tobuffer(QString::fromStdString(logline.str()));
               savelog(logline.str());
               break;

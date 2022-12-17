@@ -859,6 +859,8 @@ void MainWindow::on_lineEdit_returnPressed()
         QString html;
 
         keymem(QString::fromStdString(stdphrase));
+        phrase = QString::fromStdString(stdphrase);
+        updatestatusbar();
         if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
         else html = printword(stdphrase,'N',true,false);
         writetmpfile("<html>"+html+"</html>");
@@ -868,42 +870,47 @@ void MainWindow::on_lineEdit_returnPressed()
 
 void MainWindow::shorthelp()
 {
-        writetmpfile("<br><h1>Short help</h1><br>");
-        writetmpfile("<b>All functions are available from the Menu</b>");
-        writetmpfile("<b>By shortcut following functions are available</b>");
-        writetmpfile("<font color=\"blue\">(Ctrl-S)</font> <b>Date search</b> connect number to dates spanning the active year.");
-        writetmpfile("<font color=\"blue\">(Ctrl-H)</font> <b>Search history.txt</b> searches all words connected to entered number in history.txt.");
-        writetmpfile("<font color=\"blue\">(Ctrl-A)</font> <b>Analyze</b> takes active phrase and compare it to current date displayed on the status bar.");
-        writetmpfile("<font color=\"blue\">(Ctrl-D)</font> <b>Date details</b> displays calculations for current date. Second date will extend the information.");
-        writetmpfile("<font color=\"blue\">(Ctrl-R)</font> <b>Phrase ranking</b> search through the year and displays number of hits pr. date.");
-        writetmpfile("<font color=\"blue\">(Ctrl-W)</font> <b>Word details</b> shows details about active phrase.");
-        writetmpfile("<font color=\"blue\">(Ctrl-E)</font> <b>Compare Solar Eclipses to History.txt</b> for current date");
-        writetmpfile("<font color=\"blue\">(Ctrl-O)</font> <b>Date compare to history</b> calculate current date and compares it to history.txt");
-        writetmpfile("<font color=\"blue\">(Ctrl-T)</font> <b>Compare phrase to history.txt</b> takes one of the base ciphers from active phrase and compares it to history.txt<br>");
-        writetmpfile("<b>Sentence split</b> When unchecked analyze and word print will not split sentences<br>");
+    QString color="";
+    if (!nightmode)
+        color="blue";
+    else
+        color="lightblue";
+    writetmpfile("<br><h1>Short help</h1><br>");
+    writetmpfile("<b>All functions are available from the Menu</b>");
+    writetmpfile("<b>By shortcut following functions are available</b>");
+    writetmpfile("<font color=\""+color+"\">(Ctrl-S)</font> <b>Date search</b> connect number to dates spanning the active year.");
+    writetmpfile("<font color=\""+color+"\">(Ctrl-H)</font> <b>Search history.txt</b> searches all words connected to entered number in history.txt.");
+    writetmpfile("<font color=\""+color+"\">(Ctrl-A)</font> <b>Analyze</b> takes active phrase and compare it to current date displayed on the status bar.");
+    writetmpfile("<font color=\""+color+"\">(Ctrl-D)</font> <b>Date details</b> displays calculations for current date. Second date will extend the information.");
+    writetmpfile("<font color=\""+color+"\">(Ctrl-R)</font> <b>Phrase ranking</b> search through the year and displays number of hits pr. date.");
+    writetmpfile("<font color=\""+color+"\">(Ctrl-W)</font> <b>Word details</b> shows details about active phrase.");
+    writetmpfile("<font color=\""+color+"\">(Ctrl-E)</font> <b>Compare Solar Eclipses to History.txt</b> for current date");
+    writetmpfile("<font color=\""+color+"\">(Ctrl-O)</font> <b>Date compare to history</b> calculate current date and compares it to history.txt");
+    writetmpfile("<font color=\""+color+"\">(Ctrl-T)</font> <b>Compare phrase to history.txt</b> takes one of the base ciphers from active phrase and compares it to history.txt<br>");
+    writetmpfile("<b>Sentence split</b> When unchecked analyze and word print will not split sentences<br>");
 
 
         writetmpfile("The input area takes phrases which are displayed and saved to history.txt if Save is checked<br>");
         writetmpfile("Toggle Analyze will run entered phrases through analyzer instead of word details.<br>");
         writetmpfile("<b>The input area also takes commands:</b>");
 
-        writetmpfile("<font color=\"blue\">/a(phrase)</font> runs analyzer, (<b>Phrase</b> is optional)");
-        writetmpfile("<font color=\"blue\">/w(phrase)</font> phrase details (<b>Phrase</b> is optional)");
-        writetmpfile("<font color=\"blue\">/y(phrase)</font> phrase rank (<b>Phrase</b> active or passed in command.)");
-        writetmpfile("<font color=\"blue\">/n##/##/####</font> New date, (Year is optional)");
-        writetmpfile("<font color=\"blue\">/s##/##/####</font> New second date");
-        writetmpfile("<font color=\"blue\">/d##/##/####</font> date details (date is optional, year is extra option)");
-        writetmpfile("<font color=\"blue\">/o#/##/##</font> Date compare to history (first number is filter 1-4, date is optional)");
-        writetmpfile("<font color=\"blue\">/e@/##/##/####</font> Last and next Solar eclipse relative to date. @ is type \"T A P H-X=for all\" (date is optional, year is extra option)");
-        writetmpfile("<font color=\"blue\">/r</font> Toggle all extra ciphers on or off");
-        writetmpfile("<font color=\"blue\">/x##</font> Add or subtract days from current date and set that date.");
-        writetmpfile("<font color=\"blue\">/xs##</font> Add or subtract days from current date and set that as second date.");
-        writetmpfile("<font color=\"blue\">/xd##</font> Add or subtract days from current date and display only in output.");
-        writetmpfile("<font color=\"blue\">dd</font> deletes last line from history.txt");
-        writetmpfile("<font color=\"blue\">/h</font> shows this help");
+        writetmpfile("<font color=\""+color+"\">/a(phrase)</font> runs analyzer, (<b>Phrase</b> is optional)");
+        writetmpfile("<font color=\""+color+"\">/w(phrase)</font> phrase details (<b>Phrase</b> is optional)");
+        writetmpfile("<font color=\""+color+"\">/y(phrase)</font> phrase rank (<b>Phrase</b> active or passed in command.)");
+        writetmpfile("<font color=\""+color+"\">/n##/##/####</font> New date, (Year is optional)");
+        writetmpfile("<font color=\""+color+"\">/s##/##/####</font> New second date");
+        writetmpfile("<font color=\""+color+"\">/d##/##/####</font> date details (date is optional, year is extra option)");
+        writetmpfile("<font color=\""+color+"\">/o#/##/##</font> Date compare to history (first number is filter 1-4, date is optional)");
+        writetmpfile("<font color=\""+color+"\">/e@/##/##/####</font> Last and next Solar eclipse relative to date. @ is type \"T A P H-X=for all\" (date is optional, year is extra option)");
+        writetmpfile("<font color=\""+color+"\">/r</font> Toggle all extra ciphers on or off");
+        writetmpfile("<font color=\""+color+"\">/x##</font> Add or subtract days from current date and set that date.");
+        writetmpfile("<font color=\""+color+"\">/xs##</font> Add or subtract days from current date and set that as second date.");
+        writetmpfile("<font color=\""+color+"\">/xd##</font> Add or subtract days from current date and display only in output.");
+        writetmpfile("<font color=\""+color+"\">dd</font> deletes last line from history.txt");
+        writetmpfile("<font color=\""+color+"\">/h</font> shows this help");
 
 
-        writetmpfile("<font color=\"blue\">/c</font> Clears output");
+        writetmpfile("<font color=\""+color+"\">/c</font> Clears output");
         writetmpfile("Enter <b>Word Phrase</b> shows details about that phrase and saves it to history if Save is checked.");
         writetmpfile("Change <b>Current Year</b> from The Edit menu");
         writetmpfile("Change <b>Date Style</b> from The Edit menu");
@@ -913,11 +920,16 @@ void MainWindow::shorthelp()
 
 void MainWindow::welcome()
 {
+    QString color="";
+    if (!nightmode)
+        color="blue";
+    else
+        color="lightblue";
         writetmpfile("<h1>Welcome to Gematria Analyzer!</h1><br>");
         writetmpfile("<h2>This program calculates Kabbalah ciphers from phrases and compares it to date numerology.</h2><br>");
-        writetmpfile("<b>For details about ciphers select <font color=\"blue\">Tables->List ciphers</font></b>");
+        writetmpfile("<b>For details about ciphers select <font color=\""+color+"\">Tables->List ciphers</font></b>");
         writetmpfile("The program takes a phrase and date for comparison, also second date can be entered<br>");
-        writetmpfile("Select <b>Help</b> from menu or type <font color=\"blue\">/h</font> in input area<br>");
+        writetmpfile("Select <b>Help</b> from menu or type <font color=\""+color+"\">/h</font> in input area<br>");
         //writetmpfile("<div title=\"them's hoverin' words\">hover me</div>");
 }
 

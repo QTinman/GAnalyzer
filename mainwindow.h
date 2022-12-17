@@ -22,7 +22,7 @@ extern vector<int> primes;
 extern QString filesource;
 extern int zerodays[8][250],linenumbers;
 extern QString hmem[10];
-
+extern bool nightmode;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

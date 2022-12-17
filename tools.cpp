@@ -58,6 +58,11 @@ QString Qformattext(QString line, int color, int bold)
 
     QString formatedcolor;
     QString formatedtag;
+    QString fcolor="";
+    if (!nightmode)
+        fcolor="blue";
+    else
+        fcolor="lightblue";
     int i;
     if (color != 10 && color != 20) {
     switch (color) {
@@ -68,7 +73,7 @@ QString Qformattext(QString line, int color, int bold)
         formatedcolor = "<font color=\"red\">" +line+ "</font>";
         break;
         case 2: // blue
-        formatedcolor = "<font color=\"blue\">" +line+ "</font>";
+        formatedcolor = "<font color=\""+fcolor+"\">" +line+ "</font>";
         break;
 
 
@@ -99,6 +104,11 @@ QString Qformattext(QString line, int color, int bold)
 
 string formattext(string line, int color, int bold)
 {
+    string fcolor="";
+    if (!nightmode)
+        fcolor="blue";
+    else
+        fcolor="lightblue";
     bool isnumber = is_number(line);
     string formatedcolor;
     string formatedtag;
@@ -112,7 +122,7 @@ string formattext(string line, int color, int bold)
         formatedcolor = "<font color=\"red\">" +line+ "</font>";
         break;
         case 2: // blue
-        formatedcolor = "<font color=\"blue\">" +line+ "</font>";
+        formatedcolor = "<font color=\""+fcolor+"\">" +line+ "</font>";
         break;
 
 
