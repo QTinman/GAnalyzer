@@ -10,6 +10,7 @@
 #include "headdialog.h"
 #include <QtCore>
 #include <QDate>
+#include <QRegularExpression>
 
 #include <QKeyEvent>
 #include <QUrl>
@@ -552,11 +553,19 @@ void MainWindow::calc(QString calcstr)
     writetmpfile(calcstr+"="+QString::number(result));
 }
 
+int indexOfLineStartingWith(const QStringList& list, const QString& textToFind)
+{
+  return list.indexOf(QRegularExpression("^" + QRegularExpression::escape(textToFind) + ".+"));
+}
+
 void MainWindow::on_lineEdit_returnPressed()
 {
 
-    QString tphrase = ui->lineEdit->text();
+    QString tphrase = ui->lineEdit->text(), command;
     std::string stdphrase = tphrase.toUtf8().constData();
+    QStringList commands={"compare"};
+    int n=stdphrase.find(" ");
+    command = QString::fromStdString(stdphrase.substr(0,n));
     if (ui->checkBox->isChecked() && stdphrase[0] != '/') stdphrase = "/a" +stdphrase;
     bool forcalc=true;
     for(size_t i=0; i<stdphrase.size(); ++i){
@@ -855,7 +864,25 @@ void MainWindow::on_lineEdit_returnPressed()
         }
 
     }
-    else if (stdphrase != ""){
+    else if (stdphrase != "")
+    if (commands.indexOf(command) !=-1 && phrase != "<none>") {
+        qDebug() << "here!!";
+        int ns;
+        QString html;
+        //Compare the numbers in active phrase and one entered
+        for ( const auto& i : commands  )
+        if (i =="compare") {
+            int n=stdphrase.find(" ");
+            stdphrase.erase(0,n);
+            ns=getns(phrase.toUtf8().constData(),1,0);
+            if (getns(stdphrase,1,0) == ns) {
+                if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
+                else html = printword(stdphrase,'N',true,false);
+                writetmpfile("<html>"+html+"</html>");
+            }
+        }
+
+    }else {
         QString html;
 
         keymem(QString::fromStdString(stdphrase));
