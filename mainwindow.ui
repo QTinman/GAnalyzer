@@ -208,6 +208,7 @@
     <addaction name="menu_View"/>
     <addaction name="separator"/>
     <addaction name="action_Font"/>
+    <addaction name="actionSelect_history_file"/>
    </widget>
    <widget class="QMenu" name="menu_Tables">
     <property name="title">
@@ -477,6 +478,14 @@
    </property>
    <property name="text">
     <string>Display Welcome</string>
+   </property>
+  </action>
+  <action name="actionSelect_history_file">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Select &amp;history file</string>
    </property>
   </action>
  </widget>

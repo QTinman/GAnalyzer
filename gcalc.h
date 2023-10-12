@@ -17,6 +17,8 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
 QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate);
 QString listciphers(int reduced, int reversed, int type);
 QString searchhistory(int i, string phrase);
+QVariant loadsettings(QString settings);
+void savesettings(QString settings, QVariant attr);
 std::string charnumeric(int reduced, int reversed, std::string phrase,int type);
 QString date2history(int dd, int mm, int year,bool hlist, bool eudate,int filter);
 QString solareclipe(int dd,int mm,int year, int output, int type,bool eudate);

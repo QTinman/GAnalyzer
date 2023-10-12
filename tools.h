@@ -24,6 +24,7 @@
     std::string istriangular(int tri);
     int reduce(int sum);
     int reverse(int sum);
+
     QString deletelastline();
     QString savetext(std::string line);
     std::string tolowerCase(std::string &str);

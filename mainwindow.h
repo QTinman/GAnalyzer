@@ -13,6 +13,7 @@
 #include <QPainter>
 #include <QPrintPreviewDialog>
 #include <QEventLoop>
+#include <QSettings>
 
 extern QString phrase;
 extern QString labeltext,tmpstring;
@@ -22,6 +23,7 @@ extern vector<int> primes;
 extern QString filesource;
 extern int zerodays[8][250],linenumbers;
 extern QString hmem[10];
+extern QString appgroup;
 extern bool nightmode;
 
 QT_BEGIN_NAMESPACE
@@ -41,6 +43,8 @@ public:
 public slots:
   void handleAnchorClicked(const QUrl &url);
   void handleSourceChanged(const QUrl &url);
+  QVariant loadsettings(QString settings);
+  void savesettings(QString settings, QVariant attr);
 
 private slots:
     void on_actionDate_Search_triggered();
@@ -121,9 +125,11 @@ private slots:
     void on_actionSwap_dates_triggered();
 
     void on_actionSave_as_triggered();
-     void savelog(QString line, QString filename);
+    void savelog(QString line, QString filename);
 
-     void on_actionLine_numbers_in_view_toggled(bool arg1);
+    void on_actionLine_numbers_in_view_toggled(bool arg1);
+
+    void on_actionSelect_history_file_triggered();
 
 private:
     Ui::MainWindow *ui;

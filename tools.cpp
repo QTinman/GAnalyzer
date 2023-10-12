@@ -19,6 +19,7 @@
 using namespace std;
 
 
+
 int dayNumber(int day, int month, int year)
 {
 
@@ -594,14 +595,15 @@ QString savetext(string line)
     ofstream fout;  // Create Object of Ofstream
     ifstream fin;
     eraseAllSubStr(line,"\n");
-    fin.open("history.txt");
+    QString historyfile = loadsettings("historyfile").toString();
+    fin.open(historyfile.toUtf8().constData());
     while ( getline (fin,stext) )
     //	cout << line <<"&emsp;" << stext;
    // pause();
     {
         if (line == stext) add = 0;
     }
-    fout.open ("history.txt",ios::app); // Append mode
+    fout.open (historyfile.toUtf8().constData(),ios::app); // Append mode
     if(fin.is_open() && add == 1)
         fout<< line<<"\n"; // Writing data to file
     if (add == 1) buffer = "<br> Saved to history<br>";
@@ -735,14 +737,15 @@ std::string isprime(int prime)
 QString deletelastline() {
     std::string line;
     std::vector<std::string> lines;
-    std::ifstream inputStream("history.txt");
+    QString historyfile = loadsettings("historyfile").toString();
+    std::ifstream inputStream(historyfile.toUtf8().constData());
 
     while (getline(inputStream,line)) {
         lines.push_back(line);
     }
     inputStream.close();
 
-    std::fstream outputStream("history.txt", ios::out | ios::trunc);
+    std::fstream outputStream(historyfile.toUtf8().constData(), ios::out | ios::trunc);
     if (outputStream.is_open())
     {
         for (ulong i=0; i < lines.size()-1; i++)
@@ -958,7 +961,8 @@ QString listhistory(QString filter)
     QStringList history;
     int i = 1;
     double t1;
-    infile.setFileName("history.txt");
+    QString historyfile = loadsettings("historyfile").toString();
+    infile.setFileName(historyfile);
     //outfile.setFileName("headlines.txt");
     if (infile.open(QIODevice::ReadOnly)) {
         QTextStream in(&infile);

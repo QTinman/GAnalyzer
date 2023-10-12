@@ -20,6 +20,24 @@ int pos;
   std::to_string(42) int to string
  */
 
+QVariant loadsettings(QString settings)
+{
+    QVariant returnvar;
+    QSettings appsettings("QTinman",appgroup);
+    appsettings.beginGroup(appgroup);
+    returnvar = appsettings.value(settings);
+    appsettings.endGroup();
+    return returnvar;
+}
+
+void savesettings(QString settings, QVariant attr)
+{
+    QSettings appsettings("QTinman",appgroup);
+    appsettings.beginGroup(appgroup);
+    appsettings.setValue(settings,QVariant::fromValue(attr));
+    appsettings.endGroup();
+}
+
 QString loopYear(int ns,int dd, int mm, int year, int printcal, bool eudate)
 {
       int days, mm2 = 12, dd2 = 31;
@@ -822,9 +840,10 @@ QString solar2history(int dd, int mm, int year, int type, bool eudate)
     stringstream logline;
     int lines=0;
     ifstream myfile;
+    QString historyfile = loadsettings("historyfile").toString();
     readsolarfile(dd,mm,year);
     buffer += "Searching History.txt for match where Phrase is connected to Solar Eclipse and current date of " + QString::number(dd) + "/" +QString::number(mm) + "/" + QString::number(year) + "<br>";
-    myfile.open("history.txt");
+    myfile.open(historyfile.toUtf8().constData());
     if (myfile.is_open())
           {
 
@@ -2260,7 +2279,8 @@ QString date2history(int dd, int mm, int year,bool hlist, bool eudate,int filter
 
 
     ifstream myfile;
-    myfile.open("history.txt");
+    QString historyfile = loadsettings("historyfile").toString();
+    myfile.open(historyfile.toUtf8().constData());
     if (myfile.is_open())
           {
 
@@ -2572,7 +2592,8 @@ QString searchwords(int pattern, bool simpleprint) //Ctrl-H
     if (sumerian_on) qs9 = " - Sumerian";
     if (rev_sumerian_on) qs10 = " - Reverse Sumerian";
     if (simpleprint) buffer1 += "&emsp;&emsp;&emsp;Englis Ordinal - Full Reduction - Reverse Ordinal - Reverse Full Reduction" + qs5 + qs6 + qs7 + qs8 + qs9 + qs10;
-    myfile.open("history.txt");
+    QString historyfile = loadsettings("historyfile").toString();
+    myfile.open(historyfile.toUtf8().constData());
     if (myfile.is_open())
           {
           c1 = pattern;
