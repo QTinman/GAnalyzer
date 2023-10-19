@@ -1,0 +1,5 @@
+make clean
+PATH=/home/john/Qt/5.13.1/Src/qtbase/bin:$PATH
+export path
+qmake -config release
+make
