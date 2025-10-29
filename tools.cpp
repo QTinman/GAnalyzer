@@ -21,6 +21,7 @@ using std::cout;
 using std::endl;
 using std::floor;
 using std::isdigit;
+using std::ios;
 
 constexpr int BUFFERSIZE = 256;
 

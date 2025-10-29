@@ -1369,7 +1369,7 @@ void MainWindow::writetmpfile(QString html)
 
     if (file->open(QIODevice::WriteOnly | QIODevice::Append))
     {
-        QTextStream stream( file );
+        QTextStream stream( file.get() );
         stream << html;
         file->close();
     }

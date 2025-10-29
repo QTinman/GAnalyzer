@@ -15,6 +15,7 @@ using std::ifstream;
 using std::ofstream;
 using std::stringstream;
 using std::stoi;
+using std::to_string;
 
 constexpr int BUFFERSIZE = 256;
 int pos;

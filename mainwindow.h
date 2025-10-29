@@ -14,12 +14,13 @@
 #include <QPrintPreviewDialog>
 #include <QEventLoop>
 #include <QSettings>
+#include <vector>
 
 extern QString phrase;
 extern QString labeltext,tmpstring;
 extern int year,dd,mm,ns,d2,m2,y2,filter,hmempos;
 extern bool single_r_on,francis_on,satanic_on,jewish_on,sumerian_on,rev_sumerian_on;
-extern vector<int> primes;
+extern std::vector<int> primes;
 extern QString filesource;
 extern int zerodays[8][250],linenumbers;
 extern QString hmem[10];
@@ -113,7 +114,7 @@ private slots:
     void on_actionCalendar_triggered();
 
     void writetmpfile(QString html);
-    void SieveOfEratosthenes(vector<int> &primes);
+    void SieveOfEratosthenes(std::vector<int> &primes);
     void updatestatusbar();
     void show_news(const QString& source);
 
