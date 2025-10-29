@@ -20,17 +20,25 @@
 #include <QFontDialog>
 
 #include <QFileDialog>
+#include <memory>
 //#include "gcalc.h"
 
 
-using namespace std;
-#define MAX_SIZE 1000005
+using std::vector;
+using std::string;
+using std::ifstream;
+using std::ofstream;
+using std::ios;
+using std::unique_ptr;
+using std::make_unique;
+
+constexpr int MAX_SIZE = 1000005;
 int zerodays[8][250], linenumbers=0;
 QString hmem[10];
 vector<int> primes;
 QString phrase = "<none>";
 QString pwd = QDir::currentPath() + "/tmp.htm";
-QFile *file = new QFile(pwd);
+unique_ptr<QFile> file = make_unique<QFile>(pwd);
 bool nightmode=true;
 QString appgroup="GAnalyzer";
 
@@ -41,29 +49,30 @@ bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false,sumeria
 
 void MainWindow::SieveOfEratosthenes(vector<int> &primes)
 {
-    // Create a boolean array "IsPrime[0..MAX_SIZE]" and
-    // initialize all entries it as true. A value in
+    // Create a boolean vector "IsPrime[0..MAX_SIZE]" and
+    // initialize all entries as true. A value in
     // IsPrime[i] will finally be false if i is
     // Not a IsPrime, else true.
-    bool IsPrime[MAX_SIZE];
-    memset(IsPrime, true, sizeof(IsPrime));
+    // Using vector instead of stack array to avoid stack overflow (1MB+ allocation)
+    vector<bool> IsPrime(MAX_SIZE, true);
 
-    for (int p = 2; p * p < MAX_SIZE; p++)
+    for (int p = 2; p * p < MAX_SIZE; ++p)
     {
         // If IsPrime[p] is not changed, then it is a prime
-        if (IsPrime[p] == true)
+        if (IsPrime[p])
         {
             // Update all multiples of p greater than or
             // equal to the square of it
             // numbers which are multiple of p and are
             // less than p^2 are already been marked.
-            for (int i = p * p; i <  MAX_SIZE; i += p)
+            for (int i = p * p; i < MAX_SIZE; i += p)
                 IsPrime[i] = false;
         }
     }
 
     // Store all prime numbers
-    for (int p = 2; p < MAX_SIZE; p++)
+    primes.reserve(78498); // Pre-allocate space for known number of primes < 1000000
+    for (int p = 2; p < MAX_SIZE; ++p)
        if (IsPrime[p])
             primes.push_back(p);
 

@@ -9,8 +9,14 @@
 
 //#include "downloadmanager.h"
 
-#define BUFFERSIZE 256
-using namespace std;
+using std::string;
+using std::vector;
+using std::ifstream;
+using std::ofstream;
+using std::stringstream;
+using std::stoi;
+
+constexpr int BUFFERSIZE = 256;
 int pos;
 /*
   QString::fromStdString(string)  <- from string to Qstring
@@ -436,21 +442,35 @@ void readsolarfile(int dd, int mm, int year)
             {
         //qDebug() << QString::fromStdString(line);
         linelength = line.length();
-        if (linelength > 8) {
-        if (QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))) > QDate(year, mm, dd)) {
+        if (linelength > 8 && counter < 250) {
+        // Parse date components once instead of 4+ times
+        int eclipseYear = stoi(line.substr(0,4));
+        int eclipseMonth = stoi(line.substr(5,2));
+        int eclipseDay = stoi(line.substr(8,2));
+        QDate eclipseDate(eclipseYear, eclipseMonth, eclipseDay);
+        QDate currentDate(year, mm, dd);
+
+        // Parse eclipse type once
+        char eclipseTypeChar = line.length() > 11 ? line[11] : ' ';
+        int eclipseType = 0;
+        switch(eclipseTypeChar) {
+            case 'T': eclipseType = 1; break;
+            case 'A': eclipseType = 2; break;
+            case 'P': eclipseType = 3; break;
+            case 'H': eclipseType = 4; break;
+        }
+
+        if (eclipseDate > currentDate) {
             //if (weeks_months(QDate(year, mm, dd),QDate(fields[0].toInt(), fields[1].toInt(), fields[2].toInt()),false,true) == 0) {*/
-                zerodays[0][counter] = weeks_months(QDate(year, mm, dd),QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))),false,false);
-                zerodays[1][counter] = weeks_months(QDate(year, mm, dd),QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))),false,true);
-                zerodays[2][counter] = weeks_months(QDate(year, mm, dd),QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))),true,false);
-                zerodays[3][counter] = weeks_months(QDate(year, mm, dd),QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))),true,true);
-                zerodays[4][counter] =  stoi(line.substr(8,2)) ;
-                zerodays[5][counter] = stoi(line.substr(5,2)) ;
-                zerodays[6][counter] = stoi(line.substr(0,4)) ;
-                if (line.substr(11,1) == "T") zerodays[7][counter] = 1;
-                if (line.substr(11,1) == "A") zerodays[7][counter] = 2;
-                if (line.substr(11,1) == "P") zerodays[7][counter] = 3;
-                if (line.substr(11,1) == "H") zerodays[7][counter] = 4;
-                counter ++;
+                zerodays[0][counter] = weeks_months(currentDate, eclipseDate, false, false);
+                zerodays[1][counter] = weeks_months(currentDate, eclipseDate, false, true);
+                zerodays[2][counter] = weeks_months(currentDate, eclipseDate, true, false);
+                zerodays[3][counter] = weeks_months(currentDate, eclipseDate, true, true);
+                zerodays[4][counter] = eclipseDay;
+                zerodays[5][counter] = eclipseMonth;
+                zerodays[6][counter] = eclipseYear;
+                zerodays[7][counter] = eclipseType;
+                counter++;
            // qDebug() << zerodays[0][counter] << " " << zerodays[1][counter] << " " << zerodays[2][counter] << " " << zerodays[3][counter] << " " << zerodays[4][counter] << " " << zerodays[5][counter] << " " << counter2;
             //qDebug() << fields[2].toInt() << " " << fields[1].toInt() << " " << fields[0].toInt() << " " << fields[3] << " " << line;
 
@@ -462,20 +482,17 @@ void readsolarfile(int dd, int mm, int year)
             //if (counter == 50) break;
 
         }
-        if (QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))) < QDate(year, mm, dd)) {
+        else if (eclipseDate < currentDate) {
             //if (weeks_months(QDate(year, mm, dd),QDate(fields[0].toInt(), fields[1].toInt(), fields[2].toInt()),false,true) == 0) {*/
-                zerodays[0][counter] = weeks_months(QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))),QDate(year, mm, dd),false,false);
-                zerodays[1][counter] = weeks_months(QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))),QDate(year, mm, dd),false,true);
-                zerodays[2][counter] = weeks_months(QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))),QDate(year, mm, dd),true,false);
-                zerodays[3][counter] = weeks_months(QDate(stoi(line.substr(0,4)), stoi(line.substr(5,2)), stoi(line.substr(8,2))),QDate(year, mm, dd),true,true);
-                zerodays[4][counter] = stoi(line.substr(8,2)) ;
-                zerodays[5][counter] = stoi(line.substr(5,2)) ;
-                zerodays[6][counter] = stoi(line.substr(0,4)) ;
-                if (line.substr(11,1) == "T") zerodays[7][counter] = 1;
-                if (line.substr(11,1) == "A") zerodays[7][counter] = 2;
-                if (line.substr(11,1) == "P") zerodays[7][counter] = 3;
-                if (line.substr(11,1) == "H") zerodays[7][counter] = 4;
-                counter ++;
+                zerodays[0][counter] = weeks_months(eclipseDate, currentDate, false, false);
+                zerodays[1][counter] = weeks_months(eclipseDate, currentDate, false, true);
+                zerodays[2][counter] = weeks_months(eclipseDate, currentDate, true, false);
+                zerodays[3][counter] = weeks_months(eclipseDate, currentDate, true, true);
+                zerodays[4][counter] = eclipseDay;
+                zerodays[5][counter] = eclipseMonth;
+                zerodays[6][counter] = eclipseYear;
+                zerodays[7][counter] = eclipseType;
+                counter++;
            // qDebug() << zerodays[0][counter] << " " << zerodays[1][counter] << " " << zerodays[2][counter] << " " << zerodays[3][counter] << " " << zerodays[4][counter] << " " << zerodays[5][counter] << " " << counter2;
             //qDebug() << fields[2].toInt() << " " << fields[1].toInt() << " " << fields[0].toInt() << " " << fields[3] << " " << line;
 
@@ -786,6 +803,30 @@ int searchzerodays(int ns,int type,int dd,int mm, int year)
 
 QString solar2history(int dd, int mm, int year, int type, bool eudate)
 {
+    // Cipher configuration structure for data-driven approach
+    struct CipherConfig {
+        bool enabled;
+        int arg1;
+        int arg2;
+        int arg3;
+        const char* name;
+    };
+
+    // Define all ciphers in a table - eliminates code duplication
+    const CipherConfig ciphers[] = {
+        {true, 0, 0, 0, "English Ordinal"},
+        {true, 1, 0, 0, "Full Reduction"},
+        {true, 0, 1, 0, "Reverse Ordinal"},
+        {true, 1, 1, 0, "Reverse Full Reduction"},
+        {single_r_on, 0, 0, 1, "Single Reduction"},
+        {francis_on, 0, 0, 2, "Francis Bacon"},
+        {satanic_on, 0, 0, 3, "Satanic"},
+        {jewish_on, 0, 0, 4, "Jewish"},
+        {sumerian_on, 0, 0, 5, "Sumerian"},
+        {rev_sumerian_on, 0, 1, 5, "Reverse Sumerian"}
+    };
+    constexpr int numCiphers = sizeof(ciphers) / sizeof(ciphers[0]);
+
     string line;
     QString buffer, solartype;
     stringstream logline;
@@ -803,85 +844,30 @@ QString solar2history(int dd, int mm, int year, int type, bool eudate)
     {
         while (getline(myfile, line))
         {
-            ns = getwordnumericvalue(line, 0, 0, 0);
-            if (searchzerodays(ns, type, 0, 0, 0) > 0) {
-                lines++;
-                buffer += printzerodays(dd, mm, year, ns, type, " – \"" + formattext(line, 2, 1) + "\" [English Ordinal]", eudate, true);
-            }
+            // Loop through all cipher configurations instead of duplicating code
+            for (int i = 0; i < numCiphers; ++i) {
+                const auto& cipher = ciphers[i];
+                if (!cipher.enabled) continue;
 
-            ns = getwordnumericvalue(line, 1, 0, 0);
-            if (searchzerodays(ns, type, 0, 0, 0) > 0) {
-                lines++;
-                buffer += printzerodays(dd, mm, year, ns, type, " – \"" + formattext(line, 2, 1) + "\" [Full Reduction]", eudate, true);
-            }
-
-            ns = getwordnumericvalue(line, 0, 1, 0);
-            if (searchzerodays(ns, type, 0, 0, 0) > 0) {
-                lines++;
-                buffer += printzerodays(dd, mm, year, ns, type, " – \"" + formattext(line, 2, 1) + "\" [Reverse Ordinal]", eudate, true);
-            }
-
-            ns = getwordnumericvalue(line, 1, 1, 0);
-            if (searchzerodays(ns, type, 0, 0, 0) > 0) {
-                lines++;
-                buffer += printzerodays(dd, mm, year, ns, type, " – \"" + formattext(line, 2, 1) + "\" [Reverse Full Reduction]", eudate, true);
-            }
-
-            if (single_r_on) {
-                ns = getwordnumericvalue(line, 0, 0, 1);
+                ns = getwordnumericvalue(line, cipher.arg1, cipher.arg2, cipher.arg3);
                 if (searchzerodays(ns, type, 0, 0, 0) > 0) {
                     lines++;
-                    buffer += printzerodays(dd, mm, year, ns, type, " – \"" + formattext(line, 2, 1) + "\" [Single Reduction]", eudate, true);
-                }
-            }
-
-            if (francis_on) {
-                ns = getwordnumericvalue(line, 0, 0, 2);
-                if (searchzerodays(ns, type, 0, 0, 0) > 0) {
-                    lines++;
-                    buffer += printzerodays(dd, mm, year, ns, type, " – \"" + formattext(line, 2, 1) + "\" [Francis Bacon]", eudate, true);
-                }
-            }
-
-            if (satanic_on) {
-                ns = getwordnumericvalue(line, 0, 0, 3);
-                if (searchzerodays(ns, type, 0, 0, 0) > 0) {
-                    lines++;
-                    buffer += printzerodays(dd, mm, year, ns, type, " – \"" + formattext(line, 2, 1) + "\" [Satanic]", eudate, true);
-                }
-            }
-
-            if (jewish_on) {
-                ns = getwordnumericvalue(line, 0, 0, 4);
-                if (searchzerodays(ns, type, 0, 0, 0) > 0) {
-                    lines++;
-                    buffer += printzerodays(dd, mm, year, ns, type, " – \"" + formattext(line, 2, 1) + "\" [Jewish]", eudate, true);
-                }
-            }
-
-            if (sumerian_on) {
-                ns = getwordnumericvalue(line, 0, 0, 5);
-                if (searchzerodays(ns, type, 0, 0, 0) > 0) {
-                    lines++;
-                    buffer += printzerodays(dd, mm, year, ns, type, " – \"" + formattext(line, 2, 1) + "\" [Sumerian]", eudate, true);
-                }
-            }
-
-            if (rev_sumerian_on) {
-                ns = getwordnumericvalue(line, 0, 1, 5);
-                if (searchzerodays(ns, type, 0, 0, 0) > 0) {
-                    lines++;
-                    buffer += printzerodays(dd, mm, year, ns, type, " – \"" + formattext(line, 2, 1) + "\" [Reverse Sumerian]", eudate, true);
+                    buffer += printzerodays(dd, mm, year, ns, type,
+                        " – \"" + formattext(line, 2, 1) + "\" [" + string(cipher.name) + "]",
+                        eudate, true);
                 }
             }
         }
 
-        // Determine eclipse type label
-        if (type == 1) solartype = "Total";
-        if (type == 2) solartype = "Annular";
-        if (type == 3) solartype = "Partial";
-        if (type == 4) solartype = "Hybrid";
-        if (type == 5) solartype = "";
+        // Determine eclipse type label using switch instead of multiple ifs
+        switch(type) {
+            case 1: solartype = "Total"; break;
+            case 2: solartype = "Annular"; break;
+            case 3: solartype = "Partial"; break;
+            case 4: solartype = "Hybrid"; break;
+            case 5: solartype = ""; break;
+            default: solartype = "Unknown"; break;
+        }
 
         buffer += "<br><br><b>" + QString::fromStdString(formattext(std::to_string(lines), 1, 1)) + " phrase"
                   + (lines == 1 ? " was" : "s were") + " found matching " + solartype + " Solar Eclipses.</b><br><br>";

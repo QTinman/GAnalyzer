@@ -12,11 +12,19 @@
 #include <QDebug>
 #include <QDir>
 
+using std::vector;
+using std::string;
+using std::ifstream;
+using std::ofstream;
+using std::stringstream;
+using std::cout;
+using std::endl;
+using std::floor;
+using std::isdigit;
 
-#define BUFFERSIZE 256
+constexpr int BUFFERSIZE = 256;
 
 //#include <algorithm>
-using namespace std;
 
 
 
@@ -248,10 +256,10 @@ QString numberproperties(QString number)
 
 
 QString numberseat(char type, int number) {
-    int sum=0;
     QString result="";
         if (type == 'T' && number > 0){
-            for (int i=1; i <= number; i++) sum += i;
+            // Use triangular number formula: n*(n+1)/2 instead of O(n) loop
+            int sum = (number * (number + 1)) / 2;
             result = QString::number(sum);
         }
         if (type == 'P' && number > 0) result = QString::number(primes[number-1]);
