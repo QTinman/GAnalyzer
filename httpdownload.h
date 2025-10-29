@@ -3,63 +3,33 @@
 
 #include <QDialog>
 #include <QNetworkAccessManager>
-#include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QUrl>
-#include <QProgressDialog>
+#include <QDomDocument>
 #include <QFile>
-#include <QFileInfo>
-#include <QDir>
+#include <QTextStream>
 #include <QMessageBox>
-#include <QRegularExpression>
+#include "ui_httpdownload.h"
 
-namespace Ui {
-class HttpDownload;
-}
-
-class HttpDownload : public QDialog
-{
+class HttpDownload : public QDialog {
     Q_OBJECT
 
+signals:
+    void dl_ready(const QString &source);
+
 public:
-    explicit HttpDownload(QWidget *parent = 0);
+    explicit HttpDownload(QWidget *parent = nullptr);
     ~HttpDownload();
 
-public:
-    void startRequest(QUrl url);
-
-signals:
-    void dl_ready(const QString);
-
 private slots:
-    void on_downloadButton_clicked();
-
-    void on_quitButton_clicked();
-
-    //void on_urlList_returnPressed();
-
-    // slot for readyRead() signal
-    void httpReadyRead();
-
-    // slot for finished() signal from reply
-    void httpDownloadFinished();
-
-    // slot for downloadProgress()
-    void updateDownloadProgress(qint64, qint64);
-
-    void enableDownloadButton();
-    void cancelDownload();
+    void startRequest();
+    void handleFinished();
 
 private:
     Ui::HttpDownload *ui;
-    QUrl url;
     QNetworkAccessManager *manager;
-    QNetworkReply *reply;
-    QProgressDialog *progressDialog;
-    QFile *file;
-    bool httpRequestAborted;
-    qint64 fileSize;
-
+    QNetworkReply *reply = nullptr;
+    QString currentUrl;
+    QString currentLabel;
 };
 
 #endif // HTTPDOWNLOAD_H

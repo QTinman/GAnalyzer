@@ -1,237 +1,101 @@
 #include "httpdownload.h"
 #include "ui_httpdownload.h"
+#include "headdialog.h"
 #include "mainwindow.h"
-//#include "inputdialog.h"
+#include <QFile>
+#include <QTextStream>
+#include <QMessageBox>
+#include <QNetworkRequest>
+#include <QDomDocument>
+#include <QDateTime>
+
+QString fileheadlines = "fetched_headlines.txt";  // Global for headDialog compatibility
+QString tempstring;
 
 HttpDownload::HttpDownload(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::HttpDownload)
 {
-    QString content;
     ui->setupUi(this);
-    //ui->urlEdit->setText("https://nchc.dl.sourceforge.net/project/hplip/hplip/3.20.3/hplip-3.20.3.run");
-    QFile sources;
-    sources.setFileName("newssources.txt");
+    manager = new QNetworkAccessManager(this);
+
+    QFile sources("newssources.txt");
     if (sources.open(QIODevice::ReadOnly)) {
-        while(!sources.atEnd()) {
-            QString line = sources.readLine();
-            //QStringList fields = line.split(",");
-            line = line.trimmed();
-            int pos1 = line.indexOf("|");
-            if (pos1 != -1) ui->urlList->addItem(line.mid(0,pos1));
-            else ui->urlList->addItem(line);
+        while (!sources.atEnd()) {
+            QString line = sources.readLine().trimmed();
+            if (!line.isEmpty()) {
+                int sep = line.indexOf('|');
+                if (sep != -1)
+                    ui->urlList->addItem(line.left(sep), line.mid(sep + 1));
+            }
         }
         sources.close();
-        ui->urlList->addItem("");
-            //qDebug() << infile.size() << in.readAll();
     }
-
-
-    ui->urlList->itemData(ui->urlList->currentIndex());
-    ui->statusLabel->setWordWrap(true);
-    ui->downloadButton->setDefault(true);
-    ui->quitButton->setAutoDefault(false);
-
-
-    //connect(ui->urlList, SIGNAL(textChanged(QString)),
-    //            this, SLOT(enableDownloadButton()));
-
+    ui->urlList->addItem("Add new source...", "");  // triggers dialog when selected
+    connect(ui->downloadButton, &QPushButton::clicked, this, &HttpDownload::startRequest);
+    connect(ui->quitButton, &QPushButton::clicked, this, &HttpDownload::close);
 }
 
-HttpDownload::~HttpDownload()
-{
+HttpDownload::~HttpDownload() {
     delete ui;
 }
 
-void HttpDownload::on_downloadButton_clicked()
-{
-    QString data = ui->urlList->itemText(ui->urlList->currentIndex());
-    if (data == "") {
-        tmpstring = "";
-        labeltext = "Enter URL :";
-        inputDialog addurl;
-        addurl.setModal(true); // if nomodal is needed then create pointer inputdialog *datesearch; in mainwindow.h private section, then here use inputdialog = new datesearch(this); datesearch.show();
-        addurl.exec();
-        data = tmpstring;
-    }
-    if (data != "") {
-    manager = new QNetworkAccessManager(this);
-    progressDialog = new QProgressDialog(this);
+void HttpDownload::startRequest() {
+    QString url = ui->urlList->currentData().toString();
+    currentUrl = url;
+    currentLabel = ui->urlList->currentText();  // this is what user sees
 
-    connect(progressDialog, SIGNAL(canceled()), this, SLOT(cancelDownload()));
-    // get url
-    //url = (ui->urlEdit->text());
+    QString tempstring = url;
 
-    tmpstring = data;
-    data.remove(QRegularExpression("[\\n\\t\\r]"));
-    //qDebug() << data;
-    //url = (ui->urlList->itemText(ui->urlList->currentIndex()));
-    url = (data);
-    //qDebug() << url;
-    QFileInfo fileInfo(url.path());
-    QString fileName = fileInfo.fileName();
-    fileName.remove(QRegularExpression("[\\n\\t\\r]"));
-    if (fileName.isEmpty())
-        fileName = "headnews.html";
-    filesource = fileName;
-    if (QFile::exists(fileName)) {
-        //if (QMessageBox::question(this, tr("HTTP"),
-          //      tr("There already exists a file called %1 in "
-            //    "the current directory. Overwrite?").arg(fileName),
-              //  QMessageBox::Yes|QMessageBox::No, QMessageBox::No)
-                //== QMessageBox::No)
-                //return;
-        QFile::remove(fileName);
-    }
-
-    file = new QFile(fileName);
-    if (!file->open(QIODevice::WriteOnly)) {
-        QMessageBox::information(this, tr("HTTP"),
-                      tr("Unable to save the file %1: %2.")
-                      .arg(fileName).arg(file->errorString()));
-        delete file;
-        file = 0;
+    if (url.isEmpty()) {
+        QMessageBox::warning(this, "No URL", "No news source URL selected.");
         return;
     }
 
-    // used for progressDialog
-    // This will be set true when canceled from progress dialog
-    httpRequestAborted = false;
-
-    progressDialog->setWindowTitle(tr("HTTP"));
-    progressDialog->setLabelText(tr("Downloading %1.").arg(fileName));
-
-    // download button disabled after requesting download
-    ui->downloadButton->setEnabled(false);
-
-    startRequest(url);
-    }
+    QNetworkRequest request;
+    request.setUrl(QUrl(url));
+    reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, &HttpDownload::handleFinished);
 }
 
-void HttpDownload::httpReadyRead()
-{
-    // this slot gets called every time the QNetworkReply has new data.
-    // We read all of its new data and write it into the file.
-    // That way we use less RAM than when reading it at the finished()
-    // signal of the QNetworkReply
-    if (file)
-        file->write(reply->readAll());
-}
-
-void HttpDownload::updateDownloadProgress(qint64 bytesRead, qint64 totalBytes)
-{
-    if (httpRequestAborted)
-        return;
-
-    progressDialog->setMaximum(totalBytes);
-    progressDialog->setValue(bytesRead);
-}
-
-void HttpDownload::on_quitButton_clicked()
-{
-    this->close();
-}
-
-/*void HttpDownload::on_urlList_returnPressed()
-{
-    on_downloadButton_clicked();
-}*/
-
-void HttpDownload::enableDownloadButton()
-{
-    //ui->downloadButton->setEnabled(!(ui->urlEdit->text()).isEmpty());
-    ui->downloadButton->setEnabled((ui->urlList->itemText(ui->urlList->currentIndex())).isEmpty());
-}
-
-// During the download progress, it can be canceled
-void HttpDownload::cancelDownload()
-{
-    ui->statusLabel->setText(tr("Download canceled."));
-    httpRequestAborted = true;
-    reply->abort();
-    ui->downloadButton->setEnabled(true);
-}
-
-// When download finished or canceled, this will be called
-void HttpDownload::httpDownloadFinished()
-{
-    // when canceled
-    if (httpRequestAborted) {
-        if (file) {
-            file->close();
-            file->remove();
-            delete file;
-            file = 0;
-        }
-        reply->deleteLater();
-        progressDialog->hide();
-        return;
-    }
-
-    // download finished normally
-    progressDialog->hide();
-    file->flush();
-    file->close();
-
-    // get redirection url
-    QVariant redirectionTarget = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+void HttpDownload::handleFinished() {
     if (reply->error()) {
-        file->remove();
-        QMessageBox::information(this, tr("HTTP"),
-                                 tr("Download failed: %1.")
-                                 .arg(reply->errorString()));
-        ui->downloadButton->setEnabled(true);
-    } else if (!redirectionTarget.isNull()) {
-        QUrl newUrl = url.resolved(redirectionTarget.toUrl());
-        if (QMessageBox::question(this, tr("HTTP"),
-                                  tr("Redirect to %1 ?").arg(newUrl.toString()),
-                                  QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
-            url = newUrl;
-            reply->deleteLater();
-            file->open(QIODevice::WriteOnly);
-            file->resize(0);
-            startRequest(url);
-            return;
-        }
-    } else {
-        //QString fileName = QFileInfo(QUrl(ui->urlEdit->text()).path()).fileName();
-         QString fileName = QFileInfo(QUrl(ui->urlList->itemText(ui->urlList->currentIndex())).path()).fileName();
-         //qDebug() << fileName;
-        //ui->downloadButton->setEnabled((ui->urlList->itemText(ui->urlList->currentIndex())));
-        ui->statusLabel->setText(tr("Downloaded %1 to %2.").arg(fileName).arg(QDir::currentPath()));
-        ui->downloadButton->setEnabled(true);
+        QMessageBox::critical(this, "Download Error", reply->errorString());
+        reply->deleteLater();
+        return;
     }
 
+    QDomDocument doc;
+    QByteArray rawData = reply->readAll();  // Read once
+    reply->deleteLater();                   // Then delete
+    if (!doc.setContent(rawData)) {
+        QMessageBox::warning(this, "Parse Error", "Failed to parse RSS XML content.");
+        return;
+    }
+
+
+    QFile outFile(fileheadlines);
+    if (!outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "File Error", "Could not write headlines to file.");
+        reply->deleteLater();
+        return;
+    }
+
+    QTextStream out(&outFile);
+    QDomNodeList items = doc.elementsByTagName("item");
+    for (int i = 0; i < items.count(); ++i) {
+        QDomElement item = items.at(i).toElement();
+        QString title = item.firstChildElement("title").text().trimmed();
+        QString link = item.firstChildElement("link").text().trimmed();
+
+        if (!title.isEmpty()) {
+            out << "<a href=\"" + link + "\">[link]</a> " + title + "\n";
+        }
+    }
+    outFile.close();
     reply->deleteLater();
-    reply = 0;
-    delete file;
-    file = 0;
-    manager = 0;
-    emit dl_ready(ui->urlList->itemText(ui->urlList->currentIndex()));
-}
 
-// This will be called when download button is clicked
-void HttpDownload::startRequest(QUrl url)
-{
-    // get() method posts a request
-    // to obtain the contents of the target request
-    // and returns a new QNetworkReply object
-    // opened for reading which emits
-    // the readyRead() signal whenever new data arrives.
-    reply = manager->get(QNetworkRequest(url));
-
-    // Whenever more data is received from the network,
-    // this readyRead() signal is emitted
-    connect(reply, SIGNAL(readyRead()),
-            this, SLOT(httpReadyRead()));
-
-    // Also, downloadProgress() signal is emitted when data is received
-    connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
-            this, SLOT(updateDownloadProgress(qint64,qint64)));
-
-    // This signal is emitted when the reply has finished processing.
-    // After this signal is emitted,
-    // there will be no more updates to the reply's data or metadata.
-    connect(reply, SIGNAL(finished()),
-            this, SLOT(httpDownloadFinished()));
+    headDialog *dialog = new headDialog(fileheadlines, currentLabel, this);
+    emit dl_ready(fileheadlines);
+    dialog->exec();
 }

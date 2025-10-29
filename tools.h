@@ -20,7 +20,8 @@
     void eraseAllSubStr(std::string & mainStr, const std::string & toErase);
     void savelog(std::string line);
     void logtime();
-    std::string isprime(int prime);
+    std::string getOrdinalSuffix(int number);
+    std::string isprime(int prime, const std::vector<int>& primes);
     std::string istriangular(int tri);
     int reduce(int sum);
     int reverse(int sum);

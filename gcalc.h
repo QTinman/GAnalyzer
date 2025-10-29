@@ -5,7 +5,7 @@
 #include <QUrl>
 using namespace std;
 
-
+QString buildDDMMExpr(const QString& d1, const QString& d2, const QString& m1, const QString& m2);
 QString loopYear(int ns,int dd, int mm, int year, int printcal, bool eudate);
 QString searchwords(int pattern, bool simpleprint);
 QString printword(string line, char save, bool header, bool simpleprint);
@@ -14,6 +14,9 @@ QString analyze(int dd, int mm, int year, QString phrase,bool hlist, int filter,
 bool phrasetodate(int ns, int dd, int mm, int year, int i);
 QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filter, bool eudate);
 QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, bool eudate);
+void processNS(int ns, int dd, int mm, int year,
+               QString& buffer, bool eudate,
+               const std::string& nsExpr);
 QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2,bool eudate);
 QString listciphers(int reduced, int reversed, int type);
 QString searchhistory(int i, string phrase);
@@ -36,7 +39,7 @@ QString detail(int ns,int dd, int mm, int year, int i,bool eudate);
 QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool triangular, bool dates, bool chipers);
 int getns(string phrase, int out, int pt);
 int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar, bool prime, bool triangular, bool dates, bool chipers);
-QStringList getheadlines(QString source, int numberof);
+QStringList getheadlines(const QString &source, int numberof);
 void eraseAllQSubStr(QString & mainStr, const QString & toErase);
 QString headline(QString content, QString pattern);
 bool isheadlines(QString content, QString pattern);

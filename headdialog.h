@@ -15,7 +15,7 @@ class headDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit headDialog(QWidget *parent = nullptr);
+    explicit headDialog(const QString &filename, const QString &label, QWidget *parent = nullptr);
     ~headDialog();
 
 private slots:
@@ -29,14 +29,12 @@ private slots:
 
     void on_reversefull_toggled(bool checked);
 
-    void on_Adjust_clicked();
-
-    void on_SaveNewsFilter_clicked();
-
 private:
     Ui::headDialog *ui;
     QStringListModel *model;
     QStringList List;
+    QString _filename;
+    QString _label;
 };
 
 #endif // HEADDIALOG_H

@@ -54,108 +54,80 @@ int valid_date(int dd, int mm, int yy) {
     return 1;
 }
 
-QString Qformattext(QString line, int color, int bold)
+QString Qformattext(QString line, int color, int style)
 {
+    QString colorCode;
+    QString styledText;
+    QString fcolor = nightmode ? "lightblue" : "#0033cc";
+    QString red = "#d40000";
+    QString green = "#007a00";
 
-    QString formatedcolor;
-    QString formatedtag;
-    QString fcolor="";
-    if (!nightmode)
-        fcolor="blue";
-    else
-        fcolor="lightblue";
-    int i;
-    if (color != 10 && color != 20) {
     switch (color) {
-        case 0: //none
-        formatedcolor = line;
-        break;
-        case 1: // red
-        formatedcolor = "<font color=\"red\">" +line+ "</font>";
-        break;
-        case 2: // blue
-        formatedcolor = "<font color=\""+fcolor+"\">" +line+ "</font>";
-        break;
-
-
+    case 1: colorCode = "<font color=\"" + red + "\">" + line + "</font>"; break;
+    case 2: colorCode = "<font color=\"" + fcolor + "\">" + line + "</font>"; break;
+    case 3: colorCode = "<font color=\"" + green + "\">" + line + "</font>"; break;
+    default: colorCode = line; break;
     }
-    switch (bold) {
-        case 0: //none
-        formatedtag = formatedcolor;
-        break;
-        case 1: //bold
-        formatedtag = "<b>" +formatedcolor+"</b>";
-        break;
-        case 2: //italic
-        formatedtag = "<i>" +formatedcolor+"</i>";
-        break;
-        case 3: //bold & italic
-        formatedtag = "<i><b>" +formatedcolor+"</b></i>";
-        break;
 
+    switch (style) {
+    case 1: styledText = "<b>" + colorCode + "</b>"; break;
+    case 2: styledText = "<i>" + colorCode + "</i>"; break;
+    case 3: styledText = "<i><b>" + colorCode + "</b></i>"; break;
+    case 4: styledText = "<u>" + colorCode + "</u>"; break;
+    case 5: styledText = "<s>" + colorCode + "</s>"; break;  // optional: strikethrough
+    default: styledText = colorCode; break;
     }
+
+    // Special tab spacing
+    if (color == 10) {
+        styledText += QString("&emsp;").repeated(style > 1 ? style - 1 : 0);
+    } else if (color == 20) {
+        styledText = QString("&emsp;").repeated(style > 1 ? style - 1 : 0) + styledText;
     }
-    else formatedtag = line;
-    //qDebug() <<  QString::fromStdString(formatedtag);
-    if (color == 10) for (i=1;i<bold;i++) formatedtag=formatedtag+"&emsp;"; //tab after
-    if (color == 20) for (i=1;i<bold;i++) formatedtag="&emsp;"+formatedtag; //tab before
-    // html == "#include &lt;QtCore&gt;"
-    return formatedtag;
+
+    return styledText;
 }
 
-string formattext(string line, int color, int bold)
+
+std::string formattext(std::string line, int color, int style)
 {
-    string fcolor="";
-    if (!nightmode)
-        fcolor="blue";
-    else
-        fcolor="lightblue";
-    bool isnumber = is_number(line);
-    string formatedcolor;
-    string formatedtag;
-    int i;
-    if (color != 10 && color != 20) {
+    std::string result = line;
+    std::string fcolor = nightmode ? "lightblue" : "blue";
+    bool isNum = is_number(line);
+    std::string styled;
+
+    // Apply color
     switch (color) {
-        case 0: //none
-        formatedcolor = line;
-        break;
-        case 1: // red
-        formatedcolor = "<font color=\"red\">" +line+ "</font>";
-        break;
-        case 2: // blue
-        formatedcolor = "<font color=\""+fcolor+"\">" +line+ "</font>";
-        break;
-
-
+    case 1: styled = "<font color=\"red\">" + line + "</font>"; break;
+    case 2: styled = "<font color=\"" + fcolor + "\">" + line + "</font>"; break;
+    case 3: styled = "<font color=\"green\">" + line + "</font>"; break;
+    default: styled = line; break;
     }
-    switch (bold) {
-        case 0: //none
-        formatedtag = formatedcolor;
-        break;
-        case 1: //bold
-        formatedtag = "<b>" +formatedcolor+"</b>";
-        break;
-        case 2: //italic
-        formatedtag = "<i>" +formatedcolor+"</i>";
-        break;
-        case 3: //bold & italic
-        formatedtag = "<i><b>" +formatedcolor+"</b></i>";
-        break;
 
+    // Apply style
+    switch (style) {
+    case 1: result = "<b>" + styled + "</b>"; break;
+    case 2: result = "<i>" + styled + "</i>"; break;
+    case 3: result = "<i><b>" + styled + "</b></i>"; break;
+    case 4: result = "<u>" + styled + "</u>"; break;
+    case 5: result = "<s>" + styled + "</s>"; break;
+    default: result = styled; break;
     }
-    }
-    else formatedtag = line;
-    //qDebug() <<  QString::fromStdString(formatedtag);
-    if (color == 10) for (i=1;i<bold;i++) formatedtag=formatedtag+"&emsp;"; //tab after
-    if (color == 20) for (i=1;i<bold;i++) formatedtag="&emsp;"+formatedtag; //tab before
-    // html == "#include &lt;QtCore&gt;"
 
-    if (isnumber) {
-        string nrprop = numberproperties(QString::fromStdString(line)).toUtf8().constData();
-        formatedtag =  "<span title=\""+nrprop+"\">"+formatedtag+"</span>";
+    // Tabs
+    if (color == 10) {
+        for (int i = 1; i < style; i++) result += "&emsp;";
+    } else if (color == 20) {
+        for (int i = 1; i < style; i++) result = "&emsp;" + result;
     }
-    //writetmpfile("<span title=\"them's hoverin' words\">hover me</span>");
-    return formatedtag;
+
+    // Tooltip for number properties
+    if (isNum) {
+        std::string tooltip = numberproperties(QString::fromStdString(line)).toUtf8().constData();
+        result = "<span title=\"" + tooltip + "\">" + result + "</span>";
+    }
+
+    return result;
 }
 
 
@@ -252,7 +224,7 @@ QString numberproperties(QString number)
     int str2num = 100000+number.toInt();
     QString retstr = "";
     if (str2num > 100000) {
-    retstr = "Prime:"+QString::fromStdString(isprime(str2num))+"<br>";
+    retstr = "Prime:"+QString::fromStdString(isprime(str2num,primes))+"<br>";
     retstr += "Triangular:"+QString::fromStdString(istriangular(str2num))+"<br>";
     retstr += "Prime related:"+numberseat('P',str2num-100000)+"<br>";
     retstr += "Triangular related:"+numberseat('T',str2num-100000);
@@ -437,38 +409,27 @@ int reverse(int sum){
 }
 
 
-int getnprime(int prime)
-{
-    if ( prime % 2 == 0 && prime != 2) return 0;
-    else {
-      int i,i2, nprime = 3;
-      bool isPrime = true;
-      for(i = 2; i <= prime / 2; ++i)
-      {
-          if(prime % i == 0)
-          {
-              isPrime = false;
-              break;
-          }
-      }
+int getnprime(int prime) {
+    if (prime < 2) return 0;
 
-      if (isPrime) {
-          for(i2 = 2; i2 <= prime; ++i2) {
-              isPrime = true;
-              for(i = 2; i <= i2 / 2; ++i)
-                  if(i2 % i == 0)
-                  {
-                      isPrime = false;
-                      break;
-                  }
-              if (isPrime) nprime ++;
-          }
-          return nprime-3;
-      }
-      else
-          return 0;
+    int count = 0;
+    for (int num = 2; num <= prime; ++num) {
+        bool isPrime = true;
+        for (int i = 2; i * i <= num; ++i) {
+            if (num % i == 0) {
+                isPrime = false;
+                break;
+            }
+        }
+        if (isPrime) {
+            ++count;
+            if (num == prime) return count;  // Found the prime, return its position
+        }
     }
+
+    return 0;  // Not a prime
 }
+
 
 int getntriangular(int tri)
 {
@@ -485,7 +446,7 @@ int getntriangular(int tri)
 
 }
 
-int getwordnumericvalue(std::string word, int reduced, int reversed, int type) // type 0 english ordenal, 1 Single Reduction, 2 Francis Bacon, 3 Satanic, 4 Jewish, 5 Sumerian
+int getwordnumericvalue(std::string word, int reduced, int reversed, int type) // type 0 English ordenal, 1 Single Reduction, 2 Francis Bacon, 3 Satanic, 4 Jewish, 5 Sumerian
 {
         int s1 = 0, sum = 0;// for summing the letter values.
         if (type != 2) tolowerCase(word);
@@ -666,73 +627,46 @@ void logtime() {
        logline.str(std::string());
 }
 
-std::string isprime(int prime)
+std::string getOrdinalSuffix(int number)
 {
-   /* bool primetrue=true;
-    bool noformat = false;
-    int i;
-    std::stringstream ss;
-    if (prime >= 100000) {
-        noformat = true;
-        prime -= 100000;
-    }
-    if ( prime % 2 == 0 && prime != 2) primetrue=false;
-    if ( prime % 3 == 0) primetrue=false;
-    if ( prime % 5 == 0) primetrue=false;
-    if ( prime % 7 == 0) primetrue=false;
-    if (primetrue) {
-        qDebug() << prime;
-    i=prime;
-    do {
-        i--;
-    }
-    while (prime != primes[i-1]) ;
-    }
-    if (primetrue) {
-    ss << "Yes-" << i;
-    if (noformat) return ss.str();
-    else return formattext(ss.str(),2,2);
-    } else return "No";*/
+    int last_two = number % 100;
+    if (last_two >= 11 && last_two <= 13)
+        return "th";
 
-    bool noformat = false;
-    if (prime >= 100000) {
-        noformat = true;
-        prime -= 100000;
-    }
-    if ( prime % 2 == 0 && prime != 2) return "No";
-    else {
-      std::stringstream ss;
-      int i,i2, nprime = 3;
-      bool isPrime = true;
-      for(i = 2; i <= prime / 2; ++i)
-      {
-          if(prime % i == 0)
-          {
-              isPrime = false;
-              break;
-          }
-      }
-
-      if (isPrime) {
-          for(i2 = 2; i2 <= prime; ++i2) {
-              isPrime = true;
-              for(i = 2; i <= i2 / 2; ++i)
-                  if(i2 % i == 0)
-                  {
-                      isPrime = false;
-                      break;
-                  }
-              if (isPrime) nprime ++;
-          }
-          ss << "Yes-" << nprime-3;
-
-          if (noformat) return ss.str();
-          else return formattext(ss.str(),2,2);
-      }
-      else
-          return "No";
+    int last_digit = number % 10;
+    switch (last_digit) {
+    case 1: return "st";
+    case 2: return "nd";
+    case 3: return "rd";
+    default: return "th";
     }
 }
+
+
+std::string isprime(int prime, const std::vector<int>& primes)
+{
+    bool noformat = false;
+
+    if (prime >= 100000) {
+        noformat = true;
+        prime -= 100000;
+    }
+
+    auto it = std::lower_bound(primes.begin(), primes.end(), prime);
+    if (it != primes.end() && *it == prime) {
+        int index = std::distance(primes.begin(), it) + 1; // 1-based index
+
+        std::stringstream ss;
+        ss << "Yes (" << index << getOrdinalSuffix(index) << " Prime)";
+
+        return noformat ? ss.str() : formattext(ss.str(), 2, 2);
+    }
+
+    return noformat ? "No" : formattext("No", 2, 2);
+}
+
+
+
 
 QString deletelastline() {
     std::string line;
@@ -769,21 +703,24 @@ std::string istriangular(int tri)
         noformat = true;
         tri -= 100000;
     }
-    int i, ntri = 0;
-    std::stringstream ss;
-    bool isTri = true;
-    if (floor(sqrt(8*tri+1)) != sqrt(8*tri+1)) isTri = false;
-    if (isTri) {
-        for(i = 1; i <= tri; ++i)
-            if (floor(sqrt(8*i+1)) == sqrt(8*i+1)) ntri++;
-        ss << "Yes-" << ntri;
-        if (noformat) return ss.str();
-        else return formattext(ss.str(),2,2);
-    }
-    else
-        return "No";
 
+    // Check if 8 * n + 1 is a perfect square
+    bool isTri = floor(sqrt(8 * tri + 1)) == sqrt(8 * tri + 1);
+    if (!isTri)
+        return noformat ? "No" : formattext("No", 2, 2);
+
+    // Count which triangular number it is
+    int ntri = 0;
+    for (int i = 1; i <= tri; ++i) {
+        if (floor(sqrt(8 * i + 1)) == sqrt(8 * i + 1))
+            ntri++;
+    }
+
+    std::stringstream ss;
+    ss << "Yes (" << ntri << getOrdinalSuffix(ntri) << " Triangular)";
+    return noformat ? ss.str() : formattext(ss.str(), 2, 2);
 }
+
 
 std::string tolowerCase(std::string &str)
 {

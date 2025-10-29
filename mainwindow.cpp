@@ -73,6 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     QDate cd = QDate::currentDate();
+    setWindowIcon(QIcon(":/new/icon/g_black.png"));
     year = cd.year();
     dd = cd.day();
     mm = cd.month();
@@ -152,6 +153,7 @@ MainWindow::MainWindow(QWidget *parent)
     std::setlocale(LC_ALL,"");
     //QAbstractScrollArea(ui->textBrowser).scroll(60,60);
     ui->textBrowser->scroll(0,6000);
+    ui->textBrowser->moveCursor(QTextCursor::End);
             //int curr_locale = QLocale().language();
             //qDebug() << " String ="<< curr_locale << endl;
     if (DW=="true") welcome();
@@ -1238,7 +1240,7 @@ void MainWindow::on_actionAbout_triggered()
     msgBox.exec();
 
     if (msgBox.clickedButton()==pButtonYes) {
-        QMessageBox::about(this,"Donate","Donations can be done by Paypal to jonssofh@hotmail.com or cryptocurrency BTC 1HJ5xJmePkfrYwixbZJaMUcXosiJhYRLbo, Support is most appreciated.");
+        QMessageBox::about(this,"Donate","Donations can be done by cryptocurrency BTC bc1qqc7r9lyw6c9hx9t2vyeurcsylstvdcdplv8g6z, Support is most appreciated.");
     }
 }
 
@@ -1369,8 +1371,8 @@ void MainWindow::show_news(const QString& source)
 {
     if (filesource != "") {
         //qDebug() << source;
-        headdialog = new headDialog(this);
-        headdialog->setWindowTitle("News Headlines - "+source);
+        headDialog *dialog = new headDialog(source, source, this);
+        dialog->setWindowTitle("News Headlines - " + source);
         headdialog->show();
     }
 }
@@ -1381,8 +1383,8 @@ void MainWindow::on_action_News_headlines_exp_triggered()
     Httpdownload->setWindowTitle("News Download");
 
     Httpdownload->show();
-    connect(Httpdownload, SIGNAL(dl_ready(QString)),
-            this, SLOT(show_news(QString)));
+    //connect(Httpdownload, SIGNAL(dl_ready(QString)),
+    //        this, SLOT(show_news(QString)));
 }
 
 void MainWindow::on_actionNightmode_triggered(bool arg1)
