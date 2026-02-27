@@ -19,6 +19,16 @@ using std::to_string;
 
 constexpr int BUFFERSIZE = 256;
 int pos;
+
+// Check if a moon phase type passes the current lunar_filter
+// lunar_filter: 0=off, 1=New+Full only, 2=all phases
+static bool lunarPhaseAllowed(int phaseType)
+{
+    if (lunar_filter == 0) return false;
+    if (lunar_filter == 1) return (phaseType == 1 || phaseType == 3); // New Moon + Full Moon only
+    return true; // lunar_filter == 2: all phases
+}
+
 /*
   QString::fromStdString(string)  <- from string to Qstring
   QString::number(int) <- from int to QString
@@ -1087,15 +1097,6 @@ QString getMoonPhaseName(int type)
         case 4: return "Last Quarter";
         default: return "Unknown";
     }
-}
-
-// Check if a moon phase type passes the current lunar_filter
-// lunar_filter: 0=off, 1=New+Full only, 2=all phases
-static bool lunarPhaseAllowed(int phaseType)
-{
-    if (lunar_filter == 0) return false;
-    if (lunar_filter == 1) return (phaseType == 1 || phaseType == 3); // New Moon + Full Moon only
-    return true; // lunar_filter == 2: all phases
 }
 
 void computelunarphases(int dd, int mm, int year)
