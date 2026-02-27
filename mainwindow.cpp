@@ -40,6 +40,7 @@ QString phrase = "<none>";
 QString pwd = QDir::currentPath() + "/tmp.htm";
 unique_ptr<QFile> file = make_unique<QFile>(pwd);
 bool nightmode=true;
+int lunar_filter=0; // 0=off, 1=New+Full only, 2=all phases
 QString appgroup="GAnalyzer";
 
 QString filesource;
@@ -113,6 +114,17 @@ MainWindow::MainWindow(QWidget *parent)
     QString DW = readSettings("settings.txt","DW"); //true
     QString HistX = readSettings("settings.txt","HistX");
     QString LNs = readSettings("settings.txt","LNs"); //false
+    QString lunarF = readSettings("settings.txt","lunarF");
+    if (lunarF == "1") {
+        lunar_filter = 1;
+        ui->actionLunar_filter->setText("Lunar: New+Full");
+    } else if (lunarF == "2") {
+        lunar_filter = 2;
+        ui->actionLunar_filter->setText("Lunar: All phases");
+    } else {
+        lunar_filter = 0;
+        ui->actionLunar_filter->setText("Lunar: Off");
+    }
     if (ssplit == "false") ui->actionSentence_split->setChecked(false);
     if (DW == "none") DW="true";
     if (HistX == "none") HistX="true";
@@ -194,6 +206,7 @@ MainWindow::~MainWindow()
 
     if (ui->actionLine_numbers_in_view->isChecked()) writeSettings(filename,"LNs","true");
     else writeSettings(filename,"LNs","false");
+    writeSettings(filename,"lunarF",std::to_string(lunar_filter));
     if (ui->actionSentence_split->isChecked()) ssplit = "true";
     else ssplit = "false";
     writeSettings(filename,"ssplit",ssplit);
@@ -1543,6 +1556,17 @@ void MainWindow::on_actionLine_numbers_in_view_toggled(bool arg1)
 {
     if (arg1) linenumbers=1;
     else linenumbers=0;
+}
+
+void MainWindow::on_actionLunar_filter_triggered()
+{
+    // Cycle: 0 (Off) -> 1 (New+Full) -> 2 (All phases) -> 0 (Off)
+    lunar_filter = (lunar_filter + 1) % 3;
+    switch(lunar_filter) {
+        case 0: ui->actionLunar_filter->setText("Lunar: Off"); break;
+        case 1: ui->actionLunar_filter->setText("Lunar: New+Full"); break;
+        case 2: ui->actionLunar_filter->setText("Lunar: All phases"); break;
+    }
 }
 
 void MainWindow::on_actionSelect_history_file_triggered()

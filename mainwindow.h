@@ -26,6 +26,7 @@ extern int zerodays[8][250],lunardays[8][500],linenumbers;
 extern QString hmem[10];
 extern QString appgroup;
 extern bool nightmode;
+extern int lunar_filter; // 0=off, 1=New+Full only, 2=all phases
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -135,6 +136,8 @@ private slots:
     void on_actionLine_numbers_in_view_toggled(bool arg1);
 
     void on_actionSelect_history_file_triggered();
+
+    void on_actionLunar_filter_triggered();
 
 private:
     Ui::MainWindow *ui;

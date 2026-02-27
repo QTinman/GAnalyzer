@@ -59,7 +59,7 @@ QString loopYear(int ns, int dd, int mm, int year, int printcal, bool eudate)
     QString buffer;
 
     readsolarfile(dd, mm, year);
-    computelunarphases(dd, mm, year);
+    if (lunar_filter > 0) computelunarphases(dd, mm, year);
 
     for (int i = 0; i < mm2; ++i) {
         QDate cd(year, i + 1, 1);
@@ -154,9 +154,9 @@ QString loopYear(int ns, int dd, int mm, int year, int printcal, bool eudate)
                         buffer += printzerodays(dateval, monthval, year, ns, layer, "", eudate, false);
                     }
                 }
-                // Also search lunar phases
+                // Also search lunar phases (filtered by lunar_filter setting)
                 for (int layer = 1; layer <= 4; ++layer) {
-                    if (searchlunardays(ns, layer, dateval, monthval, year) == ns) {
+                    if (lunarPhaseAllowed(layer) && searchlunardays(ns, layer, dateval, monthval, year) == ns) {
                         buffer += printlunardays(dateval, monthval, year, ns, layer, "", eudate, false);
                     }
                 }
@@ -191,9 +191,9 @@ void processNS(int ns, int dd, int mm, int year, QString& buffer, bool eudate, c
         if (searchzerodays(ns, layer, 0, 0, 0) > 0)
             buffer += printzerodays(dd, mm, year, ns, layer, "", eudate, true);
     }
-    // Also search lunar phases
+    // Also search lunar phases (filtered by lunar_filter setting)
     for (int layer = 1; layer <= 4; ++layer) {
-        if (searchlunardays(ns, layer, 0, 0, 0) > 0)
+        if (lunarPhaseAllowed(layer) && searchlunardays(ns, layer, 0, 0, 0) > 0)
             buffer += printlunardays(dd, mm, year, ns, layer, "", eudate, true);
     }
 }
@@ -210,7 +210,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2, bool eudate) 
     int y3 = (year - (y1 * 1000) - (y2 * 100)) / 10;
     int y4 = year - (y1 * 1000) - (y2 * 100) - (y3 * 10);
     readsolarfile(dd, mm, year);
-    computelunarphases(dd, mm, year);
+    if (lunar_filter > 0) computelunarphases(dd, mm, year);
 
     m1 = mm / 10;
     m2 = mm % 10;
@@ -1089,6 +1089,15 @@ QString getMoonPhaseName(int type)
     }
 }
 
+// Check if a moon phase type passes the current lunar_filter
+// lunar_filter: 0=off, 1=New+Full only, 2=all phases
+static bool lunarPhaseAllowed(int phaseType)
+{
+    if (lunar_filter == 0) return false;
+    if (lunar_filter == 1) return (phaseType == 1 || phaseType == 3); // New Moon + Full Moon only
+    return true; // lunar_filter == 2: all phases
+}
+
 void computelunarphases(int dd, int mm, int year)
 {
     // Reference New Moon: January 6, 2000
@@ -1654,7 +1663,7 @@ QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool tri
         runsolar=true;
     }
     readsolarfile(dd,mm,year);
-    computelunarphases(dd,mm,year);
+    if (lunar_filter > 0) computelunarphases(dd,mm,year);
     size_t found = phrase.find(",");
     if (found < phrase.length()) {
         s1 = phrase.substr(0,found);
@@ -1872,16 +1881,16 @@ bool phrasetodate(int ns, int dd, int mm, int year, int i) {
        if (ns == a_seconddate("month_full")) return true;
        break;
    case 36 :
-     if (searchlunardays(ns,1,0,0,0) > 0) return true; // New Moon
+     if (lunarPhaseAllowed(1) && searchlunardays(ns,1,0,0,0) > 0) return true; // New Moon
      break;
    case 37 :
-     if (searchlunardays(ns,2,0,0,0) > 0) return true; // First Quarter
+     if (lunarPhaseAllowed(2) && searchlunardays(ns,2,0,0,0) > 0) return true; // First Quarter
      break;
    case 38 :
-     if (searchlunardays(ns,3,0,0,0) > 0) return true; // Full Moon
+     if (lunarPhaseAllowed(3) && searchlunardays(ns,3,0,0,0) > 0) return true; // Full Moon
      break;
    case 39 :
-     if (searchlunardays(ns,4,0,0,0) > 0) return true; // Last Quarter
+     if (lunarPhaseAllowed(4) && searchlunardays(ns,4,0,0,0) > 0) return true; // Last Quarter
      break;
    }
  return false;

@@ -198,6 +198,7 @@
      <addaction name="actionLine_numbers_in_view"/>
      <addaction name="actionRemove_view_history_on_exit"/>
      <addaction name="actionDisplay_Welcome"/>
+     <addaction name="actionLunar_filter"/>
     </widget>
     <addaction name="actionNew_Phrase"/>
     <addaction name="actionNew_Date"/>
@@ -507,6 +508,11 @@
    </property>
    <property name="text">
     <string>Select &amp;history file</string>
+   </property>
+  </action>
+  <action name="actionLunar_filter">
+   <property name="text">
+    <string>Lunar: Off</string>
    </property>
   </action>
  </widget>
