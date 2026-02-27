@@ -14,6 +14,7 @@ cipherDialog::cipherDialog(QWidget *parent) :
     if (jewish_on) ui->jewish->setChecked(true);
     if (sumerian_on) ui->sumerian->setChecked(true);
     if (rev_sumerian_on) ui->rev_sumerian->setChecked(true);
+    if (fibonacci_on) ui->fibonacci->setChecked(true);
 }
 
 cipherDialog::~cipherDialog()
@@ -35,5 +36,7 @@ void cipherDialog::on_buttonBox_accepted()
     else sumerian_on = false;
     if (ui->rev_sumerian->isChecked()) rev_sumerian_on = true;
     else rev_sumerian_on = false;
+    if (ui->fibonacci->isChecked()) fibonacci_on = true;
+    else fibonacci_on = false;
     //if (primeson) qDebug() << "Prime is on";
 }

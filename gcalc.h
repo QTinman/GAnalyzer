@@ -33,7 +33,8 @@ enum class CipherType {
     FrancisBacon = 3,
     Satanic = 4,
     Jewish = 5,
-    Sumerian = 6
+    Sumerian = 6,
+    Fibonacci = 7
 };
 
 QString buildDDMMExpr(const QString& d1, const QString& d2, const QString& m1, const QString& m2);

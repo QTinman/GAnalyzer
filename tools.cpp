@@ -455,8 +455,10 @@ int getntriangular(int tri)
 
 }
 
-int getwordnumericvalue(std::string word, int reduced, int reversed, int type) // type 0 English ordenal, 1 Single Reduction, 2 Francis Bacon, 3 Satanic, 4 Jewish, 5 Sumerian
+int getwordnumericvalue(std::string word, int reduced, int reversed, int type) // type 0 English ordenal, 1 Single Reduction, 2 Francis Bacon, 3 Satanic, 4 Jewish, 5 Sumerian, 6 Fibonacci
 {
+        // Fibonacci palindrome: A=1,B=1,C=2,D=3,E=5,F=8,G=13,H=21,I=34,J=55,K=89,L=144,M=233,N=233,O=144,P=89,Q=55,R=34,S=21,T=13,U=8,V=5,W=3,X=2,Y=1,Z=1
+        static const int fibonacci_values[26] = {1,1,2,3,5,8,13,21,34,55,89,144,233,233,144,89,55,34,21,13,8,5,3,2,1,1};
         int s1 = 0, sum = 0;// for summing the letter values.
         if (type != 2) tolowerCase(word);
         for(size_t i=0; i<word.size(); ++i){	    	// loop through the string 1 char at a time
@@ -482,6 +484,9 @@ int getwordnumericvalue(std::string word, int reduced, int reversed, int type) /
                 }
 
             }
+            if (type == 6 && int(word[i]) <= 122 && int(word[i]) >= 97) { // Fibonacci
+                sum = fibonacci_values[int(word[i]) - 97];
+            }
             if (reversed == 1 && int(word[i]) <= 122 && int(word[i]) >= 97){
                 sum = reverse(sum);
                 if (type == 5) sum = sum*6;
@@ -501,7 +506,7 @@ int getwordnumericvalue(std::string word, int reduced, int reversed, int type) /
 
 bool findword(int c1, std::string line)
 {
-    int ns1 = 0,ns2 = 0,ns3 = 0,ns4 = 0,ns5 = 0,ns6 = 0,ns7 = 0,ns8 = 0,ns9=0,ns10=0;
+    int ns1 = 0,ns2 = 0,ns3 = 0,ns4 = 0,ns5 = 0,ns6 = 0,ns7 = 0,ns8 = 0,ns9=0,ns10=0,ns11=0;
     ns1 = getwordnumericvalue(line,0,0,0);
     ns2 = getwordnumericvalue(line,1,0,0);
     ns3 = getwordnumericvalue(line,0,1,0);
@@ -512,7 +517,8 @@ bool findword(int c1, std::string line)
     if (jewish_on) ns8 = getwordnumericvalue(line,0,0,4);
     if (sumerian_on) ns9 = getwordnumericvalue(line,0,0,5);
     if (rev_sumerian_on) ns10 = getwordnumericvalue(line,0,1,5);
-     if (c1 == ns1 || c1 == ns2 || c1 == ns3 || c1 ==ns4 || c1 ==ns5 || c1 ==ns6 || c1 ==ns7 || c1 ==ns8 || c1 ==ns9 || c1 ==ns10)
+    if (fibonacci_on) ns11 = getwordnumericvalue(line,0,0,6);
+     if (c1 == ns1 || c1 == ns2 || c1 == ns3 || c1 ==ns4 || c1 ==ns5 || c1 ==ns6 || c1 ==ns7 || c1 ==ns8 || c1 ==ns9 || c1 ==ns10 || c1 ==ns11)
         {
             return true;
         }

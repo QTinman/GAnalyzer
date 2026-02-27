@@ -19,7 +19,7 @@
 extern QString phrase;
 extern QString labeltext,tmpstring;
 extern int year,dd,mm,ns,d2,m2,y2,filter,hmempos;
-extern bool single_r_on,francis_on,satanic_on,jewish_on,sumerian_on,rev_sumerian_on;
+extern bool single_r_on,francis_on,satanic_on,jewish_on,sumerian_on,rev_sumerian_on,fibonacci_on;
 extern std::vector<int> primes;
 extern QString filesource;
 extern int zerodays[8][250],lunardays[8][500],linenumbers;

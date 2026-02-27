@@ -46,7 +46,7 @@ QString appgroup="GAnalyzer";
 QString filesource;
 QString labeltext,tmpstring;
 int year,dd,mm,ns,d2,m2,y2,filter,hmempos = -1;
-bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false,sumerian_on=false,rev_sumerian_on=false;
+bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false,sumerian_on=false,rev_sumerian_on=false,fibonacci_on=false;
 
 void MainWindow::SieveOfEratosthenes(vector<int> &primes)
 {
@@ -151,6 +151,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (ciphers.mid(3,1) == "1") jewish_on = true;
     if (ciphers.mid(4,1) == "1") sumerian_on = true;
     if (ciphers.mid(5,1) == "1") rev_sumerian_on = true;
+    if (ciphers.mid(6,1) == "1") fibonacci_on = true;
     if (nightm == "true") {
         nightmode = true;
         ui->actionNightmode->setChecked(true);
@@ -196,6 +197,8 @@ MainWindow::~MainWindow()
     if (sumerian_on) ciphers += "1";
     else ciphers += "0";
     if (rev_sumerian_on) ciphers += "1";
+    else ciphers += "0";
+    if (fibonacci_on) ciphers += "1";
     else ciphers += "0";
     //qDebug() << ciphers;
     char filename[13] = "settings.txt";
@@ -834,20 +837,22 @@ void MainWindow::on_lineEdit_returnPressed()
                 }
             case 'r':
             {
-                if (jewish_on && single_r_on && francis_on && satanic_on && sumerian_on && rev_sumerian_on) {
+                if (jewish_on && single_r_on && francis_on && satanic_on && sumerian_on && rev_sumerian_on && fibonacci_on) {
                     single_r_on=false;
                     francis_on=false;
                     satanic_on=false;
                     jewish_on=false;
                     sumerian_on=false;
                     rev_sumerian_on=false;
-                } else if (!jewish_on && !single_r_on && !francis_on && !satanic_on && !sumerian_on && !rev_sumerian_on) {
+                    fibonacci_on=false;
+                } else if (!jewish_on && !single_r_on && !francis_on && !satanic_on && !sumerian_on && !rev_sumerian_on && !fibonacci_on) {
                     single_r_on=true;
                     francis_on=true;
                     satanic_on=true;
                     jewish_on=true;
                     sumerian_on=true;
                     rev_sumerian_on=true;
+                    fibonacci_on=true;
                 }
                 break;
             }
@@ -1083,6 +1088,10 @@ void MainWindow::on_actionList_Ciphers_triggered()
     writetmpfile("Reverse Sumerian");
     writetmpfile(listciphers(0,1,5));
     }
+    if (fibonacci_on) {
+    writetmpfile("Fibonacci");
+    writetmpfile(listciphers(0,0,6));
+    }
 }
 
 void MainWindow::on_actionList_Primenumbers_triggered()
@@ -1125,6 +1134,7 @@ void MainWindow::on_actionCompare_phrase_to_history_triggered() //Ctrl-T
     if (ns == 8) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Jewish",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     if (ns == 9) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Sumerian",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     if (ns == 10) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Reverse Sumerian",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 11) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Fibonacci",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     }
     }
 }
@@ -1142,6 +1152,7 @@ selectDialog::selectDialog(QWidget *parent) :
         ui->SingleRed->hide();
         ui->Sumerian->hide();
         ui->rev_sumerian->hide();
+        ui->Fibonacci->hide();
         ui->radioButton1->setText("Total Solar Eclipse");
         ui->radioButton2->setText("Annular Solar Eclipse");
         ui->radioButton3->setText("Partial Solar Eclipse");
@@ -1155,6 +1166,7 @@ selectDialog::selectDialog(QWidget *parent) :
         ui->SingleRed->hide();
         ui->Sumerian->hide();
         ui->rev_sumerian->hide();
+        ui->Fibonacci->hide();
         ui->radioButton1->setText("New Moon");
         ui->radioButton2->setText("First Quarter");
         ui->radioButton3->setText("Full Moon");
@@ -1168,6 +1180,7 @@ selectDialog::selectDialog(QWidget *parent) :
     if (!jewish_on) ui->Jewish->hide();
     if (!sumerian_on) ui->Sumerian->hide();
     if (!rev_sumerian_on) ui->rev_sumerian->hide();
+    if (!fibonacci_on) ui->Fibonacci->hide();
     }
 
 }
@@ -1190,6 +1203,7 @@ void selectDialog::displaydialog()
     if (ui->Jewish->isChecked()) ns = 8;
     if (ui->Sumerian->isChecked()) ns = 9;
     if (ui->rev_sumerian->isChecked()) ns = 10;
+    if (ui->Fibonacci->isChecked()) ns = 11;
     }
     if (labeltext == "Date to history") {
     if (ui->radioButton1->isChecked()) filter = 1;
@@ -1202,6 +1216,7 @@ void selectDialog::displaydialog()
     if (ui->Jewish->isChecked()) filter = 8;
     if (ui->Sumerian->isChecked()) filter = 9;
     if (ui->rev_sumerian->isChecked()) filter = 10;
+    if (ui->Fibonacci->isChecked()) filter = 11;
     }
     if (labeltext == "solar") {
     if (ui->radioButton1->isChecked()) filter = 1;

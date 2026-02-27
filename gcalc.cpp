@@ -847,7 +847,8 @@ QString solar2history(int dd, int mm, int year, int type, bool eudate)
         {satanic_on, 0, 0, 3, "Satanic"},
         {jewish_on, 0, 0, 4, "Jewish"},
         {sumerian_on, 0, 0, 5, "Sumerian"},
-        {rev_sumerian_on, 0, 1, 5, "Reverse Sumerian"}
+        {rev_sumerian_on, 0, 1, 5, "Reverse Sumerian"},
+        {fibonacci_on, 0, 0, 6, "Fibonacci"}
     };
     constexpr int numCiphers = sizeof(ciphers) / sizeof(ciphers[0]);
 
@@ -1412,7 +1413,8 @@ QString lunar2history(int dd, int mm, int year, int type, bool eudate)
         {satanic_on, 0, 0, 3, "Satanic"},
         {jewish_on, 0, 0, 4, "Jewish"},
         {sumerian_on, 0, 0, 5, "Sumerian"},
-        {rev_sumerian_on, 0, 1, 5, "Reverse Sumerian"}
+        {rev_sumerian_on, 0, 1, 5, "Reverse Sumerian"},
+        {fibonacci_on, 0, 0, 6, "Fibonacci"}
     };
     constexpr int numCiphers = sizeof(ciphers) / sizeof(ciphers[0]);
 
@@ -1616,6 +1618,9 @@ int getns(string phrase, int out, int pt)
     case 10 :
         if (rev_sumerian_on) ns = getwordnumericvalue(phrase,0,1,5);
         break;
+    case 11 :
+        if (fibonacci_on) ns = getwordnumericvalue(phrase,0,0,6);
+        break;
     }
     if (pt == 1) ns = getnprime(ns);
     if (pt == 2) ns = getntriangular(ns);
@@ -1631,7 +1636,7 @@ int counter(string phrase, int dd, int mm, int year,int minimum,bool runsolar, b
         for_end=14;
         if (!chipers & !prime & !triangular) chipers=true;
     }
-    for(nrns=1;nrns<=10;nrns++){
+    for(nrns=1;nrns<=11;nrns++){
         for(i=for_start;i<=for_end;i++){
            if (chipers) if (getns(phrase,nrns,0) > 0) if (phrasetodate(getns(phrase,nrns,0),dd,mm,year,i)) rank += 1;
            if (prime) if (getns(phrase,nrns,1) > 0) if (phrasetodate(getns(phrase,nrns,1),dd,mm,year,i)) rank += 1;
@@ -2274,6 +2279,12 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Reverse Sumerian",eudate);
         found = true;
     }
+    if (filter==11||!hlist) ns = getwordnumericvalue(phrase,0,0,6); //Fibonacci
+    for(i=1;i<=39;i++)
+    if (phrasetodate(ns,dd,mm,year,i) && (filter==11||!hlist) && fibonacci_on) {
+        if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Fibonacci",eudate);
+        found = true;
+    }
     if (found) {
         used = false;
         //ex1 << ns << " " << phrase.size() ;
@@ -2797,6 +2808,11 @@ QString date2history(int dd, int mm, int year,bool hlist, bool eudate,int filter
         buffer += QString::fromStdString(logline.str());
         savelog(logline.str());
       break;
+    case 11 :
+        logline << "<br>Fibonacci - connected to date. " << formattext(std::to_string(d1),1,1) << "/" << formattext(std::to_string(d2),1,1) << "/" << formattext(std::to_string(year),1,1) <<"<br>";
+        buffer += QString::fromStdString(logline.str());
+        savelog(logline.str());
+      break;
     }
 
 
@@ -2965,9 +2981,9 @@ QString printallwords(string line, char save, bool header, bool simpleprint)
 
 QString printword(string line, char save, bool header, bool simpleprint)
 {
-    int ns1,ns2,ns3,ns4,ns5,ns6,ns7,ns8,ns9,ns10;
+    int ns1,ns2,ns3,ns4,ns5,ns6,ns7,ns8,ns9,ns10,ns11;
     string tabs;
-    QString buffer,qs1,qs2,qs3,qs4,qs5,qs6="",qs7="",qs8="",qs9="",qs10="",qs11="";
+    QString buffer,qs1,qs2,qs3,qs4,qs5,qs6="",qs7="",qs8="",qs9="",qs10="",qs11="",qs12="";
     ns1 = getwordnumericvalue(line,0,0,0); //English Ordinal
     ns2 = getwordnumericvalue(line,1,0,0); //Full Reduction
     ns3 = getwordnumericvalue(line,0,1,0); //Reverse Ordinal
@@ -2978,6 +2994,7 @@ QString printword(string line, char save, bool header, bool simpleprint)
     ns8 = getwordnumericvalue(line,0,0,4); //Jewish
     ns9 = getwordnumericvalue(line,0,0,5); //Sumerian
     ns10 = getwordnumericvalue(line,0,1,5); //Reverse Sumerian
+    ns11 = getwordnumericvalue(line,0,0,6); //Fibonacci
     eraseAllSubStr(line,"<br>");
     stringstream logline;
     if (header) logtime();
@@ -3044,6 +3061,12 @@ QString printword(string line, char save, bool header, bool simpleprint)
           buffer += tobuffer(QString::fromStdString(logline.str()));
           savelog(logline.str());
       }
+      if (fibonacci_on) {
+          logline.str("");
+          logline << "Fibonacci : &emsp;" << charnumeric(0,0,line,6) << formattext(std::to_string(ns11),1,1) << " Prime? "<< isprime(ns11, primes) << " Triangular? " << istriangular(ns11) << "<br>";
+          buffer += tobuffer(QString::fromStdString(logline.str()));
+          savelog(logline.str());
+      }
     }
     if (simpleprint) {
      logline << "<br>" << line << tabs << ns1 << "&emsp;" << ns2 << "&emsp;" << ns3 << "&emsp;" << ns4 << "&emsp;";
@@ -3061,8 +3084,9 @@ QString printword(string line, char save, bool header, bool simpleprint)
      if (jewish_on) qs9 = Qtotable("Jew " + QString::fromStdString(formattext(std::to_string(ns8),1,1)),0,0,1,70);
      if (sumerian_on) qs10 = Qtotable("Sum " + QString::fromStdString(formattext(std::to_string(ns9),1,1)),0,0,1,70);
      if (rev_sumerian_on) qs11 = Qtotable("RS " + QString::fromStdString(formattext(std::to_string(ns10),1,1)),0,0,1,70);
+     if (fibonacci_on) qs12 = Qtotable("Fib " + QString::fromStdString(formattext(std::to_string(ns11),1,1)),0,0,1,70);
      //buffer += "<br>" + qs1 + "&emsp;EO " + qs2 + "&emsp;FR " + qs3 + "&emsp;RO " + qs4 + "&emsp;RF " + qs5 + "&emsp;" + qs6 + "&emsp;" + qs7 + "&emsp;" + qs8 + "&emsp;" + qs9;
-     buffer += Qtotable("",0,1,0,0)+Qtotable(qs1,0,0,1,150) + Qtotable("EO " + qs2,0,0,1,70) + Qtotable("FR " + qs3,0,0,1,70) + Qtotable("RO " + qs4,0,0,1,70) + Qtotable("RF " + qs5,0,0,1,70) + qs6+qs7+qs8+qs9+qs10+qs11+Qtotable("",0,2,0,0);
+     buffer += Qtotable("",0,1,0,0)+Qtotable(qs1,0,0,1,150) + Qtotable("EO " + qs2,0,0,1,70) + Qtotable("FR " + qs3,0,0,1,70) + Qtotable("RO " + qs4,0,0,1,70) + Qtotable("RF " + qs5,0,0,1,70) + qs6+qs7+qs8+qs9+qs10+qs11+qs12+Qtotable("",0,2,0,0);
      buffer += Qtotable("",2,0,0,0);
      savelog(logline.str());
     }
@@ -3189,6 +3213,10 @@ QString searchhistory(int i, string phrase) {
         break;
     case 10 :
         ns = getwordnumericvalue(phrase,0,1,5); //Reverse Sumerian
+
+        break;
+    case 11 :
+        ns = getwordnumericvalue(phrase,0,0,6); //Fibonacci
 
         break;
     }
