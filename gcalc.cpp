@@ -2205,6 +2205,8 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
     int i,ns=0;
     ex1.str("");
     found = false;
+    readsolarfile(dd, mm, year);
+    if (lunar_filter > 0) computelunarphases(dd, mm, year);
     if (!hlist) {
         logtime();
         logline.str("");
