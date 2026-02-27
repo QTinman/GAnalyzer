@@ -1567,6 +1567,9 @@ void MainWindow::on_actionLunar_filter_triggered()
         case 1: ui->actionLunar_filter->setText("Lunar: New+Full"); break;
         case 2: ui->actionLunar_filter->setText("Lunar: All phases"); break;
     }
+    // Save immediately so the setting persists
+    char filename[13] = "settings.txt";
+    writeSettings(filename,"lunarF",std::to_string(lunar_filter));
 }
 
 void MainWindow::on_actionSelect_history_file_triggered()
