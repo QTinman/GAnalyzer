@@ -33,7 +33,7 @@ using std::unique_ptr;
 using std::make_unique;
 
 constexpr int MAX_SIZE = 1000005;
-int zerodays[8][250], linenumbers=0;
+int zerodays[8][250], lunardays[8][500], linenumbers=0;
 QString hmem[10];
 vector<int> primes;
 QString phrase = "<none>";
@@ -782,6 +782,30 @@ void MainWindow::on_lineEdit_returnPressed()
                 break;
                 }
 
+            case 'm':
+                {
+                QString html;
+                int type=5;
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "N") type = 1; // New Moon
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "Q") type = 2; // First Quarter
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "F") type = 3; // Full Moon
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "L") type = 4; // Last Quarter
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "X") type = 5; // All
+                if (eudate) {if (valid_date(ui->lineEdit->text().mid(4,2).toInt(),ui->lineEdit->text().mid(7,2).toInt(),year) == 1) {
+                        if (ui->lineEdit->text().mid(10,4).toInt() > 0) html = lunarphase(ui->lineEdit->text().mid(4,2).toInt(),ui->lineEdit->text().mid(7,2).toInt(),ui->lineEdit->text().mid(10,4).toInt(),1,type,eudate);
+                        else if (ui->lineEdit->text().mid(2,1) != "") html = lunarphase(ui->lineEdit->text().mid(4,2).toInt(),ui->lineEdit->text().mid(7,2).toInt(),year,1,type,eudate);
+                    }
+                    else html = lunarphase(dd,mm,year, 1,type,eudate);
+                }else { if (valid_date(ui->lineEdit->text().mid(7,2).toInt(),ui->lineEdit->text().mid(4,2).toInt(),year) == 1) {
+                        if (ui->lineEdit->text().mid(10,4).toInt() > 0) html = lunarphase(ui->lineEdit->text().mid(7,2).toInt(),ui->lineEdit->text().mid(4,2).toInt(),ui->lineEdit->text().mid(10,4).toInt(),1,type,eudate);
+                        else lunarphase(ui->lineEdit->text().mid(7,2).toInt(),ui->lineEdit->text().mid(4,2).toInt(),year,1,type,eudate);
+                    }
+                    else if (type > 0) html = lunarphase(dd,mm,year,1,type,eudate);
+                 }
+                writetmpfile("<html>"+html+"</html>");
+                break;
+                }
+
             case 'o':
                 {
                 QString html;
@@ -961,6 +985,7 @@ void MainWindow::shorthelp()
         writetmpfile("<font color=\""+color+"\">/d##/##/####</font> date details (date is optional, year is extra option)");
         writetmpfile("<font color=\""+color+"\">/o#/##/##</font> Date compare to history (first number is filter 1-4, date is optional)");
         writetmpfile("<font color=\""+color+"\">/e@/##/##/####</font> Last and next Solar eclipse relative to date. @ is type \"T A P H-X=for all\" (date is optional, year is extra option)");
+        writetmpfile("<font color=\""+color+"\">/m@/##/##/####</font> Last and next Lunar phase relative to date. @ is type \"N=New Q=1stQtr F=Full L=LastQtr X=All\" (date is optional, year is extra option)");
         writetmpfile("<font color=\""+color+"\">/r</font> Toggle all extra ciphers on or off");
         writetmpfile("<font color=\""+color+"\">/x##</font> Add or subtract days from current date and set that date.");
         writetmpfile("<font color=\""+color+"\">/xs##</font> Add or subtract days from current date and set that as second date.");
@@ -1110,6 +1135,19 @@ selectDialog::selectDialog(QWidget *parent) :
         ui->radioButton4->setText("Hybrid Solar Eclipse");
         ui->Jewish->setText("All Solar Eclipses");
 
+    } else if (labeltext == "lunar") {
+        ui->Jewish->show();
+        ui->Francis->hide();
+        ui->Satanic->hide();
+        ui->SingleRed->hide();
+        ui->Sumerian->hide();
+        ui->rev_sumerian->hide();
+        ui->radioButton1->setText("New Moon");
+        ui->radioButton2->setText("First Quarter");
+        ui->radioButton3->setText("Full Moon");
+        ui->radioButton4->setText("Last Quarter");
+        ui->Jewish->setText("All Lunar Phases");
+
     } else {
     if (!single_r_on) ui->SingleRed->hide();
     if (!francis_on) ui->Francis->hide();
@@ -1158,6 +1196,13 @@ void selectDialog::displaydialog()
     if (ui->radioButton3->isChecked()) filter = 3;
     if (ui->radioButton4->isChecked()) filter = 4;
     if (ui->Jewish->isChecked()) filter = 5;
+    }
+    if (labeltext == "lunar") {
+    if (ui->radioButton1->isChecked()) filter = 1;  // New Moon
+    if (ui->radioButton2->isChecked()) filter = 2;  // First Quarter
+    if (ui->radioButton3->isChecked()) filter = 3;  // Full Moon
+    if (ui->radioButton4->isChecked()) filter = 4;  // Last Quarter
+    if (ui->Jewish->isChecked()) filter = 5;         // All
     }
 }
 
@@ -1271,6 +1316,40 @@ void MainWindow::on_actionList_Solar_Eclipses_triggered()
 
     writetmpfile(printzerodays(dd,mm,year,0,filter,"listsolareclipses",eudate,true));
 
+}
+
+void MainWindow::on_actionLunar_Phases_triggered()
+{
+    filter = 0;
+    labeltext = "lunar";
+    selectDialog sDialog;
+    sDialog.setModal(true);
+    sDialog.exec();
+    if (filter > 0)
+    emit writetmpfile(lunarphase(dd,mm,year,1,filter,eudate)); // 1=print
+}
+
+void MainWindow::on_actionCompare_LunarP_to_history_triggered()
+{
+    filter = 0;
+    labeltext = "lunar";
+    selectDialog sDialog;
+    sDialog.setModal(true);
+    sDialog.exec();
+
+    if (filter > 0)
+    writetmpfile(lunar2history(dd,mm,year,filter,eudate));
+}
+
+void MainWindow::on_actionList_Lunar_Phases_triggered()
+{
+    labeltext = "lunar";
+    computelunarphases(dd,mm,year);
+    selectDialog sDialog;
+    sDialog.setModal(true);
+    sDialog.exec();
+
+    writetmpfile(printlunardays(dd,mm,year,0,filter,"listlunarphases",eudate,true));
 }
 
 void MainWindow::on_actionPhrase_ranking_triggered()

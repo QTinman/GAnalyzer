@@ -59,6 +59,7 @@ QString loopYear(int ns, int dd, int mm, int year, int printcal, bool eudate)
     QString buffer;
 
     readsolarfile(dd, mm, year);
+    computelunarphases(dd, mm, year);
 
     for (int i = 0; i < mm2; ++i) {
         QDate cd(year, i + 1, 1);
@@ -153,6 +154,12 @@ QString loopYear(int ns, int dd, int mm, int year, int printcal, bool eudate)
                         buffer += printzerodays(dateval, monthval, year, ns, layer, "", eudate, false);
                     }
                 }
+                // Also search lunar phases
+                for (int layer = 1; layer <= 4; ++layer) {
+                    if (searchlunardays(ns, layer, dateval, monthval, year) == ns) {
+                        buffer += printlunardays(dateval, monthval, year, ns, layer, "", eudate, false);
+                    }
+                }
             }
         }
     }
@@ -184,6 +191,11 @@ void processNS(int ns, int dd, int mm, int year, QString& buffer, bool eudate, c
         if (searchzerodays(ns, layer, 0, 0, 0) > 0)
             buffer += printzerodays(dd, mm, year, ns, layer, "", eudate, true);
     }
+    // Also search lunar phases
+    for (int layer = 1; layer <= 4; ++layer) {
+        if (searchlunardays(ns, layer, 0, 0, 0) > 0)
+            buffer += printlunardays(dd, mm, year, ns, layer, "", eudate, true);
+    }
 }
 
 
@@ -198,6 +210,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2, bool eudate) 
     int y3 = (year - (y1 * 1000) - (y2 * 100)) / 10;
     int y4 = year - (y1 * 1000) - (y2 * 100) - (y3 * 10);
     readsolarfile(dd, mm, year);
+    computelunarphases(dd, mm, year);
 
     m1 = mm / 10;
     m2 = mm % 10;
@@ -1027,6 +1040,538 @@ QString printzerodays(int dd, int mm, int year, int ns, int type, string detail,
 }
 
 
+// ==================== LUNAR PHASE FUNCTIONS ====================
+// Moon phase computation using the synodic month period:
+// Next Full Moon = Known Full Moon + 29.530588 days * n
+// Four phases: New Moon, First Quarter, Full Moon, Last Quarter
+
+static const double SYNODIC_MONTH = 29.530588;  // days
+
+// Reference New Moon: January 6, 2000 at 18:14 UTC (Julian Day 2451550.26)
+// Phase offsets from New Moon (in days):
+//   New Moon:      0.0
+//   First Quarter: SYNODIC_MONTH / 4 = 7.382647
+//   Full Moon:     SYNODIC_MONTH / 2 = 14.765294
+//   Last Quarter:  SYNODIC_MONTH * 3/4 = 22.147941
+
+static double dateToJulianDay(int dd, int mm, int year)
+{
+    // Convert calendar date to Julian Day Number
+    int a = (14 - mm) / 12;
+    int y = year + 4800 - a;
+    int m = mm + 12 * a - 3;
+    return dd + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 + y / 400 - 32045;
+}
+
+static void julianDayToDate(double jd, int &dd, int &mm, int &year)
+{
+    // Convert Julian Day Number back to calendar date
+    int z = (int)(jd + 0.5);
+    int a = z + 32044;
+    int b = (4 * a + 3) / 146097;
+    int c = a - (146097 * b) / 4;
+    int d = (4 * c + 3) / 1461;
+    int e = c - (1461 * d) / 4;
+    int m = (5 * e + 2) / 153;
+    dd = e - (153 * m + 2) / 5 + 1;
+    mm = m + 3 - 12 * (m / 10);
+    year = 100 * b + d - 4800 + m / 10;
+}
+
+QString getMoonPhaseName(int type)
+{
+    switch(type) {
+        case 1: return "New Moon";
+        case 2: return "First Quarter";
+        case 3: return "Full Moon";
+        case 4: return "Last Quarter";
+        default: return "Unknown";
+    }
+}
+
+void computelunarphases(int dd, int mm, int year)
+{
+    // Reference New Moon: January 6, 2000
+    const double refNewMoonJD = 2451550.26; // Jan 6, 2000 18:14 UTC
+    const double phaseOffsets[4] = {
+        0.0,                    // New Moon
+        SYNODIC_MONTH / 4.0,   // First Quarter  (~7.382647 days)
+        SYNODIC_MONTH / 2.0,   // Full Moon      (~14.765294 days)
+        SYNODIC_MONTH * 3.0 / 4.0 // Last Quarter (~22.147941 days)
+    };
+
+    double currentJD = dateToJulianDay(dd, mm, year);
+    QDate currentDate(year, mm, dd);
+
+    // Compute the cycle number near the current date
+    double daysSinceRef = currentJD - refNewMoonJD;
+    int baseCycle = (int)(daysSinceRef / SYNODIC_MONTH) - 60; // start ~5 years before
+
+    int counter = 0;
+    // Generate phases for roughly 10 years around the current date
+    for (int n = baseCycle; n < baseCycle + 130 && counter < 498; n++) {
+        for (int phase = 0; phase < 4 && counter < 498; phase++) {
+            double phaseJD = refNewMoonJD + (double)n * SYNODIC_MONTH + phaseOffsets[phase];
+            int pdd, pmm, pyear;
+            julianDayToDate(phaseJD, pdd, pmm, pyear);
+
+            if (!valid_date(pdd, pmm, pyear)) continue;
+
+            QDate phaseDate(pyear, pmm, pdd);
+            int phaseType = phase + 1; // 1=New Moon, 2=First Quarter, 3=Full Moon, 4=Last Quarter
+
+            if (phaseDate > currentDate) {
+                lunardays[0][counter] = weeks_months(currentDate, phaseDate, false, false);
+                lunardays[1][counter] = weeks_months(currentDate, phaseDate, false, true);
+                lunardays[2][counter] = weeks_months(currentDate, phaseDate, true, false);
+                lunardays[3][counter] = weeks_months(currentDate, phaseDate, true, true);
+            } else if (phaseDate < currentDate) {
+                lunardays[0][counter] = weeks_months(phaseDate, currentDate, false, false);
+                lunardays[1][counter] = weeks_months(phaseDate, currentDate, false, true);
+                lunardays[2][counter] = weeks_months(phaseDate, currentDate, true, false);
+                lunardays[3][counter] = weeks_months(phaseDate, currentDate, true, true);
+            } else {
+                lunardays[0][counter] = 0;
+                lunardays[1][counter] = 0;
+                lunardays[2][counter] = 0;
+                lunardays[3][counter] = 0;
+            }
+            lunardays[4][counter] = pdd;
+            lunardays[5][counter] = pmm;
+            lunardays[6][counter] = pyear;
+            lunardays[7][counter] = phaseType;
+            counter++;
+        }
+    }
+    // Zero out remaining entries
+    for (; counter < 500; counter++) {
+        for (int i = 0; i < 8; i++) lunardays[i][counter] = 0;
+    }
+}
+
+
+QString lunarphase(int dd, int mm, int year, int output, int type, bool eudate)
+{
+    QString buffer, phasetype, phasetype2, phasetypeweeksbefore, phasetypemonthsbefore, phasetypeweeksafter, phasetypemonthsafter, typetmp;
+
+    int sdd2=0,smm2=0,syear2=0,sdd1=0,smm1=0,syear1=0,counter=0,phasetype2int,phasetypeint=0,phasetmp;
+    int ddmonthsbeforezero=0,mmmonthsbeforezero=0,yearmonthsbeforezero=0,ddweeksbeforezero=0,mmweeksbeforezero=0,yearweeksbeforezero=0;
+    int ddmonthsafterzero=0,mmmonthsafterzero=0,yearmonthsafterzero=0,ddweeksafterzero=0,mmweeksafterzero=0,yearweeksafterzero=0;
+    int beforeweeks=0,beforeweekdays=0,afterweeks=0,afterweeksdays=0,beforemonths=0,beforemonthsdays=0,aftermonths=0,aftermonthsdays=0,phasetypeweeksbeforeint=0,phasetypemonthsbeforeint=0,phasetypeweeksafterint=0,phasetypemonthsafterint=0;
+    int beforeweekszero=0,beforeweekdayszero=0,afterweekszero=0,afterweeksdayszero=0,beforemonthszero=0,beforemonthszerodays=0,aftermonthszero=0,aftermonthsdayszero=0;
+    int eudd,eumm,eusdd1,eusmm1,eusdd2,eusmm2,euddweeksbeforezero,eummweeksbeforezero,euddweeksafterzero,eummweeksafterzero,euddmonthsbeforezero,eummmonthsbeforezero,euddmonthsafterzero,eummmonthsafterzero;
+    bool foundafter=false,foundafterweek=false,foundaftermonths=false;
+    phasetype2int=type;
+    computelunarphases(dd,mm,year);
+
+    while (counter < 499) {
+
+        if (QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]) < QDate(year, mm, dd) && !foundafter && (type == lunardays[7][counter] || type == 5)) {
+
+            sdd1=lunardays[4][counter];smm1=lunardays[5][counter];syear1=lunardays[6][counter];phasetypeint=lunardays[7][counter];
+            beforeweeks=lunardays[0][counter];beforeweekdays=lunardays[1][counter];
+            beforemonths=lunardays[2][counter];beforemonthsdays=lunardays[3][counter];
+
+        }
+        if (lunardays[1][counter] == 0 && !foundafterweek && QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]) < QDate(year, mm, dd) && (type == lunardays[7][counter] || type == 5)) {
+            ddweeksbeforezero=lunardays[4][counter];mmweeksbeforezero=lunardays[5][counter];yearweeksbeforezero=lunardays[6][counter];phasetypeweeksbeforeint=lunardays[7][counter];
+            beforeweekszero=lunardays[0][counter];
+            beforeweekdayszero=lunardays[1][counter];
+        }
+        if (lunardays[3][counter] == 0 && !foundaftermonths && QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]) < QDate(year, mm, dd) && (type == lunardays[7][counter] || type == 5)) {
+            ddmonthsbeforezero=lunardays[4][counter];mmmonthsbeforezero=lunardays[5][counter];yearmonthsbeforezero=lunardays[6][counter];phasetypemonthsbeforeint=lunardays[7][counter];
+            beforemonthszero=lunardays[2][counter];
+            beforemonthszerodays=lunardays[3][counter];
+        }
+        counter ++;
+        if (lunardays[6][counter] != 0) {
+            phasetmp = lunardays[7][counter];
+
+            if (type == phasetmp || type == 5) {
+                if (!foundafter) {
+                    afterweeks=lunardays[0][counter];
+                    afterweeksdays =lunardays[1][counter];
+                    aftermonths=lunardays[2][counter];
+                    aftermonthsdays=lunardays[3][counter];
+                    sdd2 = lunardays[4][counter];
+                    smm2 = lunardays[5][counter];
+                    syear2 = lunardays[6][counter];
+                    phasetype2int = lunardays[7][counter];
+                }
+                if (!foundafterweek) {
+                    afterweekszero=lunardays[0][counter];
+                    afterweeksdayszero =lunardays[1][counter];
+                    ddweeksafterzero = lunardays[4][counter];
+                    mmweeksafterzero = lunardays[5][counter];
+                    yearweeksafterzero = lunardays[6][counter];
+                    phasetypeweeksafterint = lunardays[7][counter];
+                }
+                if (!foundaftermonths) {
+                    aftermonthszero=lunardays[2][counter];
+                    aftermonthsdayszero=lunardays[3][counter];
+                    ddmonthsafterzero = lunardays[4][counter];
+                    mmmonthsafterzero = lunardays[5][counter];
+                    yearmonthsafterzero = lunardays[6][counter];
+                    phasetypemonthsafterint = lunardays[7][counter];
+                }
+            }
+            if (QDate(syear2, smm2, sdd2) > QDate(year, mm, dd)) foundafter=true;
+
+            if (lunardays[1][counter] == 0 && !foundafterweek && QDate(lunardays[6][counter],lunardays[5][counter],lunardays[4][counter]) > QDate(year, mm, dd) && (type == phasetmp || type == 5))
+                foundafterweek=true;
+            else if (!foundafterweek) ddweeksafterzero =0;
+
+            if (lunardays[3][counter] == 0 && !foundaftermonths && QDate(lunardays[6][counter],lunardays[5][counter],lunardays[4][counter]) > QDate(year, mm, dd) && (type == phasetmp || type == 5))
+                foundaftermonths=true;
+            else if (!foundaftermonths) ddmonthsafterzero = 0;
+        }
+    }
+
+    phasetype = getMoonPhaseName(phasetypeint);
+    phasetype2 = getMoonPhaseName(phasetype2int);
+    phasetypeweeksbefore = getMoonPhaseName(phasetypeweeksbeforeint);
+    phasetypemonthsbefore = getMoonPhaseName(phasetypemonthsbeforeint);
+    phasetypeweeksafter = getMoonPhaseName(phasetypeweeksafterint);
+    phasetypemonthsafter = getMoonPhaseName(phasetypemonthsafterint);
+
+    if (type == 1) typetmp = "New Moon";
+    if (type == 2) typetmp = "First Quarter";
+    if (type == 3) typetmp = "Full Moon";
+    if (type == 4) typetmp = "Last Quarter";
+    if (type == 5) typetmp = "Any";
+
+    QDateTime startDate(QDate(syear1, smm1, sdd1),QTime(0, 0, 0));
+    QDateTime currentDate(QDate(year, mm, dd),QTime(0, 0, 0));
+    QDateTime endDate(QDate(syear2, smm2, sdd2),QTime(0, 0, 0));
+    QDateTime startDateweeksbefore(QDate(yearweeksbeforezero, mmweeksbeforezero, ddweeksbeforezero),QTime(0, 0, 0));
+    QDateTime startDateweeksafter(QDate(yearweeksafterzero, mmweeksafterzero, ddweeksafterzero),QTime(0, 0, 0));
+    QDateTime startDatemonthsbefore(QDate(yearmonthsbeforezero, mmmonthsbeforezero, ddmonthsbeforezero),QTime(0, 0, 0));
+    QDateTime startDatemonthsafter(QDate(yearmonthsafterzero, mmmonthsafterzero, ddmonthsafterzero),QTime(0, 0, 0));
+
+    if (eudate) {
+        eudd = dd; eumm = mm;
+        eusdd1 = sdd1; eusmm1 = smm1;
+        eusdd2 = sdd2; eusmm2 = smm2;
+        euddweeksbeforezero = ddweeksbeforezero; eummweeksbeforezero = mmweeksbeforezero;
+        euddweeksafterzero = ddweeksafterzero; eummweeksafterzero = mmweeksafterzero;
+        euddmonthsbeforezero = ddmonthsbeforezero; eummmonthsbeforezero = mmmonthsbeforezero;
+        euddmonthsafterzero = ddmonthsafterzero; eummmonthsafterzero = mmmonthsafterzero;
+    } else {
+        eudd = mm; eumm = dd;
+        eusdd1 = smm1; eusmm1 = sdd1;
+        eusdd2 = smm2; eusmm2 = sdd2;
+        euddweeksbeforezero = mmweeksbeforezero; eummweeksbeforezero = ddweeksbeforezero;
+        euddweeksafterzero = mmweeksafterzero; eummweeksafterzero = ddweeksafterzero;
+        euddmonthsbeforezero = mmmonthsbeforezero; eummmonthsbeforezero = ddmonthsbeforezero;
+        euddmonthsafterzero = mmmonthsafterzero; eummmonthsafterzero = ddmonthsafterzero;
+    }
+
+    switch (output) {
+    case 1: {
+        buffer += "<br><b>Searching for a " + typetmp + " Lunar Phase</b><br>";
+        buffer += "<i>Synodic month: 29.530588 days</i><br><br>";
+
+        buffer += "<b>Current Date:</b> "
+                  + QString::fromStdString(formattext(QString::number(eudd).toUtf8().constData(), 1, 1)) + "/"
+                  + QString::fromStdString(formattext(QString::number(eumm).toUtf8().constData(), 1, 1)) + "/"
+                  + QString::fromStdString(formattext(QString::number(year).toUtf8().constData(), 1, 1)) + "<br><br>";
+
+        buffer += "<b>Previous " + phasetype + ":</b> "
+                  + QString::fromStdString(formattext(QString::number(eusdd1).toUtf8().constData(), 1, 1)) + "/"
+                  + QString::fromStdString(formattext(QString::number(eusmm1).toUtf8().constData(), 1, 1)) + "/"
+                  + QString::fromStdString(formattext(QString::number(syear1).toUtf8().constData(), 1, 1)) + "<br>";
+
+        buffer += "<b>Next " + phasetype2 + ":</b> "
+                  + QString::fromStdString(formattext(QString::number(eusdd2).toUtf8().constData(), 1, 1)) + "/"
+                  + QString::fromStdString(formattext(QString::number(eusmm2).toUtf8().constData(), 1, 1)) + "/"
+                  + QString::fromStdString(formattext(QString::number(syear2).toUtf8().constData(), 1, 1)) + "<br><br>";
+
+        buffer += "<b>Time from the previous lunar phase to the current date:</b><br>• "
+                  + QString::fromStdString(formattext(QString::number(startDate.daysTo(currentDate)).toUtf8().constData(), 1, 1)) + " days<br>• "
+                  + QString::fromStdString(formattext(QString::number(beforeweeks).toUtf8().constData(), 1, 1)) + " weeks and "
+                  + QString::fromStdString(formattext(QString::number(beforeweekdays).toUtf8().constData(), 1, 1)) + " days<br>• "
+                  + QString::fromStdString(formattext(QString::number(beforemonths).toUtf8().constData(), 1, 1)) + " months and "
+                  + QString::fromStdString(formattext(QString::number(beforemonthsdays).toUtf8().constData(), 1, 1)) + " days<br><br>";
+
+        buffer += "<b>Time from the current date to the next lunar phase:</b><br>• "
+                  + QString::fromStdString(formattext(QString::number(currentDate.daysTo(endDate)).toUtf8().constData(), 1, 1)) + " days<br>• "
+                  + QString::fromStdString(formattext(QString::number(afterweeks).toUtf8().constData(), 1, 1)) + " weeks and "
+                  + QString::fromStdString(formattext(QString::number(afterweeksdays).toUtf8().constData(), 1, 1)) + " days<br>• "
+                  + QString::fromStdString(formattext(QString::number(aftermonths).toUtf8().constData(), 1, 1)) + " months and "
+                  + QString::fromStdString(formattext(QString::number(aftermonthsdays).toUtf8().constData(), 1, 1)) + " days<br><br>";
+
+        if (ddweeksbeforezero > 0)
+            buffer += "<b>Last " + phasetypeweeksbefore + " that occurred exactly at the end of a week:</b> "
+                      + QString::fromStdString(formattext(QString::number(euddweeksbeforezero).toUtf8().constData(), 1, 1)) + "/"
+                      + QString::fromStdString(formattext(QString::number(eummweeksbeforezero).toUtf8().constData(), 1, 1)) + "/"
+                      + QString::fromStdString(formattext(QString::number(yearweeksbeforezero).toUtf8().constData(), 1, 1)) + "<br>";
+
+        if (ddweeksafterzero > 0)
+            buffer += "<b>Next " + phasetypeweeksafter + " that will occur exactly at the end of a week:</b> "
+                      + QString::fromStdString(formattext(QString::number(euddweeksafterzero).toUtf8().constData(), 1, 1)) + "/"
+                      + QString::fromStdString(formattext(QString::number(eummweeksafterzero).toUtf8().constData(), 1, 1)) + "/"
+                      + QString::fromStdString(formattext(QString::number(yearweeksafterzero).toUtf8().constData(), 1, 1)) + "<br><br>";
+
+        if (ddweeksbeforezero > 0)
+            buffer += "<b>Time from that lunar phase to now (week-aligned):</b><br>• "
+                      + QString::fromStdString(formattext(QString::number(startDateweeksbefore.daysTo(currentDate)).toUtf8().constData(), 1, 1)) + " days<br>• "
+                      + QString::fromStdString(formattext(QString::number(beforeweekszero).toUtf8().constData(), 1, 1)) + " weeks and "
+                      + QString::fromStdString(formattext(QString::number(beforeweekdayszero).toUtf8().constData(), 1, 1)) + " days<br><br>";
+
+        if (ddweeksafterzero > 0)
+            buffer += "<b>Time from now to the next week-aligned lunar phase:</b><br>• "
+                      + QString::fromStdString(formattext(QString::number(currentDate.daysTo(startDateweeksafter)).toUtf8().constData(), 1, 1)) + " days<br>• "
+                      + QString::fromStdString(formattext(QString::number(afterweekszero).toUtf8().constData(), 1, 1)) + " weeks and "
+                      + QString::fromStdString(formattext(QString::number(afterweeksdayszero).toUtf8().constData(), 1, 1)) + " days<br><br>";
+
+        if (ddmonthsbeforezero > 0)
+            buffer += "<b>Last " + phasetypemonthsbefore + " that occurred exactly at the end of a month:</b> "
+                      + QString::fromStdString(formattext(QString::number(euddmonthsbeforezero).toUtf8().constData(), 1, 1)) + "/"
+                      + QString::fromStdString(formattext(QString::number(eummmonthsbeforezero).toUtf8().constData(), 1, 1)) + "/"
+                      + QString::fromStdString(formattext(QString::number(yearmonthsbeforezero).toUtf8().constData(), 1, 1)) + "<br>";
+
+        if (ddmonthsafterzero > 0)
+            buffer += "<b>Next " + phasetypemonthsafter + " that will occur exactly at the end of a month:</b> "
+                      + QString::fromStdString(formattext(QString::number(euddmonthsafterzero).toUtf8().constData(), 1, 1)) + "/"
+                      + QString::fromStdString(formattext(QString::number(eummmonthsafterzero).toUtf8().constData(), 1, 1)) + "/"
+                      + QString::fromStdString(formattext(QString::number(yearmonthsafterzero).toUtf8().constData(), 1, 1)) + "<br><br>";
+
+        if (ddmonthsbeforezero > 0)
+            buffer += "<b>Time from that lunar phase to now (month-aligned):</b><br>• "
+                      + QString::fromStdString(formattext(QString::number(startDatemonthsbefore.daysTo(currentDate)).toUtf8().constData(), 1, 1)) + " days<br>• "
+                      + QString::fromStdString(formattext(QString::number(beforemonthszero).toUtf8().constData(), 1, 1)) + " months and "
+                      + QString::fromStdString(formattext(QString::number(beforemonthszerodays).toUtf8().constData(), 1, 1)) + " days<br><br>";
+
+        if (ddmonthsafterzero > 0)
+            buffer += "<b>Time from now to the next month-aligned lunar phase:</b><br>• "
+                      + QString::fromStdString(formattext(QString::number(currentDate.daysTo(startDatemonthsafter)).toUtf8().constData(), 1, 1)) + " days<br>• "
+                      + QString::fromStdString(formattext(QString::number(aftermonthszero).toUtf8().constData(), 1, 1)) + " months and "
+                      + QString::fromStdString(formattext(QString::number(aftermonthsdayszero).toUtf8().constData(), 1, 1)) + " days<br><br>";
+
+        break;
+    }
+    }
+    return buffer;
+}
+
+
+int searchlunardays(int ns, int type, int dd, int mm, int year)
+{
+    int counter;
+
+    for (counter=0;counter<500;counter++) {
+        if (dd==0) {
+            if (lunardays[0][counter] == ns && (lunardays[7][counter] == type || type == 5) && lunardays[1][counter] == 0) return 1;
+            if (lunardays[2][counter] == ns && (lunardays[7][counter] == type || type == 5) && lunardays[3][counter] == 0) return 2;
+        } else {
+            if (QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]) > QDate(year, mm, dd) && lunardays[7][counter] == type) {
+                if (weeks_months(QDate(year, mm, dd),QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),false,false) == ns &&
+                    weeks_months(QDate(year, mm, dd),QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),false,true) == 0) return ns;
+                if (weeks_months(QDate(year, mm, dd),QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),true,false) == ns &&
+                    weeks_months(QDate(year, mm, dd),QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),true,true) == 0) return ns;
+            }
+            if (QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]) < QDate(year, mm, dd) && lunardays[7][counter] == type) {
+                if (weeks_months(QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),QDate(year, mm, dd),false,false) == ns &&
+                    weeks_months(QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),QDate(year, mm, dd),false,true) == 0) return ns;
+                if (weeks_months(QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),QDate(year, mm, dd),true,false) == ns &&
+                    weeks_months(QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),QDate(year, mm, dd),true,true) == 0) return ns;
+            }
+        }
+    }
+    return 0;
+}
+
+
+QString lunar2history(int dd, int mm, int year, int type, bool eudate)
+{
+    struct CipherConfig {
+        bool enabled;
+        int arg1;
+        int arg2;
+        int arg3;
+        const char* name;
+    };
+
+    const CipherConfig ciphers[] = {
+        {true, 0, 0, 0, "English Ordinal"},
+        {true, 1, 0, 0, "Full Reduction"},
+        {true, 0, 1, 0, "Reverse Ordinal"},
+        {true, 1, 1, 0, "Reverse Full Reduction"},
+        {single_r_on, 0, 0, 1, "Single Reduction"},
+        {francis_on, 0, 0, 2, "Francis Bacon"},
+        {satanic_on, 0, 0, 3, "Satanic"},
+        {jewish_on, 0, 0, 4, "Jewish"},
+        {sumerian_on, 0, 0, 5, "Sumerian"},
+        {rev_sumerian_on, 0, 1, 5, "Reverse Sumerian"}
+    };
+    constexpr int numCiphers = sizeof(ciphers) / sizeof(ciphers[0]);
+
+    string line;
+    QString buffer, moonphasetype;
+    stringstream logline;
+    int lines = 0;
+    ifstream myfile;
+    QString historyfile = loadsettings("historyfile").toString();
+
+    computelunarphases(dd, mm, year);
+
+    buffer += "Searching <code>History.txt</code> for phrases related to a Lunar Phase on the current date: "
+              + QString::number(dd) + "/" + QString::number(mm) + "/" + QString::number(year) + "<br><br>";
+
+    myfile.open(historyfile.toUtf8().constData());
+    if (myfile.is_open())
+    {
+        while (getline(myfile, line))
+        {
+            for (int i = 0; i < numCiphers; ++i) {
+                const auto& cipher = ciphers[i];
+                if (!cipher.enabled) continue;
+
+                ns = getwordnumericvalue(line, cipher.arg1, cipher.arg2, cipher.arg3);
+                if (searchlunardays(ns, type, 0, 0, 0) > 0) {
+                    lines++;
+                    buffer += printlunardays(dd, mm, year, ns, type,
+                        " \xe2\x80\x93 \"" + formattext(line, 2, 1) + "\" [" + string(cipher.name) + "]",
+                        eudate, true);
+                }
+            }
+        }
+
+        moonphasetype = getMoonPhaseName(type);
+        if (type == 5) moonphasetype = "";
+
+        buffer += "<br><br><b>" + QString::fromStdString(formattext(std::to_string(lines), 1, 1)) + " phrase"
+                  + (lines == 1 ? " was" : "s were") + " found matching " + moonphasetype + " Lunar Phases.</b><br><br>";
+
+        logline << buffer.toStdString();
+        logtime();
+        savelog(logline.str());
+
+        myfile.close();
+    }
+    else {
+        buffer += "<b>Error:</b> Unable to open file: <code>" + historyfile + "</code><br>";
+    }
+
+    return buffer;
+}
+
+
+QString printlunardays(int dd, int mm, int year, int ns, int type, string detail, bool eudate, bool read)
+{
+    int counter;
+    bool printbuffer=false;
+    QString buffer, moonphasetype, se1,se2,se3,se4,se5,se6,se7;
+    eraseAllSubStr(detail,"th ");
+    if (eudate) se7 = QString::number(dd) + " " +  getMonthName (mm-1).c_str() + " - ";
+    else se7 = QString::fromStdString(getMonthName (mm-1).c_str()) + " " +  QString::number(dd) + " - ";
+    for (counter=0;counter<500;counter++) {
+        if (detail == "listlunarphases" && read) {
+            se1 = "";
+            se2 = "";
+            se3 = " on ";
+            if (eudate) {
+                se4 = QString::fromStdString(formattext(QString::number(lunardays[4][counter]).toUtf8().constData(),1,1));
+                se5 = QString::fromStdString(formattext(QString::number(lunardays[5][counter]).toUtf8().constData(),1,1));
+            } else {
+                se5 = QString::fromStdString(formattext(QString::number(lunardays[4][counter]).toUtf8().constData(),1,1));
+                se4 = QString::fromStdString(formattext(QString::number(lunardays[5][counter]).toUtf8().constData(),1,1));
+            }
+            se6 = QString::fromStdString(formattext(QString::number(lunardays[6][counter]).toUtf8().constData(),1,1));
+            moonphasetype = getMoonPhaseName(lunardays[7][counter]);
+            if ((lunardays[7][counter] == type || type == 5) && lunardays[4][counter] != 0) buffer += moonphasetype + " " + se3 + se2 + se4 + "/" + se5 + "/" + se6 +"<br>";
+        }
+        else if (((lunardays[0][counter] == ns && (lunardays[7][counter] == type || type == 5)) || (lunardays[2][counter] == ns && (lunardays[7][counter] == type || type == 5))) && read) {
+            se4 = QString::fromStdString(formattext(QString::number(lunardays[4][counter]).toUtf8().constData(),1,1));
+            se5 = QString::fromStdString(formattext(QString::number(lunardays[5][counter]).toUtf8().constData(),1,1));
+            se6 = QString::fromStdString(formattext(QString::number(lunardays[6][counter]).toUtf8().constData(),1,1));
+            moonphasetype = getMoonPhaseName(lunardays[7][counter]);
+            if (QDate(lunardays[6][counter],lunardays[5][counter],lunardays[4][counter]) < QDate(year, mm, dd)) {
+                if (lunardays[0][counter] == ns) {
+                    se1 = " - There was a ";
+                    se2 = " weeks ago on ";
+                    se3 = QString::fromStdString(formattext(std::to_string(lunardays[0][counter]),1,1));
+                    printbuffer = true;
+                } else {
+                    se1 = " - There was a ";
+                    se2 = " months ago on ";
+                    se3 = QString::fromStdString(formattext(std::to_string(lunardays[2][counter]),1,1));
+                    printbuffer = true;
+                }
+            } else {
+                if (lunardays[0][counter] == ns) {
+                    se1 = " - There is a ";
+                    se2 = " weeks from now on ";
+                    se3 = QString::fromStdString(formattext(std::to_string(lunardays[0][counter]),1,1));
+                    printbuffer = true;
+                } else {
+                    se1 = " - There is a ";
+                    se2 = " months from now on ";
+                    se3 = QString::fromStdString(formattext(std::to_string(lunardays[2][counter]),1,1));
+                    printbuffer = true;
+                }
+            }
+        } else {
+            if (QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]) > QDate(year, mm, dd) && lunardays[7][counter] == type) {
+                if (weeks_months(QDate(year, mm, dd),QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),false,false) == ns &&
+                    weeks_months(QDate(year, mm, dd),QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),false,true) == 0) {
+                    se1 = " - There is a ";
+                    se2 = " weeks from now on ";
+                    se3 = QString::fromStdString(formattext(std::to_string(ns),1,1));
+                    se4 = QString::fromStdString(formattext(QString::number(lunardays[4][counter]).toUtf8().constData(),1,1));
+                    se5 = QString::fromStdString(formattext(QString::number(lunardays[5][counter]).toUtf8().constData(),1,1));
+                    se6 = QString::fromStdString(formattext(QString::number(lunardays[6][counter]).toUtf8().constData(),1,1));
+                    moonphasetype = getMoonPhaseName(lunardays[7][counter]);
+                    printbuffer = true;
+                }
+                if (weeks_months(QDate(year, mm, dd),QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),true,false) == ns &&
+                    weeks_months(QDate(year, mm, dd),QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),true,true) == 0) {
+                    se1 = " - There is a ";
+                    se2 = " months from now on ";
+                    se3 = QString::fromStdString(formattext(std::to_string(ns),1,1));
+                    se4 = QString::fromStdString(formattext(QString::number(lunardays[4][counter]).toUtf8().constData(),1,1));
+                    se5 = QString::fromStdString(formattext(QString::number(lunardays[5][counter]).toUtf8().constData(),1,1));
+                    se6 = QString::fromStdString(formattext(QString::number(lunardays[6][counter]).toUtf8().constData(),1,1));
+                    moonphasetype = getMoonPhaseName(lunardays[7][counter]);
+                    printbuffer = true;
+                }
+            }
+            if (QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]) < QDate(year, mm, dd) && lunardays[7][counter] == type) {
+                if (weeks_months(QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),QDate(year, mm, dd),false,false) == ns &&
+                    weeks_months(QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),QDate(year, mm, dd),false,true) == 0) {
+                    se1 = " - There was a ";
+                    se2 = " weeks ago on ";
+                    se3 = QString::fromStdString(formattext(std::to_string(ns),1,1));
+                    se4 = QString::fromStdString(formattext(QString::number(lunardays[4][counter]).toUtf8().constData(),1,1));
+                    se5 = QString::fromStdString(formattext(QString::number(lunardays[5][counter]).toUtf8().constData(),1,1));
+                    se6 = QString::fromStdString(formattext(QString::number(lunardays[6][counter]).toUtf8().constData(),1,1));
+                    moonphasetype = getMoonPhaseName(lunardays[7][counter]);
+                    printbuffer = true;
+                }
+                if (weeks_months(QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),QDate(year, mm, dd),true,false) == ns &&
+                    weeks_months(QDate(lunardays[6][counter], lunardays[5][counter], lunardays[4][counter]),QDate(year, mm, dd),true,true) == 0) {
+                    se1 = " - There was a ";
+                    se2 = " months ago on ";
+                    se3 = QString::fromStdString(formattext(std::to_string(ns),1,1));
+                    se4 = QString::fromStdString(formattext(QString::number(lunardays[4][counter]).toUtf8().constData(),1,1));
+                    se5 = QString::fromStdString(formattext(QString::number(lunardays[5][counter]).toUtf8().constData(),1,1));
+                    se6 = QString::fromStdString(formattext(QString::number(lunardays[6][counter]).toUtf8().constData(),1,1));
+                    moonphasetype = getMoonPhaseName(lunardays[7][counter]);
+                    printbuffer = true;
+                }
+            }
+        }
+    }
+    if (printbuffer) {
+        if (eudate) buffer += se7 + moonphasetype + " " + se3 + se2 + se4 + "/" + se5 + "/" + se6 + QString::fromStdString(detail)+"<br>";
+        else buffer += se7 + moonphasetype + " " + se3 + se2 + se5 + "/" + se4 + "/" + se6 + QString::fromStdString(detail)+"<br>";
+    }
+    return buffer;
+}
+
+// ==================== END LUNAR PHASE FUNCTIONS ====================
+
+
 int getns(string phrase, int out, int pt)
 {
     int ns=0;
@@ -1109,6 +1654,7 @@ QString phraserank(string phrase, bool eudate, int minimum, bool prime, bool tri
         runsolar=true;
     }
     readsolarfile(dd,mm,year);
+    computelunarphases(dd,mm,year);
     size_t found = phrase.find(",");
     if (found < phrase.length()) {
         s1 = phrase.substr(0,found);
@@ -1325,6 +1871,18 @@ bool phrasetodate(int ns, int dd, int mm, int year, int i) {
    case 35 :
        if (ns == a_seconddate("month_full")) return true;
        break;
+   case 36 :
+     if (searchlunardays(ns,1,0,0,0) > 0) return true; // New Moon
+     break;
+   case 37 :
+     if (searchlunardays(ns,2,0,0,0) > 0) return true; // First Quarter
+     break;
+   case 38 :
+     if (searchlunardays(ns,3,0,0,0) > 0) return true; // Full Moon
+     break;
+   case 39 :
+     if (searchlunardays(ns,4,0,0,0) > 0) return true; // Last Quarter
+     break;
    }
  return false;
 }
@@ -1609,6 +2167,22 @@ QString print_p_to_d(int ns, int dd, int mm, int year, int i, string detail, boo
            buffer += tobuffer(QString::fromStdString(logline.str()));
            savelog(logline.str());
            break;
+       case 36 : // New Moon
+           buffer += tobuffer(printlunardays(dd,mm,year,ns,1,detail,eudate,true));
+           savelog(logline.str());
+           break;
+       case 37 : // First Quarter
+           buffer += tobuffer(printlunardays(dd,mm,year,ns,2,detail,eudate,true));
+           savelog(logline.str());
+           break;
+       case 38 : // Full Moon
+           buffer += tobuffer(printlunardays(dd,mm,year,ns,3,detail,eudate,true));
+           savelog(logline.str());
+           break;
+       case 39 : // Last Quarter
+           buffer += tobuffer(printlunardays(dd,mm,year,ns,4,detail,eudate,true));
+           savelog(logline.str());
+           break;
        }
        return buffer;
 }
@@ -1629,61 +2203,61 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
         savelog(logline.str());
     }
     if (filter==1||!hlist) ns = getwordnumericvalue(phrase,0,0,0); //English Ordinal - start of compare cifers to date
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==1||!hlist)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," English Ordinal",eudate);
         found = true;
     }
     if (filter==2||!hlist) ns = getwordnumericvalue(phrase,1,0,0); //Full Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==2||!hlist)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Full Reduction",eudate);
         found = true;
     }
     if (filter==3||!hlist) ns = getwordnumericvalue(phrase,0,1,0); //Reverse Ordinal
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==3||!hlist)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Reverse Ordinal",eudate);
         found = true;
     }
     if (filter==4||!hlist) ns = getwordnumericvalue(phrase,1,1,0); //Reverse Full Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==4||!hlist)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Reverse Full Reduction",eudate);
         found = true;
     }
     if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==5||!hlist) && single_r_on && ns != getwordnumericvalue(phrase,1,0,0)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Single Reduction",eudate);
         found = true;
     }
     if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==6||!hlist) && francis_on && ns != getwordnumericvalue(phrase,0,0,0)) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Francis Bacon",eudate);
         found = true;
     }
     if (filter==7||!hlist) ns = getwordnumericvalue(phrase,0,0,3); //Satanic
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==7||!hlist) && satanic_on) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Satanic",eudate);
         found = true;
     }
     if (filter==8||!hlist) ns = getwordnumericvalue(phrase,0,0,4); //Jewish
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==8||!hlist) && jewish_on) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Jewish",eudate);
         found = true;
     }
     if (filter==9||!hlist) ns = getwordnumericvalue(phrase,0,0,5); //Sumerian
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==9||!hlist) && sumerian_on) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Sumerian",eudate);
         found = true;
     }
     if (filter==10||!hlist) ns = getwordnumericvalue(phrase,0,1,5); //Reverse Sumerian
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(ns,dd,mm,year,i) && (filter==10||!hlist) && rev_sumerian_on) {
         if (!hlist) buffer += print_p_to_d(ns,dd,mm,year,i," Reverse Sumerian",eudate);
         found = true;
@@ -1695,61 +2269,61 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
     }
 
     if (filter==1||!hlist) ns = getwordnumericvalue(phrase,0,0,0); //English Ordinal - start of compare prime numbers to date
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==1||!hlist)) && getnprime(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from English Ordinal",eudate);
             found = true;
         }
     if (filter==2||!hlist) ns = getwordnumericvalue(phrase,1,0,0); //Full Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==2||!hlist)) && getnprime(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Full Reduction",eudate);
             found = true;
         }
     if (filter==3||!hlist) ns = getwordnumericvalue(phrase,0,1,0); //Reverse Ordinal
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==3||!hlist)) && getnprime(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Reverse Ordinal",eudate);
             found = true;
         }
     if (filter==4||!hlist) ns = getwordnumericvalue(phrase,1,1,0); //Reverse Full Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==4||!hlist)) && getnprime(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Reverse Full Reduction",eudate);
             found = true;
         }
     if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==5||!hlist)) && getnprime(ns) != 0 && single_r_on && getnprime(ns) != getnprime(getwordnumericvalue(phrase,1,0,0))) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Single Reduction",eudate);
             found = true;
         }
     if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==6||!hlist)) && getnprime(ns) != 0 && francis_on && getnprime(ns) != getnprime(getwordnumericvalue(phrase,0,0,0))) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Francis Bacon",eudate);
             found = true;
         }
     if (filter==7||!hlist) ns = getwordnumericvalue(phrase,0,0,3); //Satanic
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==7||!hlist)) && getnprime(ns) != 0 && satanic_on) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Satanic",eudate);
             found = true;
         }
     if (filter==8||!hlist) ns = getwordnumericvalue(phrase,0,0,4); //Jewish
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==8||!hlist)) && getnprime(ns) != 0 && jewish_on) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Jewish",eudate);
             found = true;
         }
     if (filter==9||!hlist) ns = getwordnumericvalue(phrase,0,0,5); //Sumerian
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==9||!hlist)) && getnprime(ns) != 0 && sumerian_on) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Sumerian",eudate);
             found = true;
         }
     if (filter==10||!hlist) ns = getwordnumericvalue(phrase,0,1,5); //Reverse Sumerian
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getnprime(ns),dd,mm,year,i) && (filter==10||!hlist)) && getnprime(ns) != 0 && rev_sumerian_on) {
             if (!hlist) buffer += print_p_to_d(getnprime(ns),dd,mm,year,i,"th Prime from Reverse Sumerian",eudate);
             found = true;
@@ -1759,61 +2333,61 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
         ex1 << formattext(std::to_string(getnprime(ns)),1,1) << formattext("th Prime",2,2);
     }
     if (filter==1||!hlist) ns = getwordnumericvalue(phrase,0,0,0); //English Ordinal - start of compare triangular numbers to date
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==1||!hlist)) && getntriangular(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from English Ordinal",eudate);
             found = true;
         }
     if (filter==2||!hlist) ns = getwordnumericvalue(phrase,1,0,0); //Full Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==2||!hlist)) && getntriangular(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Full Reduction",eudate);
             found = true;
         }
     if (filter==3||!hlist) ns = getwordnumericvalue(phrase,0,1,0); //Reverse Ordinal
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==3||!hlist)) && getntriangular(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Reverse Ordinal",eudate);
             found = true;
         }
     if (filter==4||!hlist) ns = getwordnumericvalue(phrase,1,1,0); //Reverse Full Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==4||!hlist)) && getntriangular(ns) != 0) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Reverse Full Reduction",eudate);
             found = true;
         }
     if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==5||!hlist)) && getntriangular(ns) != 0 && single_r_on && getntriangular(ns) != getntriangular(getwordnumericvalue(phrase,1,0,0))) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Single Reduction",eudate);
             found = true;
         }
     if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==6||!hlist)) && getntriangular(ns) != 0 && francis_on && getntriangular(ns) != getntriangular(getwordnumericvalue(phrase,0,0,0))) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Francis Bacon",eudate);
             found = true;
         }
     if (filter==7||!hlist) ns = getwordnumericvalue(phrase,0,0,3); //Satanic
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==7||!hlist)) && getntriangular(ns) != 0 && satanic_on) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Satanic",eudate);
             found = true;
         }
     if (filter==8||!hlist) ns = getwordnumericvalue(phrase,0,0,4); //Jewish
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==8||!hlist)) && getntriangular(ns) != 0 && jewish_on) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Jewish",eudate);
             found = true;
         }
     if (filter==9||!hlist) ns = getwordnumericvalue(phrase,0,0,5); //Sumerian
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==9||!hlist)) && getntriangular(ns) != 0 && sumerian_on) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Sumerian",eudate);
             found = true;
         }
     if (filter==10||!hlist) ns = getwordnumericvalue(phrase,0,1,5); //Reverse Sumerian
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
         if ((phrasetodate(getntriangular(ns),dd,mm,year,i) && (filter==10||!hlist)) && getntriangular(ns) != 0 && rev_sumerian_on) {
             if (!hlist) buffer += print_p_to_d(getntriangular(ns),dd,mm,year,i,"th Triangular from Reverse Sumerian",eudate);
             found = true;
@@ -1824,61 +2398,61 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
     }
 
     if (filter==1||!hlist) ns = getwordnumericvalue(phrase,0,0,0); //English Ordinal - start of compare prime related to date
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(primes[ns-1],dd,mm,year,i) && (filter==1||!hlist)) {
         if (!hlist) buffer += print_p_to_d(primes[ns-1],dd,mm,year,i," Prime related to English Ordinal",eudate);
         found = true;
     }
     if (filter==2||!hlist) ns = getwordnumericvalue(phrase,1,0,0); //Full Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(primes[ns-1],dd,mm,year,i) && (filter==2||!hlist)) {
         if (!hlist) buffer += print_p_to_d(primes[ns-1],dd,mm,year,i," Prime related to Full Reduction",eudate);
         found = true;
     }
     if (filter==3||!hlist) ns = getwordnumericvalue(phrase,0,1,0); //Reverse Ordinal
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(primes[ns-1],dd,mm,year,i) && (filter==3||!hlist)) {
         if (!hlist) buffer += print_p_to_d(primes[ns-1],dd,mm,year,i," Prime related to Reverse Ordinal",eudate);
         found = true;
     }
     if (filter==4||!hlist) ns = getwordnumericvalue(phrase,1,1,0); //Reverse Full Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(primes[ns-1],dd,mm,year,i) && (filter==4||!hlist)) {
         if (!hlist) buffer += print_p_to_d(primes[ns-1],dd,mm,year,i," Prime related to Reverse Full Reduction",eudate);
         found = true;
     }
     if (filter==5||!hlist) ns = getwordnumericvalue(phrase,0,0,1); //Single Reduction
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(primes[ns-1],dd,mm,year,i) && (filter==5||!hlist) && single_r_on && primes[ns-1] != getwordnumericvalue(phrase,1,0,0)) {
         if (!hlist) buffer += print_p_to_d(primes[ns-1],dd,mm,year,i," Prime related to Single Reduction",eudate);
         found = true;
     }
     if (filter==6||!hlist) ns = getwordnumericvalue(phrase,0,0,2); //Francis Bacon
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(primes[ns-1],dd,mm,year,i) && (filter==6||!hlist) && francis_on && primes[ns-1] != getwordnumericvalue(phrase,0,0,0)) {
         if (!hlist) buffer += print_p_to_d(primes[ns-1],dd,mm,year,i," Prime related to Francis Bacon",eudate);
         found = true;
     }
     if (filter==7||!hlist) ns = getwordnumericvalue(phrase,0,0,3); //Satanic
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(primes[ns-1],dd,mm,year,i) && (filter==7||!hlist) && satanic_on) {
         if (!hlist) buffer += print_p_to_d(primes[ns-1],dd,mm,year,i," Prime related to Satanic",eudate);
         found = true;
     }
     if (filter==8||!hlist) ns = getwordnumericvalue(phrase,0,0,4); //Jewish
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(primes[ns-1],dd,mm,year,i) && (filter==8||!hlist) && jewish_on) {
         if (!hlist) buffer += print_p_to_d(primes[ns-1],dd,mm,year,i," Prime related to Jewish",eudate);
         found = true;
     }
     if (filter==9||!hlist) ns = getwordnumericvalue(phrase,0,0,5); //Sumerian
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(primes[ns-1],dd,mm,year,i) && (filter==9||!hlist) && sumerian_on) {
         if (!hlist) buffer += print_p_to_d(primes[ns-1],dd,mm,year,i," Prime related to Sumerian",eudate);
         found = true;
     }
     if (filter==10||!hlist) ns = getwordnumericvalue(phrase,0,1,5); //Reverse Sumerian
-    for(i=1;i<=35;i++)
+    for(i=1;i<=39;i++)
     if (phrasetodate(primes[ns-1],dd,mm,year,i) && (filter==10||!hlist) && rev_sumerian_on) {
         if (!hlist) buffer += print_p_to_d(primes[ns-1],dd,mm,year,i," Prime related to Reverse Sumerian",eudate);
         found = true;
@@ -1892,7 +2466,7 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
     if (found && hlist){
         qt2 = "";
         buffer += Qtotable("",1,0,0,0);
-        for(i=1;i<=35;i++) {
+        for(i=1;i<=39;i++) {
             qt2 = detail(ns,dd,mm,year,i,eudate);
             if (qt2 !="") break;
             qt2 = detail(getnprime(ns),dd,mm,year,i,eudate);

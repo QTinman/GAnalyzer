@@ -15,6 +15,16 @@ enum class EclipseType {
     All = 5
 };
 
+// Moon phase type enumeration for type safety
+enum class MoonPhaseType {
+    Unknown = 0,
+    NewMoon = 1,
+    FirstQuarter = 2,
+    FullMoon = 3,
+    LastQuarter = 4,
+    All = 5
+};
+
 // Cipher type enumeration for type safety
 enum class CipherType {
     EnglishOrdinal = 0,
@@ -68,4 +78,10 @@ void erasefromToQSubStr(QString & mainStr, const QString & fromErase, const QStr
 QString wordnumbericlist(QString head);
 QString clean_news_content(QString content, QString pattern);
 QString tobuffer(QString html);
+void computelunarphases(int dd, int mm, int year);
+QString lunarphase(int dd, int mm, int year, int output, int type, bool eudate);
+int searchlunardays(int ns, int type, int dd, int mm, int year);
+QString printlunardays(int dd, int mm, int year, int ns, int type, std::string detail, bool eudate, bool read);
+QString lunar2history(int dd, int mm, int year, int type, bool eudate);
+QString getMoonPhaseName(int type);
 #endif // GCALC_H

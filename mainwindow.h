@@ -22,7 +22,7 @@ extern int year,dd,mm,ns,d2,m2,y2,filter,hmempos;
 extern bool single_r_on,francis_on,satanic_on,jewish_on,sumerian_on,rev_sumerian_on;
 extern std::vector<int> primes;
 extern QString filesource;
-extern int zerodays[8][250],linenumbers;
+extern int zerodays[8][250],lunardays[8][500],linenumbers;
 extern QString hmem[10];
 extern QString appgroup;
 extern bool nightmode;
@@ -89,6 +89,10 @@ private slots:
     void on_actionSolar_Eclipses_triggered();
 
     void on_actionCompare_SolarE_to_history_triggered();
+
+    void on_actionLunar_Phases_triggered();
+    void on_actionCompare_LunarP_to_history_triggered();
+    void on_actionList_Lunar_Phases_triggered();
 
     void on_pushButton_clicked();
 
