@@ -35,6 +35,7 @@ public:
     QVBoxLayout *verticalLayout_2;
     QCheckBox *sumerian;
     QCheckBox *rev_sumerian;
+    QCheckBox *fibonacci;
 
     void setupUi(QDialog *cipherDialog)
     {
@@ -77,7 +78,7 @@ public:
 
         layoutWidget1 = new QWidget(cipherDialog);
         layoutWidget1->setObjectName(QString::fromUtf8("layoutWidget1"));
-        layoutWidget1->setGeometry(QRect(180, 80, 137, 56));
+        layoutWidget1->setGeometry(QRect(180, 60, 137, 76));
         verticalLayout_2 = new QVBoxLayout(layoutWidget1);
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
         verticalLayout_2->setContentsMargins(0, 0, 0, 0);
@@ -90,6 +91,11 @@ public:
         rev_sumerian->setObjectName(QString::fromUtf8("rev_sumerian"));
 
         verticalLayout_2->addWidget(rev_sumerian);
+
+        fibonacci = new QCheckBox(layoutWidget1);
+        fibonacci->setObjectName(QString::fromUtf8("fibonacci"));
+
+        verticalLayout_2->addWidget(fibonacci);
 
 
         retranslateUi(cipherDialog);
@@ -108,6 +114,7 @@ public:
         jewish->setText(QCoreApplication::translate("cipherDialog", "Jewish", nullptr));
         sumerian->setText(QCoreApplication::translate("cipherDialog", "Sumerian", nullptr));
         rev_sumerian->setText(QCoreApplication::translate("cipherDialog", "Reverse Sumerian", nullptr));
+        fibonacci->setText(QCoreApplication::translate("cipherDialog", "Fibonacci", nullptr));
     } // retranslateUi
 
 };
