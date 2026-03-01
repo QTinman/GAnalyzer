@@ -862,7 +862,7 @@ QString readSettings(string file, string entry)
     return "none";
 }
 
-void writeSettings(char file[], string entry,string settings)
+void writeSettings(const char file[], string entry,string settings)
 {
     string strReplace = entry+"=";
     string strNew = entry+"="+settings;

@@ -938,33 +938,34 @@ void MainWindow::on_lineEdit_returnPressed()
         }
 
     }
-    else if (stdphrase != "")
-    if (commands.indexOf(command) !=-1 && phrase != "<none>") {
-        qDebug() << "here!!";
-        int ns;
-        QString html;
-        //Compare the numbers in active phrase and one entered
-        for ( const auto& i : commands  )
-        if (i =="compare") {
-            int n=stdphrase.find(" ");
-            stdphrase.erase(0,n);
-            ns=getns(phrase.toUtf8().constData(),1,0);
-            if (getns(stdphrase,1,0) == ns) {
-                if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
-                else html = printword(stdphrase,'N',true,false);
-                writetmpfile("<html>"+html+"</html>");
+    else if (stdphrase != "") {
+        if (commands.indexOf(command) !=-1 && phrase != "<none>") {
+            qDebug() << "here!!";
+            int ns;
+            QString html;
+            //Compare the numbers in active phrase and one entered
+            for ( const auto& i : commands  )
+            if (i =="compare") {
+                int n=stdphrase.find(" ");
+                stdphrase.erase(0,n);
+                ns=getns(phrase.toUtf8().constData(),1,0);
+                if (getns(stdphrase,1,0) == ns) {
+                    if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
+                    else html = printword(stdphrase,'N',true,false);
+                    writetmpfile("<html>"+html+"</html>");
+                }
             }
+
+        } else {
+            QString html;
+
+            keymem(QString::fromStdString(stdphrase));
+            phrase = QString::fromStdString(stdphrase);
+            updatestatusbar();
+            if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
+            else html = printword(stdphrase,'N',true,false);
+            writetmpfile("<html>"+html+"</html>");
         }
-
-    }else {
-        QString html;
-
-        keymem(QString::fromStdString(stdphrase));
-        phrase = QString::fromStdString(stdphrase);
-        updatestatusbar();
-        if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
-        else html = printword(stdphrase,'N',true,false);
-        writetmpfile("<html>"+html+"</html>");
     }
     ui->lineEdit->clear();
 }
@@ -1027,12 +1028,12 @@ void MainWindow::welcome()
         color="blue";
     else
         color="lightblue";
-        writetmpfile("<h1>Welcome to Gematria Analyzer!</h1><br>");
-        writetmpfile("<h2>This program calculates Kabbalah ciphers from phrases and compares it to date numerology.</h2><br>");
-        writetmpfile("<b>For details about ciphers select <font color=\""+color+"\">Tables->List ciphers</font></b>");
-        writetmpfile("The program takes a phrase and date for comparison, also second date can be entered<br>");
-        writetmpfile("Select <b>Help</b> from menu or type <font color=\""+color+"\">/h</font> in input area<br>");
-        //writetmpfile("<div title=\"them's hoverin' words\">hover me</div>");
+    writetmpfile("<h1>Welcome to Gematria Analyzer!</h1><br>");
+    writetmpfile("<h2>This program calculates Kabbalah ciphers from phrases and compares it to date numerology.</h2><br>");
+    writetmpfile("<b>For details about ciphers select <font color=\""+color+"\">Tables->List ciphers</font></b>");
+    writetmpfile("The program takes a phrase and date for comparison, also second date can be entered<br>");
+    writetmpfile("Select <b>Help</b> from menu or type <font color=\""+color+"\">/h</font> in input area<br>");
+    //writetmpfile("<div title=\"them's hoverin' words\">hover me</div>");
 }
 
 void MainWindow::on_action_Word_details_triggered() //Ctrl-W

@@ -72,7 +72,7 @@ void headDialog::on_lineEdit_returnPressed()
 {
     QStringList filterlist, displaylist;
     QString nstype;
-    int nslist = ui->lineEdit->text().toUInt(), count, startw, endw, red = 0, rev = 0;
+    int nslist = ui->lineEdit->text().toUInt(), startw, endw, red = 0, rev = 0;
 
     if (ui->englisordinal->isChecked()) nstype = "English Ordinal";
     if (ui->fullreduction->isChecked()) { red = 1; nstype = "Full Reduction"; }

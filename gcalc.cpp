@@ -210,7 +210,7 @@ void processNS(int ns, int dd, int mm, int year, QString& buffer, bool eudate, c
 
 
 QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2, bool eudate) {
-    int d1, d2, m1, m2, ns, daynumb, dayleft, wd1, wd2, nm1, nm2, days, daysbeetween, year2;
+    int d1, d2, m1, m2, daynumb, dayleft, wd1, wd2, nm1, nm2, days, daysbeetween;
     double w1;
     QString buffer;
     stringstream logline;
