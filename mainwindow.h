@@ -23,9 +23,11 @@ extern bool single_r_on,francis_on,satanic_on,jewish_on,sumerian_on,rev_sumerian
 extern std::vector<int> primes;
 extern QString filesource;
 extern int zerodays[8][250],linenumbers;
+extern int moondays[8][250];
 extern QString hmem[10];
 extern QString appgroup;
 extern bool nightmode;
+extern bool moon_phases_on;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

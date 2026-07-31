@@ -59,6 +59,9 @@ QString loopYear(int ns, int dd, int mm, int year, int printcal, bool eudate)
     QString buffer;
 
     readsolarfile(dd, mm, year);
+    if (moon_phases_on) {
+        calculatemoonphases(dd, mm, year);
+    }
 
     for (int i = 0; i < mm2; ++i) {
         QDate cd(year, i + 1, 1);
@@ -153,6 +156,14 @@ QString loopYear(int ns, int dd, int mm, int year, int printcal, bool eudate)
                         buffer += printzerodays(dateval, monthval, year, ns, layer, "", eudate, false);
                     }
                 }
+
+                if (moon_phases_on) {
+                    for (int layer = 1; layer <= 4; ++layer) {
+                        if (searchmoondays(ns, layer, dateval, monthval, year) == ns) {
+                            buffer += printmoondays(dateval, monthval, year, ns, layer, "", eudate, false);
+                        }
+                    }
+                }
             }
         }
     }
@@ -184,6 +195,13 @@ void processNS(int ns, int dd, int mm, int year, QString& buffer, bool eudate, c
         if (searchzerodays(ns, layer, 0, 0, 0) > 0)
             buffer += printzerodays(dd, mm, year, ns, layer, "", eudate, true);
     }
+
+    if (moon_phases_on) {
+        for (int layer = 1; layer <= 4; ++layer) {
+            if (searchmoondays(ns, layer, 0, 0, 0) > 0)
+                buffer += printmoondays(dd, mm, year, ns, layer, "", eudate, true);
+        }
+    }
 }
 
 
@@ -198,6 +216,9 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2, bool eudate) 
     int y3 = (year - (y1 * 1000) - (y2 * 100)) / 10;
     int y4 = year - (y1 * 1000) - (y2 * 100) - (y3 * 10);
     readsolarfile(dd, mm, year);
+    if (moon_phases_on) {
+        calculatemoonphases(dd, mm, year);
+    }
 
     m1 = mm / 10;
     m2 = mm % 10;
@@ -872,6 +893,324 @@ QString solar2history(int dd, int mm, int year, int type, bool eudate)
 
         buffer += "<br><br><b>" + QString::fromStdString(formattext(std::to_string(lines), 1, 1)) + " phrase"
                   + (lines == 1 ? " was" : "s were") + " found matching " + solartype + " Solar Eclipses.</b><br><br>";
+
+        logline << buffer.toStdString();
+        logtime();
+        savelog(logline.str());
+
+        myfile.close();
+    }
+    else {
+        buffer += "⚠️ <b>Error:</b> Unable to open file: <code>" + historyfile + "</code><br>";
+    }
+
+    return buffer;
+}
+
+
+// ==================== MOON PHASE CALCULATIONS ====================
+
+// Convert Gregorian date to Julian Date
+double toJulianDate(int year, int month, int day) {
+    if (month <= 2) {
+        year--;
+        month += 12;
+    }
+
+    int A = year / 100;
+    int B = 2 - A + (A / 4);
+
+    double JD = floor(365.25 * (year + 4716)) + floor(30.6001 * (month + 1)) + day + B - 1524.5;
+    return JD;
+}
+
+// Calculate moon phase for a given Julian Date
+// Returns phase as 0-3: 0=New, 1=First Quarter, 2=Full, 3=Last Quarter
+// exactPhase returns the exact phase value (0.0-1.0)
+int calculateMoonPhase(double JD, double &exactPhase) {
+    // Days since known new moon (Jan 6, 2000)
+    double daysSinceNew = JD - 2451550.1;
+
+    // Lunar cycle length
+    constexpr double lunarCycle = 29.53058867;
+
+    // Calculate phase
+    double phase = daysSinceNew / lunarCycle;
+    phase = phase - floor(phase); // Normalize to 0-1
+    exactPhase = phase;
+
+    // Determine which quarter
+    if (phase < 0.125 || phase >= 0.875) return 0; // New Moon
+    else if (phase >= 0.125 && phase < 0.375) return 1; // First Quarter
+    else if (phase >= 0.375 && phase < 0.625) return 2; // Full Moon
+    else return 3; // Last Quarter
+}
+
+// Find next moon phase of specific type from given date
+QDate findNextMoonPhase(int phaseType, QDate fromDate) {
+    constexpr double lunarCycle = 29.53058867;
+    double targetPhase = phaseType * 0.25; // 0, 0.25, 0.5, 0.75
+
+    double JD = toJulianDate(fromDate.year(), fromDate.month(), fromDate.day());
+    double exactPhase;
+    calculateMoonPhase(JD, exactPhase);
+
+    // Calculate days until target phase
+    double phaseDiff = targetPhase - exactPhase;
+    if (phaseDiff < 0) phaseDiff += 1.0;
+
+    double daysUntil = phaseDiff * lunarCycle;
+    QDate nextPhase = fromDate.addDays(static_cast<int>(daysUntil + 0.5));
+
+    // Refine to get exact date
+    JD = toJulianDate(nextPhase.year(), nextPhase.month(), nextPhase.day());
+    calculateMoonPhase(JD, exactPhase);
+
+    // Adjust if needed (within 1 day accuracy)
+    if (abs(exactPhase - targetPhase) > 0.1 && abs(exactPhase - targetPhase) < 0.9) {
+        if (exactPhase < targetPhase) nextPhase = nextPhase.addDays(1);
+        else nextPhase = nextPhase.addDays(-1);
+    }
+
+    return nextPhase;
+}
+
+// Calculate and populate moon phase data
+void calculatemoonphases(int dd, int mm, int year) {
+    // Clear moon days array
+    for (int i = 0; i < 8; ++i) {
+        for (int j = 0; j < 250; ++j) {
+            moondays[i][j] = 0;
+        }
+    }
+
+    QDate currentDate(year, mm, dd);
+    int counter = 0;
+
+    // Calculate next 62 phases (about 5 years) for each type
+    for (int phaseType = 0; phaseType <= 3 && counter < 250; ++phaseType) {
+        QDate phaseDate = currentDate;
+
+        for (int i = 0; i < 62 && counter < 250; ++i) {
+            phaseDate = findNextMoonPhase(phaseType, phaseDate.addDays(1));
+
+            if (phaseDate > currentDate) {
+                moondays[0][counter] = weeks_months(currentDate, phaseDate, false, false);
+                moondays[1][counter] = weeks_months(currentDate, phaseDate, false, true);
+                moondays[2][counter] = weeks_months(currentDate, phaseDate, true, false);
+                moondays[3][counter] = weeks_months(currentDate, phaseDate, true, true);
+                moondays[4][counter] = phaseDate.day();
+                moondays[5][counter] = phaseDate.month();
+                moondays[6][counter] = phaseDate.year();
+                moondays[7][counter] = phaseType;
+                counter++;
+            }
+        }
+    }
+
+    // Also calculate recent past phases
+    for (int phaseType = 0; phaseType <= 3 && counter < 250; ++phaseType) {
+        QDate phaseDate = currentDate;
+
+        for (int i = 0; i < 12 && counter < 250; ++i) {
+            // Find previous phase
+            phaseDate = findNextMoonPhase(phaseType, phaseDate.addDays(-30));
+
+            if (phaseDate < currentDate) {
+                moondays[0][counter] = weeks_months(phaseDate, currentDate, false, false);
+                moondays[1][counter] = weeks_months(phaseDate, currentDate, false, true);
+                moondays[2][counter] = weeks_months(phaseDate, currentDate, true, false);
+                moondays[3][counter] = weeks_months(phaseDate, currentDate, true, true);
+                moondays[4][counter] = phaseDate.day();
+                moondays[5][counter] = phaseDate.month();
+                moondays[6][counter] = phaseDate.year();
+                moondays[7][counter] = phaseType;
+                counter++;
+            }
+        }
+    }
+}
+
+// Search moon phase dates for matching gematria value
+int searchmoondays(int ns, int type, int dd, int mm, int year) {
+    for (int counter = 0; counter < 250; ++counter) {
+        if (moondays[4][counter] == 0) break; // End of data
+
+        // Check if type matches (or type == 4 for all)
+        if (type == moondays[7][counter] || type == 4) {
+            int d1 = moondays[4][counter] / 10;
+            int d2 = moondays[4][counter] % 10;
+            int m1 = moondays[5][counter] / 10;
+            int m2 = moondays[5][counter] % 10;
+            int y1 = (moondays[6][counter] / 1000);
+            int y2 = (moondays[6][counter] / 100) % 10;
+            int y3 = (moondays[6][counter] / 10) % 10;
+            int y4 = moondays[6][counter] % 10;
+
+            // Various numeric combinations
+            if (ns == (d1 + d2 + m1 + m2)) return ns;
+            if (ns == (d1 + d2 + m1 + m2 + y1 + y2 + y3 + y4)) return ns;
+            if (ns == moondays[4][counter] + moondays[5][counter]) return ns;
+            if (ns == moondays[0][counter]) return ns; // weeks
+            if (ns == moondays[2][counter]) return ns; // months
+        }
+    }
+    return 0;
+}
+
+// Print moon phase information
+QString printmoondays(int dd, int mm, int year, int ns, int type, string detail, bool eudate, bool read) {
+    QString buffer;
+    QString moontype;
+    int counter = 0;
+
+    // Determine moon phase name
+    switch(type) {
+        case 0: moontype = "New Moon"; break;
+        case 1: moontype = "First Quarter"; break;
+        case 2: moontype = "Full Moon"; break;
+        case 3: moontype = "Last Quarter"; break;
+        case 4: moontype = ""; break; // All phases
+        default: moontype = "Unknown"; break;
+    }
+
+    if (detail == "listmoonphases") {
+        buffer += "<b>Upcoming Moon Phases:</b><br>";
+        while (counter < 250 && moondays[4][counter] != 0) {
+            if (type == moondays[7][counter] || type == 4) {
+                QString phaseType;
+                switch(moondays[7][counter]) {
+                    case 0: phaseType = "New Moon"; break;
+                    case 1: phaseType = "First Quarter"; break;
+                    case 2: phaseType = "Full Moon"; break;
+                    case 3: phaseType = "Last Quarter"; break;
+                }
+
+                QString dateStr = eudate ?
+                    QString::number(moondays[4][counter]) + "/" + QString::number(moondays[5][counter]) + "/" + QString::number(moondays[6][counter]) :
+                    QString::number(moondays[5][counter]) + "/" + QString::number(moondays[4][counter]) + "/" + QString::number(moondays[6][counter]);
+
+                buffer += phaseType + ": " + dateStr;
+                buffer += " (" + QString::number(moondays[2][counter]) + " months, " + QString::number(moondays[3][counter]) + " days)<br>";
+            }
+            counter++;
+        }
+        return buffer;
+    }
+
+    // Regular search output
+    while (counter < 250 && moondays[4][counter] != 0) {
+        if (type == moondays[7][counter] || type == 4) {
+            int d1 = moondays[4][counter] / 10;
+            int d2 = moondays[4][counter] % 10;
+            int m1 = moondays[5][counter] / 10;
+            int m2 = moondays[5][counter] % 10;
+
+            if (searchmoondays(ns, type, 0, 0, 0) > 0) {
+                QString dateStr = eudate ?
+                    QString::number(dd) + "/" + QString::number(mm) :
+                    QString::number(mm) + "/" + QString::number(dd);
+
+                QString phaseDate = eudate ?
+                    QString::number(moondays[4][counter]) + "/" + QString::number(moondays[5][counter]) + "/" + QString::number(moondays[6][counter]) :
+                    QString::number(moondays[5][counter]) + "/" + QString::number(moondays[4][counter]) + "/" + QString::number(moondays[6][counter]);
+
+                buffer += dateStr + " - " + moontype + " ";
+                buffer += QString::number(moondays[2][counter]) + " months from now on " + phaseDate;
+                buffer += QString::fromStdString(detail) + "<br>";
+                break;
+            }
+        }
+        counter++;
+    }
+
+    return buffer;
+}
+
+// Display detailed moon phase analysis
+QString moonphases(int dd, int mm, int year, int output, int type, bool eudate) {
+    QString buffer;
+    calculatemoonphases(dd, mm, year);
+
+    buffer += "<b>Moon Phase Analysis for ";
+    buffer += eudate ? QString::number(dd) + "/" + QString::number(mm) + "/" + QString::number(year) :
+                       QString::number(mm) + "/" + QString::number(dd) + "/" + QString::number(year);
+    buffer += "</b><br><br>";
+
+    buffer += printmoondays(dd, mm, year, 0, type, "listmoonphases", eudate, true);
+
+    return buffer;
+}
+
+// Compare moon phases to history.txt
+QString moon2history(int dd, int mm, int year, int type, bool eudate) {
+    // Cipher configuration structure for data-driven approach
+    struct CipherConfig {
+        bool enabled;
+        int arg1;
+        int arg2;
+        int arg3;
+        const char* name;
+    };
+
+    const CipherConfig ciphers[] = {
+        {true, 0, 0, 0, "English Ordinal"},
+        {true, 1, 0, 0, "Full Reduction"},
+        {true, 0, 1, 0, "Reverse Ordinal"},
+        {true, 1, 1, 0, "Reverse Full Reduction"},
+        {single_r_on, 0, 0, 1, "Single Reduction"},
+        {francis_on, 0, 0, 2, "Francis Bacon"},
+        {satanic_on, 0, 0, 3, "Satanic"},
+        {jewish_on, 0, 0, 4, "Jewish"},
+        {sumerian_on, 0, 0, 5, "Sumerian"},
+        {rev_sumerian_on, 0, 1, 5, "Reverse Sumerian"}
+    };
+    constexpr int numCiphers = sizeof(ciphers) / sizeof(ciphers[0]);
+
+    string line;
+    QString buffer, moontype;
+    stringstream logline;
+    int lines = 0;
+    ifstream myfile;
+    QString historyfile = loadsettings("historyfile").toString();
+
+    calculatemoonphases(dd, mm, year);
+
+    buffer += "Searching <code>History.txt</code> for phrases related to Moon Phases on the current date: "
+              + QString::number(dd) + "/" + QString::number(mm) + "/" + QString::number(year) + "<br><br>";
+
+    myfile.open(historyfile.toUtf8().constData());
+    if (myfile.is_open())
+    {
+        while (getline(myfile, line))
+        {
+            // Loop through all cipher configurations
+            for (int i = 0; i < numCiphers; ++i) {
+                const auto& cipher = ciphers[i];
+                if (!cipher.enabled) continue;
+
+                ns = getwordnumericvalue(line, cipher.arg1, cipher.arg2, cipher.arg3);
+                if (searchmoondays(ns, type, 0, 0, 0) > 0) {
+                    lines++;
+                    buffer += printmoondays(dd, mm, year, ns, type,
+                        " – \"" + formattext(line, 2, 1) + "\" [" + string(cipher.name) + "]",
+                        eudate, true);
+                }
+            }
+        }
+
+        // Determine moon phase label
+        switch(type) {
+            case 0: moontype = "New Moon"; break;
+            case 1: moontype = "First Quarter"; break;
+            case 2: moontype = "Full Moon"; break;
+            case 3: moontype = "Last Quarter"; break;
+            case 4: moontype = ""; break;
+            default: moontype = "Unknown"; break;
+        }
+
+        buffer += "<br><br><b>" + QString::fromStdString(formattext(to_string(lines), 1, 1)) + " phrase"
+                  + (lines == 1 ? " was" : "s were") + " found matching " + moontype + " phases.</b><br><br>";
 
         logline << buffer.toStdString();
         logtime();

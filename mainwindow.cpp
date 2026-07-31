@@ -34,6 +34,7 @@ using std::make_unique;
 
 constexpr int MAX_SIZE = 1000005;
 int zerodays[8][250], linenumbers=0;
+int moondays[8][250];
 QString hmem[10];
 vector<int> primes;
 QString phrase = "<none>";
@@ -46,6 +47,7 @@ QString filesource;
 QString labeltext,tmpstring;
 int year,dd,mm,ns,d2,m2,y2,filter,hmempos = -1;
 bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false,sumerian_on=false,rev_sumerian_on=false;
+bool moon_phases_on=false;
 
 void MainWindow::SieveOfEratosthenes(vector<int> &primes)
 {
