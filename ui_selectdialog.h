@@ -38,6 +38,7 @@ public:
     QRadioButton *Satanic;
     QRadioButton *Sumerian;
     QRadioButton *rev_sumerian;
+    QRadioButton *Fibonacci;
 
     void setupUi(QDialog *selectDialog)
     {
@@ -119,6 +120,11 @@ public:
 
         gridLayout->addWidget(rev_sumerian, 4, 1, 1, 1);
 
+        Fibonacci = new QRadioButton(widget);
+        Fibonacci->setObjectName(QString::fromUtf8("Fibonacci"));
+
+        gridLayout->addWidget(Fibonacci, 5, 0, 1, 1);
+
 
         retranslateUi(selectDialog);
         QObject::connect(pushButton, &QPushButton::clicked, selectDialog, &QDialog::accept);
@@ -142,6 +148,7 @@ public:
         Satanic->setText(QCoreApplication::translate("selectDialog", "Satanic", nullptr));
         Sumerian->setText(QCoreApplication::translate("selectDialog", "Sumerian", nullptr));
         rev_sumerian->setText(QCoreApplication::translate("selectDialog", "Reverse Sumerian", nullptr));
+        Fibonacci->setText(QCoreApplication::translate("selectDialog", "Fibonacci", nullptr));
     } // retranslateUi
 
 };

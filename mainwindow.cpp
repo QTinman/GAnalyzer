@@ -20,50 +20,60 @@
 #include <QFontDialog>
 
 #include <QFileDialog>
+#include <memory>
 //#include "gcalc.h"
 
 
-using namespace std;
-#define MAX_SIZE 1000005
-int zerodays[8][250], linenumbers=0;
+using std::vector;
+using std::string;
+using std::ifstream;
+using std::ofstream;
+using std::ios;
+using std::unique_ptr;
+using std::make_unique;
+
+constexpr int MAX_SIZE = 1000005;
+int zerodays[8][250], lunardays[8][500], linenumbers=0;
 QString hmem[10];
 vector<int> primes;
 QString phrase = "<none>";
 QString pwd = QDir::currentPath() + "/tmp.htm";
-QFile *file = new QFile(pwd);
+unique_ptr<QFile> file = make_unique<QFile>(pwd);
 bool nightmode=true;
+int lunar_filter=0; // 0=off, 1=New+Full only, 2=all phases
 QString appgroup="GAnalyzer";
 
 QString filesource;
 QString labeltext,tmpstring;
 int year,dd,mm,ns,d2,m2,y2,filter,hmempos = -1;
-bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false,sumerian_on=false,rev_sumerian_on=false;
+bool single_r_on=false,francis_on=false,satanic_on=false,jewish_on=false,sumerian_on=false,rev_sumerian_on=false,fibonacci_on=false;
 
 void MainWindow::SieveOfEratosthenes(vector<int> &primes)
 {
-    // Create a boolean array "IsPrime[0..MAX_SIZE]" and
-    // initialize all entries it as true. A value in
+    // Create a boolean vector "IsPrime[0..MAX_SIZE]" and
+    // initialize all entries as true. A value in
     // IsPrime[i] will finally be false if i is
     // Not a IsPrime, else true.
-    bool IsPrime[MAX_SIZE];
-    memset(IsPrime, true, sizeof(IsPrime));
+    // Using vector instead of stack array to avoid stack overflow (1MB+ allocation)
+    vector<bool> IsPrime(MAX_SIZE, true);
 
-    for (int p = 2; p * p < MAX_SIZE; p++)
+    for (int p = 2; p * p < MAX_SIZE; ++p)
     {
         // If IsPrime[p] is not changed, then it is a prime
-        if (IsPrime[p] == true)
+        if (IsPrime[p])
         {
             // Update all multiples of p greater than or
             // equal to the square of it
             // numbers which are multiple of p and are
             // less than p^2 are already been marked.
-            for (int i = p * p; i <  MAX_SIZE; i += p)
+            for (int i = p * p; i < MAX_SIZE; i += p)
                 IsPrime[i] = false;
         }
     }
 
     // Store all prime numbers
-    for (int p = 2; p < MAX_SIZE; p++)
+    primes.reserve(78498); // Pre-allocate space for known number of primes < 1000000
+    for (int p = 2; p < MAX_SIZE; ++p)
        if (IsPrime[p])
             primes.push_back(p);
 
@@ -104,6 +114,17 @@ MainWindow::MainWindow(QWidget *parent)
     QString DW = readSettings("settings.txt","DW"); //true
     QString HistX = readSettings("settings.txt","HistX");
     QString LNs = readSettings("settings.txt","LNs"); //false
+    QString lunarF = readSettings("settings.txt","lunarF");
+    if (lunarF == "1") {
+        lunar_filter = 1;
+        ui->actionLunar_filter->setText("Lunar: New+Full");
+    } else if (lunarF == "2") {
+        lunar_filter = 2;
+        ui->actionLunar_filter->setText("Lunar: All phases");
+    } else {
+        lunar_filter = 0;
+        ui->actionLunar_filter->setText("Lunar: Off");
+    }
     if (ssplit == "false") ui->actionSentence_split->setChecked(false);
     if (DW == "none") DW="true";
     if (HistX == "none") HistX="true";
@@ -130,6 +151,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (ciphers.mid(3,1) == "1") jewish_on = true;
     if (ciphers.mid(4,1) == "1") sumerian_on = true;
     if (ciphers.mid(5,1) == "1") rev_sumerian_on = true;
+    if (ciphers.mid(6,1) == "1") fibonacci_on = true;
     if (nightm == "true") {
         nightmode = true;
         ui->actionNightmode->setChecked(true);
@@ -176,6 +198,8 @@ MainWindow::~MainWindow()
     else ciphers += "0";
     if (rev_sumerian_on) ciphers += "1";
     else ciphers += "0";
+    if (fibonacci_on) ciphers += "1";
+    else ciphers += "0";
     //qDebug() << ciphers;
     char filename[13] = "settings.txt";
     writeSettings(filename,"ciphers",ciphers.toUtf8().constData());
@@ -185,6 +209,7 @@ MainWindow::~MainWindow()
 
     if (ui->actionLine_numbers_in_view->isChecked()) writeSettings(filename,"LNs","true");
     else writeSettings(filename,"LNs","false");
+    writeSettings(filename,"lunarF",std::to_string(lunar_filter));
     if (ui->actionSentence_split->isChecked()) ssplit = "true";
     else ssplit = "false";
     writeSettings(filename,"ssplit",ssplit);
@@ -773,6 +798,30 @@ void MainWindow::on_lineEdit_returnPressed()
                 break;
                 }
 
+            case 'm':
+                {
+                QString html;
+                int type=5;
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "N") type = 1; // New Moon
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "Q") type = 2; // First Quarter
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "F") type = 3; // Full Moon
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "L") type = 4; // Last Quarter
+                if (ui->lineEdit->text().mid(2,1).toUpper() == "X") type = 5; // All
+                if (eudate) {if (valid_date(ui->lineEdit->text().mid(4,2).toInt(),ui->lineEdit->text().mid(7,2).toInt(),year) == 1) {
+                        if (ui->lineEdit->text().mid(10,4).toInt() > 0) html = lunarphase(ui->lineEdit->text().mid(4,2).toInt(),ui->lineEdit->text().mid(7,2).toInt(),ui->lineEdit->text().mid(10,4).toInt(),1,type,eudate);
+                        else if (ui->lineEdit->text().mid(2,1) != "") html = lunarphase(ui->lineEdit->text().mid(4,2).toInt(),ui->lineEdit->text().mid(7,2).toInt(),year,1,type,eudate);
+                    }
+                    else html = lunarphase(dd,mm,year, 1,type,eudate);
+                }else { if (valid_date(ui->lineEdit->text().mid(7,2).toInt(),ui->lineEdit->text().mid(4,2).toInt(),year) == 1) {
+                        if (ui->lineEdit->text().mid(10,4).toInt() > 0) html = lunarphase(ui->lineEdit->text().mid(7,2).toInt(),ui->lineEdit->text().mid(4,2).toInt(),ui->lineEdit->text().mid(10,4).toInt(),1,type,eudate);
+                        else lunarphase(ui->lineEdit->text().mid(7,2).toInt(),ui->lineEdit->text().mid(4,2).toInt(),year,1,type,eudate);
+                    }
+                    else if (type > 0) html = lunarphase(dd,mm,year,1,type,eudate);
+                 }
+                writetmpfile("<html>"+html+"</html>");
+                break;
+                }
+
             case 'o':
                 {
                 QString html;
@@ -788,20 +837,22 @@ void MainWindow::on_lineEdit_returnPressed()
                 }
             case 'r':
             {
-                if (jewish_on && single_r_on && francis_on && satanic_on && sumerian_on && rev_sumerian_on) {
+                if (jewish_on && single_r_on && francis_on && satanic_on && sumerian_on && rev_sumerian_on && fibonacci_on) {
                     single_r_on=false;
                     francis_on=false;
                     satanic_on=false;
                     jewish_on=false;
                     sumerian_on=false;
                     rev_sumerian_on=false;
-                } else if (!jewish_on && !single_r_on && !francis_on && !satanic_on && !sumerian_on && !rev_sumerian_on) {
+                    fibonacci_on=false;
+                } else if (!jewish_on && !single_r_on && !francis_on && !satanic_on && !sumerian_on && !rev_sumerian_on && !fibonacci_on) {
                     single_r_on=true;
                     francis_on=true;
                     satanic_on=true;
                     jewish_on=true;
                     sumerian_on=true;
                     rev_sumerian_on=true;
+                    fibonacci_on=true;
                 }
                 break;
             }
@@ -887,33 +938,34 @@ void MainWindow::on_lineEdit_returnPressed()
         }
 
     }
-    else if (stdphrase != "")
-    if (commands.indexOf(command) !=-1 && phrase != "<none>") {
-        qDebug() << "here!!";
-        int ns;
-        QString html;
-        //Compare the numbers in active phrase and one entered
-        for ( const auto& i : commands  )
-        if (i =="compare") {
-            int n=stdphrase.find(" ");
-            stdphrase.erase(0,n);
-            ns=getns(phrase.toUtf8().constData(),1,0);
-            if (getns(stdphrase,1,0) == ns) {
-                if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
-                else html = printword(stdphrase,'N',true,false);
-                writetmpfile("<html>"+html+"</html>");
+    else if (stdphrase != "") {
+        if (commands.indexOf(command) !=-1 && phrase != "<none>") {
+            qDebug() << "here!!";
+            int ns;
+            QString html;
+            //Compare the numbers in active phrase and one entered
+            for ( const auto& i : commands  )
+            if (i =="compare") {
+                int n=stdphrase.find(" ");
+                stdphrase.erase(0,n);
+                ns=getns(phrase.toUtf8().constData(),1,0);
+                if (getns(stdphrase,1,0) == ns) {
+                    if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
+                    else html = printword(stdphrase,'N',true,false);
+                    writetmpfile("<html>"+html+"</html>");
+                }
             }
+
+        } else {
+            QString html;
+
+            keymem(QString::fromStdString(stdphrase));
+            phrase = QString::fromStdString(stdphrase);
+            updatestatusbar();
+            if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
+            else html = printword(stdphrase,'N',true,false);
+            writetmpfile("<html>"+html+"</html>");
         }
-
-    }else {
-        QString html;
-
-        keymem(QString::fromStdString(stdphrase));
-        phrase = QString::fromStdString(stdphrase);
-        updatestatusbar();
-        if (ui->SaveHistory->isChecked()) html = printword(stdphrase,'Y',true,false);
-        else html = printword(stdphrase,'N',true,false);
-        writetmpfile("<html>"+html+"</html>");
     }
     ui->lineEdit->clear();
 }
@@ -952,6 +1004,7 @@ void MainWindow::shorthelp()
         writetmpfile("<font color=\""+color+"\">/d##/##/####</font> date details (date is optional, year is extra option)");
         writetmpfile("<font color=\""+color+"\">/o#/##/##</font> Date compare to history (first number is filter 1-4, date is optional)");
         writetmpfile("<font color=\""+color+"\">/e@/##/##/####</font> Last and next Solar eclipse relative to date. @ is type \"T A P H-X=for all\" (date is optional, year is extra option)");
+        writetmpfile("<font color=\""+color+"\">/m@/##/##/####</font> Last and next Lunar phase relative to date. @ is type \"N=New Q=1stQtr F=Full L=LastQtr X=All\" (date is optional, year is extra option)");
         writetmpfile("<font color=\""+color+"\">/r</font> Toggle all extra ciphers on or off");
         writetmpfile("<font color=\""+color+"\">/x##</font> Add or subtract days from current date and set that date.");
         writetmpfile("<font color=\""+color+"\">/xs##</font> Add or subtract days from current date and set that as second date.");
@@ -975,12 +1028,12 @@ void MainWindow::welcome()
         color="blue";
     else
         color="lightblue";
-        writetmpfile("<h1>Welcome to Gematria Analyzer!</h1><br>");
-        writetmpfile("<h2>This program calculates Kabbalah ciphers from phrases and compares it to date numerology.</h2><br>");
-        writetmpfile("<b>For details about ciphers select <font color=\""+color+"\">Tables->List ciphers</font></b>");
-        writetmpfile("The program takes a phrase and date for comparison, also second date can be entered<br>");
-        writetmpfile("Select <b>Help</b> from menu or type <font color=\""+color+"\">/h</font> in input area<br>");
-        //writetmpfile("<div title=\"them's hoverin' words\">hover me</div>");
+    writetmpfile("<h1>Welcome to Gematria Analyzer!</h1><br>");
+    writetmpfile("<h2>This program calculates Kabbalah ciphers from phrases and compares it to date numerology.</h2><br>");
+    writetmpfile("<b>For details about ciphers select <font color=\""+color+"\">Tables->List ciphers</font></b>");
+    writetmpfile("The program takes a phrase and date for comparison, also second date can be entered<br>");
+    writetmpfile("Select <b>Help</b> from menu or type <font color=\""+color+"\">/h</font> in input area<br>");
+    //writetmpfile("<div title=\"them's hoverin' words\">hover me</div>");
 }
 
 void MainWindow::on_action_Word_details_triggered() //Ctrl-W
@@ -1036,6 +1089,10 @@ void MainWindow::on_actionList_Ciphers_triggered()
     writetmpfile("Reverse Sumerian");
     writetmpfile(listciphers(0,1,5));
     }
+    if (fibonacci_on) {
+    writetmpfile("Fibonacci");
+    writetmpfile(listciphers(0,0,6));
+    }
 }
 
 void MainWindow::on_actionList_Primenumbers_triggered()
@@ -1078,6 +1135,7 @@ void MainWindow::on_actionCompare_phrase_to_history_triggered() //Ctrl-T
     if (ns == 8) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Jewish",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     if (ns == 9) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Sumerian",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     if (ns == 10) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Reverse Sumerian",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
+    if (ns == 11) writetmpfile( "Calculated from " +QString::fromStdString(formattext("Fibonacci",2,2)) +" from Phrase :"+QString::fromStdString(formattext(phrase.toUtf8().constData(),1,1))+"<br>");
     }
     }
 }
@@ -1095,11 +1153,26 @@ selectDialog::selectDialog(QWidget *parent) :
         ui->SingleRed->hide();
         ui->Sumerian->hide();
         ui->rev_sumerian->hide();
+        ui->Fibonacci->hide();
         ui->radioButton1->setText("Total Solar Eclipse");
         ui->radioButton2->setText("Annular Solar Eclipse");
         ui->radioButton3->setText("Partial Solar Eclipse");
         ui->radioButton4->setText("Hybrid Solar Eclipse");
         ui->Jewish->setText("All Solar Eclipses");
+
+    } else if (labeltext == "lunar") {
+        ui->Jewish->show();
+        ui->Francis->hide();
+        ui->Satanic->hide();
+        ui->SingleRed->hide();
+        ui->Sumerian->hide();
+        ui->rev_sumerian->hide();
+        ui->Fibonacci->hide();
+        ui->radioButton1->setText("New Moon");
+        ui->radioButton2->setText("First Quarter");
+        ui->radioButton3->setText("Full Moon");
+        ui->radioButton4->setText("Last Quarter");
+        ui->Jewish->setText("All Lunar Phases");
 
     } else {
     if (!single_r_on) ui->SingleRed->hide();
@@ -1108,6 +1181,7 @@ selectDialog::selectDialog(QWidget *parent) :
     if (!jewish_on) ui->Jewish->hide();
     if (!sumerian_on) ui->Sumerian->hide();
     if (!rev_sumerian_on) ui->rev_sumerian->hide();
+    if (!fibonacci_on) ui->Fibonacci->hide();
     }
 
 }
@@ -1130,6 +1204,7 @@ void selectDialog::displaydialog()
     if (ui->Jewish->isChecked()) ns = 8;
     if (ui->Sumerian->isChecked()) ns = 9;
     if (ui->rev_sumerian->isChecked()) ns = 10;
+    if (ui->Fibonacci->isChecked()) ns = 11;
     }
     if (labeltext == "Date to history") {
     if (ui->radioButton1->isChecked()) filter = 1;
@@ -1142,6 +1217,7 @@ void selectDialog::displaydialog()
     if (ui->Jewish->isChecked()) filter = 8;
     if (ui->Sumerian->isChecked()) filter = 9;
     if (ui->rev_sumerian->isChecked()) filter = 10;
+    if (ui->Fibonacci->isChecked()) filter = 11;
     }
     if (labeltext == "solar") {
     if (ui->radioButton1->isChecked()) filter = 1;
@@ -1149,6 +1225,13 @@ void selectDialog::displaydialog()
     if (ui->radioButton3->isChecked()) filter = 3;
     if (ui->radioButton4->isChecked()) filter = 4;
     if (ui->Jewish->isChecked()) filter = 5;
+    }
+    if (labeltext == "lunar") {
+    if (ui->radioButton1->isChecked()) filter = 1;  // New Moon
+    if (ui->radioButton2->isChecked()) filter = 2;  // First Quarter
+    if (ui->radioButton3->isChecked()) filter = 3;  // Full Moon
+    if (ui->radioButton4->isChecked()) filter = 4;  // Last Quarter
+    if (ui->Jewish->isChecked()) filter = 5;         // All
     }
 }
 
@@ -1264,6 +1347,40 @@ void MainWindow::on_actionList_Solar_Eclipses_triggered()
 
 }
 
+void MainWindow::on_actionLunar_Phases_triggered()
+{
+    filter = 0;
+    labeltext = "lunar";
+    selectDialog sDialog;
+    sDialog.setModal(true);
+    sDialog.exec();
+    if (filter > 0)
+    emit writetmpfile(lunarphase(dd,mm,year,1,filter,eudate)); // 1=print
+}
+
+void MainWindow::on_actionCompare_LunarP_to_history_triggered()
+{
+    filter = 0;
+    labeltext = "lunar";
+    selectDialog sDialog;
+    sDialog.setModal(true);
+    sDialog.exec();
+
+    if (filter > 0)
+    writetmpfile(lunar2history(dd,mm,year,filter,eudate));
+}
+
+void MainWindow::on_actionList_Lunar_Phases_triggered()
+{
+    labeltext = "lunar";
+    computelunarphases(dd,mm,year);
+    selectDialog sDialog;
+    sDialog.setModal(true);
+    sDialog.exec();
+
+    writetmpfile(printlunardays(dd,mm,year,0,filter,"listlunarphases",eudate,true));
+}
+
 void MainWindow::on_actionPhrase_ranking_triggered()
 {
     bool chiper=false,dates=false,prime=false,triangular=false;
@@ -1360,7 +1477,7 @@ void MainWindow::writetmpfile(QString html)
 
     if (file->open(QIODevice::WriteOnly | QIODevice::Append))
     {
-        QTextStream stream( file );
+        QTextStream stream( file.get() );
         stream << html;
         file->close();
     }
@@ -1455,6 +1572,20 @@ void MainWindow::on_actionLine_numbers_in_view_toggled(bool arg1)
 {
     if (arg1) linenumbers=1;
     else linenumbers=0;
+}
+
+void MainWindow::on_actionLunar_filter_triggered()
+{
+    // Cycle: 0 (Off) -> 1 (New+Full) -> 2 (All phases) -> 0 (Off)
+    lunar_filter = (lunar_filter + 1) % 3;
+    switch(lunar_filter) {
+        case 0: ui->actionLunar_filter->setText("Lunar: Off"); break;
+        case 1: ui->actionLunar_filter->setText("Lunar: New+Full"); break;
+        case 2: ui->actionLunar_filter->setText("Lunar: All phases"); break;
+    }
+    // Save immediately so the setting persists
+    char filename[13] = "settings.txt";
+    writeSettings(filename,"lunarF",std::to_string(lunar_filter));
 }
 
 void MainWindow::on_actionSelect_history_file_triggered()

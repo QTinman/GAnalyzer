@@ -77,9 +77,9 @@
    <property name="geometry">
     <rect>
      <x>180</x>
-     <y>80</y>
+     <y>60</y>
      <width>137</width>
-     <height>56</height>
+     <height>76</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -94,6 +94,13 @@
      <widget class="QCheckBox" name="rev_sumerian">
       <property name="text">
        <string>Reverse Sumerian</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="fibonacci">
+      <property name="text">
+       <string>Fibonacci</string>
       </property>
      </widget>
     </item>

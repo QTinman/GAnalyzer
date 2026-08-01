@@ -178,6 +178,8 @@
     <addaction name="actionC_ompare_date_to_History_txt"/>
     <addaction name="actionCompare_SolarE_to_history"/>
     <addaction name="actionSolar_Eclipses"/>
+    <addaction name="actionLunar_Phases"/>
+    <addaction name="actionCompare_LunarP_to_history"/>
     <addaction name="separator"/>
     <addaction name="actionSave_as"/>
     <addaction name="action_Print"/>
@@ -196,6 +198,7 @@
      <addaction name="actionLine_numbers_in_view"/>
      <addaction name="actionRemove_view_history_on_exit"/>
      <addaction name="actionDisplay_Welcome"/>
+     <addaction name="actionLunar_filter"/>
     </widget>
     <addaction name="actionNew_Phrase"/>
     <addaction name="actionNew_Date"/>
@@ -218,6 +221,7 @@
     <addaction name="actionList_Primenumbers"/>
     <addaction name="actionList_Triangular_numbers"/>
     <addaction name="actionList_Solar_Eclipses"/>
+    <addaction name="actionList_Lunar_Phases"/>
     <addaction name="actionList_History"/>
     <addaction name="actionCalendar"/>
     <addaction name="action_News_headlines_exp"/>
@@ -388,6 +392,24 @@
     <string>List Solar Eclipses</string>
    </property>
   </action>
+  <action name="actionLunar_Phases">
+   <property name="text">
+    <string>Lunar Phases</string>
+   </property>
+  </action>
+  <action name="actionCompare_LunarP_to_history">
+   <property name="text">
+    <string>Compare Lunar&amp;Ph to history</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="actionList_Lunar_Phases">
+   <property name="text">
+    <string>List Lunar Phases</string>
+   </property>
+  </action>
   <action name="actionPhrase_ranking">
    <property name="text">
     <string>Phrase &amp;ranking</string>
@@ -486,6 +508,11 @@
    </property>
    <property name="text">
     <string>Select &amp;history file</string>
+   </property>
+  </action>
+  <action name="actionLunar_filter">
+   <property name="text">
+    <string>Lunar: Off</string>
    </property>
   </action>
  </widget>
