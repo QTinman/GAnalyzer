@@ -85,4 +85,5 @@ int searchlunardays(int ns, int type, int dd, int mm, int year);
 QString printlunardays(int dd, int mm, int year, int ns, int type, std::string detail, bool eudate, bool read);
 QString lunar2history(int dd, int mm, int year, int type, bool eudate);
 QString getMoonPhaseName(int type);
+QString moonphasestatus(int dd, int mm, int year, bool eudate);
 #endif // GCALC_H

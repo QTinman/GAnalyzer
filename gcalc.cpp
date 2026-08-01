@@ -266,6 +266,7 @@ QString gcalc(int dd, int mm, int year, int dd2, int mm2, int yy2, bool eudate) 
         logline << "<br>Date of " << mm << "/" << dd << "/" << year << " is " << formattext(dayname(dayNumber(dd, mm, year)), 1, 2) << "<br>";
     buffer += QString::fromStdString(logline.str());
     savelog(logline.str());
+    if (lunar_filter > 0) buffer += tobuffer(moonphasestatus(dd, mm, year, eudate));
 
     auto process = [&](int ns, const std::string& expr) {
         processNS(ns, dd, mm, year, buffer, eudate, expr);
@@ -1098,6 +1099,52 @@ QString getMoonPhaseName(int type)
         case 4: return "Last Quarter";
         default: return "Unknown";
     }
+}
+
+// Moon status on the date itself: names the exact phase when the date is a
+// New/Quarter/Full Moon day (same rounding as computelunarphases so it always
+// agrees with the phase table), otherwise the in-between phase from the moon's age
+QString moonphasestatus(int dd, int mm, int year, bool eudate)
+{
+    const double refNewMoonJD = 2451550.26; // Jan 6, 2000 18:14 UTC
+    const double phaseOffsets[4] = {
+        0.0,                       // New Moon
+        SYNODIC_MONTH / 4.0,       // First Quarter
+        SYNODIC_MONTH / 2.0,       // Full Moon
+        SYNODIC_MONTH * 3.0 / 4.0  // Last Quarter
+    };
+    QString phase;
+    double daysSinceRef = dateToJulianDay(dd, mm, year) - refNewMoonJD;
+    int cycle = (int)(daysSinceRef / SYNODIC_MONTH);
+
+    for (int n = cycle - 1; n <= cycle + 1 && phase.isEmpty(); n++) {
+        for (int p = 0; p < 4; p++) {
+            int pdd, pmm, pyear;
+            julianDayToDate(refNewMoonJD + (double)n * SYNODIC_MONTH + phaseOffsets[p], pdd, pmm, pyear);
+            if (pdd == dd && pmm == mm && pyear == year) {
+                phase = getMoonPhaseName(p + 1);
+                break;
+            }
+        }
+    }
+
+    double age = fmod(daysSinceRef, SYNODIC_MONTH);
+    if (age < 0) age += SYNODIC_MONTH;
+    if (phase.isEmpty()) {
+        if (age < SYNODIC_MONTH / 4.0) phase = "Waxing Crescent";
+        else if (age < SYNODIC_MONTH / 2.0) phase = "Waxing Gibbous";
+        else if (age < SYNODIC_MONTH * 3.0 / 4.0) phase = "Waning Gibbous";
+        else phase = "Waning Crescent";
+    }
+
+    QString buffer;
+    if (eudate) buffer = QString::number(dd) + " " + getMonthName(mm-1).c_str() + " - ";
+    else buffer = QString::fromStdString(getMonthName(mm-1).c_str()) + " " + QString::number(dd) + " - ";
+    buffer += "Moon status: " + phase + ", moon age "
+              + QString::fromStdString(formattext(QString::number(age,'f',1).toUtf8().constData(),1,1))
+              + " days<br>";
+    savelog(buffer.toUtf8().constData());
+    return buffer;
 }
 
 void computelunarphases(int dd, int mm, int year)
@@ -2218,6 +2265,7 @@ QString runanalyze(int dd, int mm, int year, string phrase,bool hlist, int filte
         logline << "<br>Statistic for " << formattext(phrase,2,3) << "<br>";
         buffer += QString::fromStdString(logline.str());
         savelog(logline.str());
+        if (lunar_filter > 0) buffer += tobuffer(moonphasestatus(dd,mm,year,eudate));
     }
     if (filter==1||!hlist) ns = getwordnumericvalue(phrase,0,0,0); //English Ordinal - start of compare cifers to date
     for(i=1;i<=39;i++)
