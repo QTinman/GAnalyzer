@@ -19,6 +19,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    aiprovider.cpp \
     analyzer.cpp \
     calwindow.cpp \
     ciphers.cpp \
@@ -35,6 +36,7 @@ SOURCES += \
     tools.cpp
 
 HEADERS += \
+    aiprovider.h \
     analyzer.h \
     calwindow.h \
     ciphers.h \
