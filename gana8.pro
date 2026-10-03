@@ -19,10 +19,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    analyzer.cpp \
     calwindow.cpp \
     ciphers.cpp \
     ciphervalue.cpp \
     cipherdialog.cpp \
+    decodegraph.cpp \
+    historyindex.cpp \
     gcalc.cpp \
     headdialog.cpp \
     httpdownload.cpp \
@@ -32,10 +35,13 @@ SOURCES += \
     tools.cpp
 
 HEADERS += \
+    analyzer.h \
     calwindow.h \
     ciphers.h \
     ciphervalue.h \
     cipherdialog.h \
+    decodegraph.h \
+    historyindex.h \
     gcalc.h \
     headdialog.h \
     httpdownload.h \

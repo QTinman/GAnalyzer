@@ -507,5 +507,11 @@ private slots:
     }
 };
 
-QTEST_APPLESS_MAIN(CipherTests)
+// No QTEST_APPLESS_MAIN: two suites share one binary, so each exposes an
+// entry point and main.cpp runs both. See tests/main.cpp.
+int runCipherTests(int argc, char **argv)
+{
+    CipherTests tests;
+    return QTest::qExec(&tests, argc, argv);
+}
 #include "tst_ciphers.moc"
