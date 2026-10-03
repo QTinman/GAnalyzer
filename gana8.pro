@@ -21,6 +21,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     aiprovider.cpp \
     analyzer.cpp \
+    analyzerdialog.cpp \
     calwindow.cpp \
     ciphers.cpp \
     ciphervalue.cpp \
@@ -38,6 +39,7 @@ SOURCES += \
 HEADERS += \
     aiprovider.h \
     analyzer.h \
+    analyzerdialog.h \
     calwindow.h \
     ciphers.h \
     ciphervalue.h \

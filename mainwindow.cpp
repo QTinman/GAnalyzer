@@ -3,6 +3,7 @@
 #include "ui_inputdialog.h"
 #include "ui_selectdialog.h"
 #include "ui_rankdialog.h"
+#include "analyzerdialog.h"
 #include "cipherdialog.h"
 #include "rankdialog.h"
 #include "calwindow.h"
@@ -179,6 +180,21 @@ MainWindow::MainWindow(QWidget *parent)
             //int curr_locale = QLocale().language();
             //qDebug() << " String ="<< curr_locale << endl;
     if (DW=="true") welcome();
+
+    // The Analyzer menu is added here rather than to mainwindow.ui because the
+    // generated ui_*.h headers are committed in this repository: a .ui change
+    // needs a matching regeneration, and silently compiles against the old
+    // header when that is forgotten. One menu item is not worth that risk.
+    QMenu *analyzerMenu = menuBar()->addMenu(tr("&Analyzer"));
+    QAction *againstHistory = analyzerMenu->addAction(tr("Analyze against &history..."));
+
+    againstHistory->setShortcut(QKeySequence("Ctrl+Shift+A"));
+    againstHistory->setStatusTip(tr("Find stored words that share a cipher value with a phrase"));
+
+    connect(againstHistory, &QAction::triggered, this, [this]() {
+        AnalyzerDialog dialog(this);
+        dialog.exec();
+    });
 
     //qDebug() << MainWindow::width() << " " << MainWindow::x() << " " << ui->textBrowser->width();
 }
