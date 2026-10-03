@@ -1,5 +1,4 @@
 QT       += testlib gui widgets network xml printsupport
-QT       -=
 
 CONFIG   += console testcase
 CONFIG   -= app_bundle
@@ -15,8 +14,10 @@ INCLUDEPATH += ..
 SOURCES += \
     tst_ciphers.cpp \
     ../ciphers.cpp \
+    ../ciphervalue.cpp \
     ../tools.cpp
 
 HEADERS += \
     ../ciphers.h \
+    ../ciphervalue.h \
     ../tools.h

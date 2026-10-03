@@ -244,6 +244,191 @@ private slots:
         QVERIFY(reduce(130) != 4);
     }
 
+    // ---- multiplicative, and the reason it needs its own number type -----
+
+    void multiplicativeIsTheProductOfLetterValues()
+    {
+        QCOMPARE(ciphers::value(QString("ABC"), ciphers::Multiplicative), 6LL);     // 1*2*3
+        QCOMPARE(ciphers::value(QString("A"), ciphers::Multiplicative), 1LL);
+        QCOMPARE(ciphers::value(QString("CAB"), ciphers::Multiplicative), 6LL);     // order cannot matter
+        QCOMPARE(ciphers::value(QString(""), ciphers::Multiplicative), 0LL);
+    }
+
+    void multiplicativeIsNotOrdinalTimesPosition()
+    {
+        // The rejected definition would make ABC 1*1 + 2*2 + 3*3 or 1*1*2*2*3*3;
+        // it is neither. BA and AB would also differ, and they must not.
+        QCOMPARE(ciphers::value(QString("AB"), ciphers::Multiplicative),
+                 ciphers::value(QString("BA"), ciphers::Multiplicative));
+    }
+
+    void multiplicativeStaysExactPastSixtyFourBits()
+    {
+        // Twelve Zs still fit; twenty do not. Before arbitrary precision this
+        // wrapped silently into a number that was not wrong so much as
+        // meaningless - and would then have been indexed and matched against
+        // other meaningless numbers.
+        const ciphers::CipherValue twelve = ciphers::valueOf(QString("ZZZZZZZZZZZZ"), ciphers::Multiplicative);
+        QVERIFY(!twelve.isBig());
+        QCOMPARE(twelve.toString(), QString("95428956661682176"));
+
+        const ciphers::CipherValue twenty =
+            ciphers::valueOf(QString("ZZZZZZZZZZZZZZZZZZZZ"), ciphers::Multiplicative);
+        QVERIFY(twenty.isBig());
+        QCOMPARE(twenty.toString(), QString("19928148895209409152340197376"));
+
+        // The boundary itself: 20! fits in a qint64 with little to spare.
+        const ciphers::CipherValue factorial =
+            ciphers::valueOf(QString("ABCDEFGHIJKLMNOPQRST"), ciphers::Multiplicative);
+        QVERIFY(!factorial.isBig());
+        QCOMPARE(factorial.toString(), QString("2432902008176640000"));
+    }
+
+    void bigValuesCompareAndPrintCorrectly()
+    {
+        const ciphers::CipherValue a = ciphers::valueOf(QString("ZZZZZZZZZZZZZZZZZZZZ"), ciphers::Multiplicative);
+        const ciphers::CipherValue b = ciphers::valueOf(QString("ZZZZZZZZZZZZZZZZZZZZ"), ciphers::Multiplicative);
+        const ciphers::CipherValue c = ciphers::valueOf(QString("ZZZZZZZZZZZZZZZZZZZ"), ciphers::Multiplicative);
+
+        QVERIFY(a == b);
+        QVERIFY(a != c);
+        QVERIFY(c < a);
+        QVERIFY(ciphers::CipherValue(5) < a);
+
+        // The index keys on this string, so a value that prints two ways would
+        // land in two buckets.
+        QCOMPARE(a.key(), b.key());
+
+        // Limb padding: a number with an interior group of zeros must not lose
+        // them. 1e9 + 2 is the smallest case that catches it.
+        ciphers::BigUInt n(1000000002ull);
+        QCOMPARE(n.toString(), QString("1000000002"));
+    }
+
+    void wordSquareIsTheSquareOfTheTotal()
+    {
+        // ABC sums to 6, so 36 - NOT 1 + 4 + 9. If the sum of individual
+        // squares is ever wanted it gets its own name, as agreed.
+        QCOMPARE(ciphers::value(QString("ABC"), ciphers::EnglishOrdinal), 6LL);
+        QCOMPARE(ciphers::value(QString("ABC"), ciphers::WordSquare), 36LL);
+        QVERIFY(ciphers::value(QString("ABC"), ciphers::WordSquare) != 14LL);
+    }
+
+    // ---- Elizabethan -----------------------------------------------------
+
+    void elizabethanMergesIJandUV()
+    {
+        QCOMPARE(ciphers::value(QString("I"), ciphers::ElizabethanOrdinal), 9LL);
+        QCOMPARE(ciphers::value(QString("J"), ciphers::ElizabethanOrdinal), 9LL);
+        QCOMPARE(ciphers::value(QString("U"), ciphers::ElizabethanOrdinal), 20LL);
+        QCOMPARE(ciphers::value(QString("V"), ciphers::ElizabethanOrdinal), 20LL);
+
+        // The whole alphabet after I is shifted, so Z is 24 and not 26. This is
+        // what distinguishes a genuine 24-letter alphabet from modern ordinal
+        // values with two letters quietly merged.
+        QCOMPARE(ciphers::value(QString("Z"), ciphers::ElizabethanOrdinal), 24LL);
+        QCOMPARE(ciphers::value(QString("K"), ciphers::ElizabethanOrdinal), 10LL);
+        QCOMPARE(ciphers::value(QString("Z"), ciphers::EnglishOrdinal), 26LL);
+    }
+
+    // ---- Mirror / Atbash -------------------------------------------------
+
+    void mirrorIsAtbashAndEqualsReverseOrdinalByArithmetic()
+    {
+        // Atbash sends position n to 27-n, which is exactly what Reverse
+        // Ordinal computes. They agree for every input, by arithmetic and not
+        // by coincidence - so the analyzer must count them once.
+        const char *words[] = { "A", "Z", "eclipse", "Washington", "The Quick Brown Fox", "" };
+
+        for (size_t i = 0; i < sizeof(words) / sizeof(words[0]); ++i) {
+            QCOMPARE(ciphers::value(QString(words[i]), ciphers::MirrorAtbash),
+                     ciphers::value(QString(words[i]), ciphers::ReverseOrdinal));
+        }
+
+        QCOMPARE(ciphers::value(QString("A"), ciphers::MirrorAtbash), 26LL);
+        QCOMPARE(ciphers::value(QString("Z"), ciphers::MirrorAtbash), 1LL);
+    }
+
+    void theRedundancyIsDeclaredNotJustTrue()
+    {
+        // A comment would not stop the analyzer double-counting; this does.
+        QCOMPARE(ciphers::byId(ciphers::MirrorAtbash)->redundantWith,
+                 static_cast<int>(ciphers::ReverseOrdinal));
+
+        // And nothing else claims to duplicate anything.
+        const std::vector<ciphers::Cipher> &all = ciphers::all();
+        int declared = 0;
+
+        for (size_t i = 0; i < all.size(); ++i) {
+            if (all[i].redundantWith >= 0) {
+                ++declared;
+                QVERIFY(ciphers::byId(all[i].redundantWith) != nullptr);
+            }
+        }
+
+        QCOMPARE(declared, 1);
+    }
+
+    // ---- native scripts, with no transliteration -------------------------
+
+    void greekIsopsephyAndOrdinalAreDifferentSystems()
+    {
+        QCOMPARE(ciphers::value(QString::fromUtf8("α"), ciphers::GreekIsopsephy), 1LL);
+        QCOMPARE(ciphers::value(QString::fromUtf8("ω"), ciphers::GreekIsopsephy), 800LL);  // omega
+        QCOMPARE(ciphers::value(QString::fromUtf8("ω"), ciphers::GreekOrdinal), 24LL);
+
+        // Both forms of sigma must agree, or a word ending in one differs from
+        // the same word in the middle of a phrase.
+        QCOMPARE(ciphers::value(QString::fromUtf8("σ"), ciphers::GreekIsopsephy),
+                 ciphers::value(QString::fromUtf8("ς"), ciphers::GreekIsopsephy));
+
+        // Capitals too.
+        QCOMPARE(ciphers::value(QString::fromUtf8("Α"), ciphers::GreekIsopsephy),
+                 ciphers::value(QString::fromUtf8("α"), ciphers::GreekIsopsephy));
+    }
+
+    void abjadAndArabicOrdinalAreDifferentSystems()
+    {
+        QCOMPARE(ciphers::value(QString::fromUtf8("ا"), ciphers::Abjad), 1LL);     // alef
+        QCOMPARE(ciphers::value(QString::fromUtf8("غ"), ciphers::Abjad), 1000LL);  // ghain
+        QCOMPARE(ciphers::value(QString::fromUtf8("غ"), ciphers::ArabicOrdinal), 19LL);
+
+        // Hamza-bearing alef reads as alef.
+        QCOMPARE(ciphers::value(QString::fromUtf8("أ"), ciphers::Abjad), 1LL);
+    }
+
+    void cyrillicNumeralsAreNotTheModernAlphabet()
+    {
+        QCOMPARE(ciphers::value(QString::fromUtf8("а"), ciphers::RussianOrdinal), 1LL);   // а
+        QCOMPARE(ciphers::value(QString::fromUtf8("я"), ciphers::RussianOrdinal), 33LL);  // я
+        QCOMPARE(ciphers::value(QString::fromUtf8("ц"), ciphers::CyrillicNumerals), 900LL); // ц
+
+        // б was never a numeral and so is worth nothing in that system, while
+        // it is plainly the second letter of the modern alphabet.
+        QCOMPARE(ciphers::value(QString::fromUtf8("б"), ciphers::CyrillicNumerals), 0LL);
+        QCOMPARE(ciphers::value(QString::fromUtf8("б"), ciphers::RussianOrdinal), 2LL);
+    }
+
+    void latinTextIsNotSilentlyTransliterated()
+    {
+        // The decision was native script only. "eclipse" has no Greek value,
+        // and saying it has one would be inventing a transliteration scheme.
+        QCOMPARE(ciphers::value(QString("eclipse"), ciphers::GreekIsopsephy), 0LL);
+        QCOMPARE(ciphers::value(QString("eclipse"), ciphers::Abjad), 0LL);
+        QCOMPARE(ciphers::value(QString("eclipse"), ciphers::RussianOrdinal), 0LL);
+
+        QCOMPARE(ciphers::value(QString::fromUtf8("αβγ"), ciphers::EnglishOrdinal), 0LL);
+    }
+
+    void eachScriptReadsOnlyItsOwnLettersFromMixedText()
+    {
+        const QString mixed = QString::fromUtf8("abc αβγ");
+
+        QCOMPARE(ciphers::value(mixed, ciphers::EnglishOrdinal), 6LL);     // a+b+c
+        QCOMPARE(ciphers::value(mixed, ciphers::GreekIsopsephy), 6LL);     // alpha+beta+gamma
+        QCOMPARE(ciphers::value(mixed, ciphers::Abjad), 0LL);
+    }
+
     // ---- nothing that already existed has moved --------------------------
 
     void legacyCiphersAreUnchanged()
