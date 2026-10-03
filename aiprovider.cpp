@@ -159,7 +159,12 @@ QString Settings::unusableReason() const
 Settings Settings::fromSettings()
 {
     Settings s;
-    QSettings store;
+
+    // The same place MainWindow keeps everything else: QSettings("QTinman",
+    // appgroup), then a group of the same name. The default constructor would
+    // write elsewhere and the settings would seem not to stick.
+    QSettings store(QStringLiteral("QTinman"),
+                    appgroup.isEmpty() ? QStringLiteral("GAnalyzer") : appgroup);
 
     store.beginGroup(appgroup.isEmpty() ? QStringLiteral("GAnalyzer") : appgroup);
     store.beginGroup(QStringLiteral("ai"));
@@ -181,7 +186,8 @@ Settings Settings::fromSettings()
 
 void Settings::save() const
 {
-    QSettings store;
+    QSettings store(QStringLiteral("QTinman"),
+                    appgroup.isEmpty() ? QStringLiteral("GAnalyzer") : appgroup);
 
     store.beginGroup(appgroup.isEmpty() ? QStringLiteral("GAnalyzer") : appgroup);
     store.beginGroup(QStringLiteral("ai"));

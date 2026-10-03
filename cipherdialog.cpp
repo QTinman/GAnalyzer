@@ -1,42 +1,109 @@
 #include "cipherdialog.h"
-#include "ui_cipherdialog.h"
-#include "mainwindow.h"
-#include <QDebug>
+#include "cipherselection.h"
+#include "ciphers.h"
 
-cipherDialog::cipherDialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::cipherDialog)
+#include <QDialogButtonBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QListWidget>
+#include <QPushButton>
+#include <QVBoxLayout>
+
+cipherDialog::cipherDialog(QWidget *parent)
+    : QDialog(parent)
 {
-    ui->setupUi(this);
-    if (single_r_on) ui->single_reduction->setChecked(true);
-    if (francis_on) ui->francis_bacon->setChecked(true);
-    if (satanic_on) ui->satanic->setChecked(true);
-    if (jewish_on) ui->jewish->setChecked(true);
-    if (sumerian_on) ui->sumerian->setChecked(true);
-    if (rev_sumerian_on) ui->rev_sumerian->setChecked(true);
-    if (fibonacci_on) ui->fibonacci->setChecked(true);
+    setWindowTitle(tr("Ciphers"));
+    resize(420, 560);
+
+    QVBoxLayout *layout = new QVBoxLayout(this);
+
+    QLabel *note = new QLabel(
+        tr("Which ciphers to show. The first four are always shown."), this);
+    note->setWordWrap(true);
+    note->setStyleSheet("color: gray;");
+    layout->addWidget(note);
+
+    _list = new QListWidget(this);
+    _list->setSelectionMode(QAbstractItemView::NoSelection);
+    layout->addWidget(_list, 1);
+
+    const std::vector<ciphers::Cipher> &all = ciphers::all();
+
+    for (size_t i = 0; i < all.size(); ++i) {
+        const int id = all[i].id;
+
+        QListWidgetItem *item = new QListWidgetItem(ciphers::name(id), _list);
+
+        item->setData(Qt::UserRole, id);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(cipherselection::isEnabled(id) ? Qt::Checked : Qt::Unchecked);
+
+        if (cipherselection::isAlwaysOn(id)) {
+            // Shown ticked and disabled rather than hidden: a checkbox you
+            // cannot untick explains itself, while a column that appears from
+            // nowhere does not.
+            item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+            item->setToolTip(tr("Always shown."));
+        } else if (all[i].redundantWith >= 0) {
+            item->setToolTip(tr("Always equal to %1.").arg(ciphers::name(all[i].redundantWith)));
+        }
+    }
+
+    QHBoxLayout *buttons = new QHBoxLayout;
+
+    QPushButton *selectAll = new QPushButton(tr("All"), this);
+    QPushButton *selectNone = new QPushButton(tr("None"), this);
+
+    buttons->addWidget(selectAll);
+    buttons->addWidget(selectNone);
+    buttons->addStretch(1);
+    layout->addLayout(buttons);
+
+    QDialogButtonBox *box = new QDialogButtonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    layout->addWidget(box);
+
+    connect(selectAll, &QPushButton::clicked, this, &cipherDialog::onSelectAll);
+    connect(selectNone, &QPushButton::clicked, this, &cipherDialog::onSelectNone);
+    connect(box, &QDialogButtonBox::accepted, this, &cipherDialog::onAccepted);
+    connect(box, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(box, &QDialogButtonBox::rejected, this, &QDialog::reject);
 }
 
-cipherDialog::~cipherDialog()
+cipherDialog::~cipherDialog() = default;
+
+void cipherDialog::onSelectAll()
 {
-    delete ui;
+    for (int i = 0; i < _list->count(); ++i) {
+        QListWidgetItem *item = _list->item(i);
+
+        if (item->flags() & Qt::ItemIsEnabled)
+            item->setCheckState(Qt::Checked);
+    }
 }
 
-void cipherDialog::on_buttonBox_accepted()
+void cipherDialog::onSelectNone()
 {
-    if (ui->single_reduction->isChecked()) single_r_on = true;
-    else single_r_on = false;
-    if (ui->francis_bacon->isChecked()) francis_on = true;
-    else francis_on = false;
-    if (ui->satanic->isChecked()) satanic_on = true;
-    else satanic_on = false;
-    if (ui->jewish->isChecked()) jewish_on = true;
-    else jewish_on = false;
-    if (ui->sumerian->isChecked()) sumerian_on = true;
-    else sumerian_on = false;
-    if (ui->rev_sumerian->isChecked()) rev_sumerian_on = true;
-    else rev_sumerian_on = false;
-    if (ui->fibonacci->isChecked()) fibonacci_on = true;
-    else fibonacci_on = false;
-    //if (primeson) qDebug() << "Prime is on";
+    for (int i = 0; i < _list->count(); ++i) {
+        QListWidgetItem *item = _list->item(i);
+
+        if (item->flags() & Qt::ItemIsEnabled)
+            item->setCheckState(Qt::Unchecked);
+    }
+}
+
+void cipherDialog::onAccepted()
+{
+    QVector<int> chosen;
+
+    for (int i = 0; i < _list->count(); ++i) {
+        const QListWidgetItem *item = _list->item(i);
+
+        if (item->checkState() == Qt::Checked)
+            chosen.append(item->data(Qt::UserRole).toInt());
+    }
+
+    // Writes the settings and updates the seven legacy globals the rest of the
+    // program reads, so printword and findword need to know nothing about this.
+    cipherselection::setEnabled(chosen);
 }

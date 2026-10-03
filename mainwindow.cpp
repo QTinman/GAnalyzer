@@ -5,6 +5,7 @@
 #include "ui_rankdialog.h"
 #include "analyzerdialog.h"
 #include "cipherdialog.h"
+#include "cipherselection.h"
 #include "rankdialog.h"
 #include "calwindow.h"
 #include "httpdownload.h"
@@ -180,6 +181,11 @@ MainWindow::MainWindow(QWidget *parent)
             //int curr_locale = QLocale().language();
             //qDebug() << " String ="<< curr_locale << endl;
     if (DW=="true") welcome();
+
+    // Reads the stored cipher selection and sets the seven legacy globals from
+    // it. Anything with no stored setting stays off, so a user who has never
+    // opened the cipher dialog sees the same columns as before this change.
+    cipherselection::load();
 
     // The Analyzer menu is added here rather than to mainwindow.ui because the
     // generated ui_*.h headers are committed in this repository: a .ui change

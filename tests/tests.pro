@@ -16,12 +16,14 @@ SOURCES += \
     tst_ciphers.cpp \
     tst_analyzer.cpp \
     tst_ai.cpp \
+    tst_selection.cpp \
     ../ciphers.cpp \
     ../ciphervalue.cpp \
     ../analyzer.cpp \
     ../decodegraph.cpp \
     ../historyindex.cpp \
     ../aiprovider.cpp \
+    ../cipherselection.cpp \
     ../tools.cpp
 
 HEADERS += \
@@ -31,4 +33,5 @@ HEADERS += \
     ../decodegraph.h \
     ../historyindex.h \
     ../aiprovider.h \
+    ../cipherselection.h \
     ../tools.h

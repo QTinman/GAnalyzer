@@ -18,11 +18,12 @@
 int runCipherTests(int argc, char **argv);
 int runAnalyzerTests(int argc, char **argv);
 int runAiTests(int argc, char **argv);
+int runSelectionTests(int argc, char **argv);
 
 int main(int argc, char **argv)
 {
     const QString first = argc > 1 ? QString::fromLocal8Bit(argv[1]).toLower() : QString();
-    const bool named = (first == "ciphers" || first == "analyzer" || first == "ai");
+    const bool named = (first == "ciphers" || first == "analyzer" || first == "ai" || first == "selection");
 
     // Hide the suite name from QTest, which would take it for a test to run.
     int testArgc = argc;
@@ -49,6 +50,9 @@ int main(int argc, char **argv)
 
     if (!named || first == "ai")
         failures += runAiTests(testArgc, testArgv);
+
+    if (!named || first == "selection")
+        failures += runSelectionTests(testArgc, testArgv);
 
     return failures;
 }

@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QDate>
 #include <QFile>
+#include "ciphers.h"
+#include "cipherselection.h"
 #include <QtCore>
 #include <QMessageBox>
 
@@ -3066,6 +3068,43 @@ QString printword(string line, char save, bool header, bool simpleprint)
           logline << "Fibonacci : &emsp;" << charnumeric(0,0,line,6) << formattext(std::to_string(ns11),1,1) << " Prime? "<< isprime(ns11, primes) << " Triangular? " << istriangular(ns11) << "<br>";
           buffer += tobuffer(QString::fromStdString(logline.str()));
           savelog(logline.str());
+      }
+
+      // The ciphers added after this function was written, each printed only if
+      // the user has turned it on. Appended after the eleven above rather than
+      // woven among them, so every line that existed before this change still
+      // reads exactly as it did.
+      //
+      // No letter-by-letter breakdown: charnumeric() builds "1+2+3=" from
+      // getwordnumericvalue(), which does not know these ciphers. Printing the
+      // total alone is honest; printing a breakdown from the wrong engine would
+      // not be.
+      {
+          const QVector<int> extra = cipherselection::enabled();
+
+          for (int i = 0; i < extra.size(); ++i) {
+              const int id = extra.at(i);
+
+              if (id <= ciphers::Fibonacci)
+                  continue;   // handled above, in its original wording
+
+              const ciphers::CipherValue value = ciphers::valueOf(QString::fromStdString(line), id);
+
+              logline.str("");
+              logline << ciphers::name(id).toStdString() << " : &emsp;"
+                      << formattext(value.toString().toStdString(), 1, 1);
+
+              // A Multiplicative value can be twenty-nine digits, which is past
+              // what the prime and triangular tests here can take.
+              if (!value.isBig()) {
+                  const int v = static_cast<int>(value.toLongLong());
+                  logline << " Prime? " << isprime(v, primes) << " Triangular? " << istriangular(v);
+              }
+
+              logline << "<br>";
+              buffer += tobuffer(QString::fromStdString(logline.str()));
+              savelog(logline.str());
+          }
       }
     }
     if (simpleprint) {

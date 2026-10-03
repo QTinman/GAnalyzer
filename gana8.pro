@@ -26,6 +26,7 @@ SOURCES += \
     ciphers.cpp \
     ciphervalue.cpp \
     cipherdialog.cpp \
+    cipherselection.cpp \
     decodegraph.cpp \
     historyindex.cpp \
     gcalc.cpp \
@@ -44,6 +45,7 @@ HEADERS += \
     ciphers.h \
     ciphervalue.h \
     cipherdialog.h \
+    cipherselection.h \
     decodegraph.h \
     historyindex.h \
     gcalc.h \
@@ -55,7 +57,6 @@ HEADERS += \
 
 FORMS += \
     calwindow.ui \
-    cipherdialog.ui \
     headdialog.ui \
     httpdownload.ui \
     inputdialog.ui \

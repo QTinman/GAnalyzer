@@ -3,9 +3,20 @@
 
 #include <QDialog>
 
-namespace Ui {
-class cipherDialog;
-}
+class QListWidget;
+
+// The cipher chooser.
+//
+// It used to be seven checkboxes placed by hand in cipherdialog.ui, each read
+// and written by name in the constructor and the accept handler. The list is
+// now built from the cipher table, so a cipher added there appears here with no
+// further work - which is the point, the table having gone from eleven entries
+// to thirty.
+//
+// No .ui file any more. This repository commits the generated ui_*.h headers,
+// so a form change needs a matching regeneration by hand and compiles against
+// stale widget names when that is forgotten; it has already cost one commit.
+// A dialog assembled in code cannot fall out of step with itself.
 
 class cipherDialog : public QDialog
 {
@@ -13,13 +24,15 @@ class cipherDialog : public QDialog
 
 public:
     explicit cipherDialog(QWidget *parent = nullptr);
-    ~cipherDialog();
+    ~cipherDialog() override;
 
 private slots:
-    void on_buttonBox_accepted();
+    void onAccepted();
+    void onSelectAll();
+    void onSelectNone();
 
 private:
-    Ui::cipherDialog *ui;
+    QListWidget *_list;
 };
 
 #endif // CIPHERDIALOG_H
