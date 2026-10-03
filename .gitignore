@@ -1,0 +1,15 @@
+# Qt Creator session state - per-machine, not source
+*.pro.user
+*.pro.user.*
+
+# Build output
+build-*/
+*.o
+*.obj
+moc_*
+qrc_*.cpp
+ui_*.h.autosave
+Makefile*
+.qmake.stash
+debug/
+release/

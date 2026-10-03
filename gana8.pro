@@ -20,6 +20,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     calwindow.cpp \
+    ciphers.cpp \
     cipherdialog.cpp \
     gcalc.cpp \
     headdialog.cpp \
@@ -31,6 +32,7 @@ SOURCES += \
 
 HEADERS += \
     calwindow.h \
+    ciphers.h \
     cipherdialog.h \
     gcalc.h \
     headdialog.h \
