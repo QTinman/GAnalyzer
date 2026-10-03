@@ -26,6 +26,17 @@ SOURCES += \
     ../cipherselection.cpp \
     ../tools.cpp
 
+# tools.cpp includes mainwindow.h, which reaches httpdownload.h, which includes
+# ui_httpdownload.h. Naming the form here makes uic generate that header for
+# this project too.
+#
+# It used to be satisfied by a copy of the generated header committed in the
+# source tree - which is what made the whole repository build against stale uic
+# output, and is the thing being removed. This is the honest version of the same
+# dependency: declared, and regenerated from the form every build.
+FORMS += \
+    ../httpdownload.ui
+
 HEADERS += \
     ../ciphers.h \
     ../ciphervalue.h \

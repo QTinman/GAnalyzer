@@ -8,7 +8,12 @@ build-*/
 *.obj
 moc_*
 qrc_*.cpp
-ui_*.h.autosave
+
+# uic regenerates these from the .ui files on every build. Committing them
+# meant the source-directory copy won every #include, so the program built
+# the committed header and not the form - six of them were still uic 6.0.0
+# output against a 6.5.2 toolchain, and one no longer matched its own .ui.
+ui_*.h
 Makefile*
 .qmake.stash
 debug/
