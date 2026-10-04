@@ -534,12 +534,21 @@ void readsolarfile(int dd, int mm, int year)
     }
    }
     myfile.close();
-    for (counter=0;counter<250;counter++) {
-    ss << "Counter " << counter << " - Weeks " << zerodays[0][counter] << " and days " << zerodays[1][counter] << " - months " << zerodays[2][counter] << " and days " << zerodays[3][counter]
-          << " - date " << zerodays[4][counter] << "/" << zerodays[5][counter] << "/" << zerodays[6][counter] << " - type " << zerodays[7][counter] << "\n";
-   savetotemp(ss.str());
-   ss.str("");
-}
+
+    // A debug dump of the whole eclipse table used to be written here: 250
+    // lines, each handed to savetotemp(), which opens temp.txt twice - once to
+    // read, once to append - and closes it again. Five hundred file operations
+    // every time the eclipse file is read.
+    //
+    // runanalyze() reads it once per phrase, and date2history() calls
+    // runanalyze() for every line of the history file, so comparing a date
+    // against two hundred stored phrases meant a hundred thousand opens of
+    // temp.txt. It was the whole of the two and a half seconds this function
+    // took, and the reason Date-to-history and Compare-phrase-to-history never
+    // finished.
+    //
+    // Nothing reads temp.txt. The only other call to savetotemp() in the
+    // program is commented out.
 }
 
 

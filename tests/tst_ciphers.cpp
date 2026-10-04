@@ -1,5 +1,6 @@
 #include <QtTest>
 #include <QElapsedTimer>
+#include <QDate>
 #include <string>
 
 #include "ciphers.h"
@@ -483,6 +484,57 @@ private slots:
 
         // Unchanged for everything the older ciphers actually produce.
         QVERIFY(!numberproperties("153").isEmpty());
+    }
+
+    // ---- the date helpers that could not finish --------------------------
+
+    void aMonthSpanEndingInJanuaryTerminates()
+    {
+        // monthbeetween() counted months until i reached m_to - 1. i only ever
+        // holds 1..12, so when m_to was 1 the target was 0 and the loop ran
+        // until the program was killed. The month before January is December.
+        //
+        // If this ever regresses it hangs rather than fails, which is the
+        // nature of the fault; a hanging test is still a signal.
+        ::year = 2026; ::mm = 10; ::dd = 4;
+        ::y2 = 2024; ::m2 = 1; ::d2 = 15;
+
+        const int months = monthbeetween(10, 1, 400, 'M');
+
+        QVERIFY(months >= 0);
+        QVERIFY2(months < 12 * 200, "the backstop should never be the thing that stops it here");
+    }
+
+    void noSecondDateMeansNoSpanRatherThanTheYearZero()
+    {
+        // d2, m2 and y2 are zero until somebody enters a second date, which is
+        // the program's usual state. a_seconddate() used to run anyway on
+        // QDate(0,0,0) - an invalid date - leaving monthbeetween() counting
+        // months from the year zero, several hundred times per phrase, for
+        // every line of the history file.
+        ::year = 2026; ::mm = 10; ::dd = 4;
+        ::y2 = 0; ::m2 = 0; ::d2 = 0;
+
+        QCOMPARE(a_seconddate("day_d_s"), 0);
+        QCOMPARE(a_seconddate("week_s_d"), 0);
+        QCOMPARE(a_seconddate("month_full"), 0);
+    }
+
+    void aSecondDateThatIsSetStillMeasuresSomething()
+    {
+        // The guard above must not have switched the feature off.
+        ::year = 2026; ::mm = 10; ::dd = 4;
+        ::y2 = 2026; ::m2 = 10; ::d2 = 4;
+
+        QVERIFY(QDate(::y2, ::m2, ::d2).isValid());
+
+        // Same date both ways: a span of nothing, but measured rather than
+        // refused - and it returns, which is the point.
+        const int days = a_seconddate("day_d_s");
+
+        QVERIFY(days >= 0);
+
+        ::y2 = 0; ::m2 = 0; ::d2 = 0;   // leave the globals as they were found
     }
 
     void theTriangularTestCostsItsOwnArgument()

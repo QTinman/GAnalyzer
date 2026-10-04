@@ -1022,6 +1022,23 @@ int monthbeetween(int m_from, int m_to, int daysbeetween,QChar type)
         }
         i=m_from;
         if (m_to > 12) m_to -=12;
+
+        // The month before m_to. Written as m_to-1 this could never be reached
+        // when m_to was 1, because i only ever holds 1..12 and never 0 - the
+        // loop then ran until the program was killed. The month before January
+        // is December, of the year before.
+        int target = (m_to - 1 < 1) ? 12 : m_to - 1;
+
+        // A backstop on top of the fix. Two hundred years of months is far
+        // past any span this program measures, and it bounds the other way
+        // this loop can misbehave: when no second date has been entered, y2 is
+        // zero, so year1 starts at zero and this counts through two thousand
+        // years of months - on every one of the several hundred calls made for
+        // each phrase. A wrong number can be noticed and corrected. A frozen
+        // window cannot.
+        int guard = 0;
+        const int guardLimit = 12 * 200;
+
         do {
             nm2 -= numberOfDays(i-1,year1);
             nm1++;
@@ -1030,7 +1047,7 @@ int monthbeetween(int m_from, int m_to, int daysbeetween,QChar type)
                 year1++;
                 i=1;
             }
-        } while (year1 < year2 || i != m_to-1);
+        } while ((year1 < year2 || i != target) && ++guard < guardLimit);
     }
     if (type == 'M') returnnum = nm1;
     else returnnum = nm2;
@@ -1042,6 +1059,19 @@ int a_seconddate(QString output_type)
 {
     int wd1, wd2, nm1=0,nm2=0,returnnum=0;
     double w1;
+
+    // There is no second date until somebody enters one: d2, m2 and y2 are all
+    // zero until then, and that is the usual state of the program.
+    //
+    // Without this the whole function ran anyway, on QDate(0, 0, 0) - an
+    // invalid date, whose daysTo() means nothing and which left monthbeetween()
+    // counting months from the year zero. phrasetodate() asks for nine of these
+    // per cipher, eleven ciphers per phrase, for every line of the history
+    // file; Date-to-history and Compare-phrase-to-history could not finish.
+    //
+    // Zero is the honest answer: no span was measured, so nothing matches.
+    if (!QDate(y2, m2, d2).isValid())
+        return 0;
 
     if (output_type.indexOf("d_s") != -1) {
         if (QDate(year,mm,dd) > QDate(year,m2,d2))
