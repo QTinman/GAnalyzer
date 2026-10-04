@@ -630,10 +630,23 @@ Analysis Client::interpret(const analyzer::Result &result) const
                              ? QStringLiteral("The request failed.")
                              : reply.error;
 
-        // Some providers put a useful message in the body of a failed request.
-        QString fromBody;
-        if (!reply.body.isEmpty() && parseReply(_settings.provider, reply.body, &fromBody, nullptr))
-            analysis.error += " " + fromBody;
+        // The provider's own explanation, which is in the body of the failed
+        // request and is the only part worth reading.
+        //
+        // This asked parseReply() for the model's text and appended it only on
+        // success - but a failure body has no text in it, so parseReply()
+        // always returned false here and the explanation was dropped every
+        // time. A bad model name arrived as a bare "status code 404" when the
+        // server had plainly said which model it could not find.
+        if (!reply.body.isEmpty()) {
+            QString fromBody;
+            QString providerSaid;
+
+            if (parseReply(_settings.provider, reply.body, &fromBody, &providerSaid))
+                analysis.error += " " + fromBody;
+            else if (!providerSaid.isEmpty())
+                analysis.error += " - " + providerSaid;
+        }
 
         return analysis;
     }

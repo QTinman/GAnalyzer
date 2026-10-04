@@ -15,6 +15,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QScreen>
 #include <QSpinBox>
 #include <QSplitter>
 #include <QTableWidget>
@@ -46,9 +47,18 @@ AnalyzerDialog::AnalyzerDialog(QWidget *parent)
     : QDialog(parent), _hasResult(false)
 {
     setWindowTitle(tr("Analyze against history"));
-    resize(1000, 700);
 
     buildUi();
+
+    // Fit the screen rather than assume one. The first version opened at a
+    // fixed 1000x700, which is taller than a 768-high laptop display once the
+    // task bar and the title bar are taken off - the AI panel at the bottom,
+    // including the button, was off the end of it with no way to reach it.
+    const QRect available = screen() != nullptr ? screen()->availableGeometry()
+                                                : QRect(0, 0, 1000, 700);
+
+    resize(qMin(1000, static_cast<int>(available.width() * 0.9)),
+           qMin(700, static_cast<int>(available.height() * 0.9)));
     loadCiphers();
     loadHistory();
     loadAiSettings();
@@ -59,6 +69,9 @@ AnalyzerDialog::~AnalyzerDialog() = default;
 void AnalyzerDialog::buildUi()
 {
     QVBoxLayout *outer = new QVBoxLayout(this);
+
+    outer->setContentsMargins(6, 6, 6, 6);
+    outer->setSpacing(4);
 
     // ---- phrase ---------------------------------------------------------
 
@@ -88,6 +101,7 @@ void AnalyzerDialog::buildUi()
     QVBoxLayout *cipherLayout = new QVBoxLayout(cipherBox);
 
     _ciphers = new QListWidget(cipherBox);
+    _ciphers->setMinimumHeight(90);
     _ciphers->setSelectionMode(QAbstractItemView::NoSelection);
     cipherLayout->addWidget(_ciphers);
 
@@ -171,7 +185,7 @@ void AnalyzerDialog::buildUi()
     _scoring->setStyleSheet("color: gray;");
 
     _detail = new QTextBrowser(this);
-    _detail->setMinimumHeight(120);
+    _detail->setMinimumHeight(70);
 
     QSplitter *split = new QSplitter(Qt::Vertical, this);
     split->addWidget(_results);
@@ -187,10 +201,20 @@ void AnalyzerDialog::buildUi()
     _aiBox = new QGroupBox(tr("AI interpretation (optional)"), this);
     QVBoxLayout *aiLayout = new QVBoxLayout(_aiBox);
 
-    QFormLayout *aiForm = new QFormLayout;
+    aiLayout->setContentsMargins(6, 4, 6, 4);
+    aiLayout->setSpacing(4);
 
+    // The tick box stays visible; the seven settings rows below it fold away
+    // when it is off, which is most of the time. Expanded they are half the
+    // height of the window, for something the user configures once.
     _aiEnabled = new QCheckBox(tr("Enabled"), _aiBox);
-    aiForm->addRow(_aiEnabled);
+    aiLayout->addWidget(_aiEnabled);
+
+    _aiSettings = new QWidget(_aiBox);
+    QFormLayout *aiForm = new QFormLayout(_aiSettings);
+
+    aiForm->setContentsMargins(0, 0, 0, 0);
+    aiForm->setSpacing(4);
 
     _aiProvider = new QComboBox(_aiBox);
     _aiProvider->addItem(ai::Settings::providerName(ai::Provider::Anthropic));
@@ -225,7 +249,7 @@ void AnalyzerDialog::buildUi()
                                     "Your history file is never sent."));
     aiForm->addRow(tr("Candidates sent at most:"), _aiMaxCandidates);
 
-    aiLayout->addLayout(aiForm);
+    aiLayout->addWidget(_aiSettings);
 
     QHBoxLayout *aiButtons = new QHBoxLayout;
     _aiAnalyze = new QPushButton(tr("Analyze with AI"), _aiBox);
@@ -239,7 +263,7 @@ void AnalyzerDialog::buildUi()
     aiLayout->addLayout(aiButtons);
 
     _aiOutput = new QTextBrowser(_aiBox);
-    _aiOutput->setMinimumHeight(100);
+    _aiOutput->setMinimumHeight(60);
     aiLayout->addWidget(_aiOutput);
 
     outer->addWidget(_aiBox);
@@ -531,6 +555,11 @@ void AnalyzerDialog::onAiSettingsChanged()
     const ai::Settings settings = aiSettingsFromUi();
 
     settings.save();
+
+    // Seven rows of configuration are worth the space only while they are
+    // being used.
+    if (_aiSettings != nullptr)
+        _aiSettings->setVisible(_aiEnabled->isChecked());
 
     QString reason;
     const ai::Status usable = ai::usability(settings, &reason);

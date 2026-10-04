@@ -84,6 +84,10 @@ private:
 
     QGroupBox      *_aiBox;
     QCheckBox      *_aiEnabled;
+
+    // The settings rows, folded away unless AI is switched on.
+    QWidget        *_aiSettings;
+
     QComboBox      *_aiProvider;
     QLineEdit      *_aiModel;
     QLineEdit      *_aiEndpoint;
