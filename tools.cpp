@@ -230,7 +230,26 @@ bool is_number(const std::string& s)
 
 QString numberproperties(QString number)
 {
-    int str2num = 100000+number.toInt();
+    // Every number printed by formattext() passes through here for its tooltip,
+    // which is fine while the numbers are small and is not fine otherwise.
+    //
+    // istriangular() counts from one up to its argument, so the tooltip costs
+    // the number itself in iterations; and numberseat('P', n) reads primes[n-1]
+    // with no bounds check against a vector holding the 78,498 primes below a
+    // million. Until the newer ciphers arrived nothing reached either limit -
+    // the largest any older cipher produces for a long phrase is tens of
+    // thousands. Word Square is the square of the word total and passes both
+    // without difficulty, which read off the end of that vector and crashed the
+    // program before its window appeared.
+    //
+    // So: describe the numbers these helpers can describe, and say nothing
+    // about the rest. A missing tooltip is not worth a crash.
+    const int value = number.toInt();   // 0 when the text will not fit an int
+
+    if (value <= 0 || value > 100000)
+        return QString();
+
+    int str2num = 100000+value;
     QString retstr = "";
     if (str2num > 100000) {
     retstr = "Prime:"+QString::fromStdString(isprime(str2num,primes))+"<br>";
@@ -263,7 +282,12 @@ QString numberseat(char type, int number) {
             int sum = (number * (number + 1)) / 2;
             result = QString::number(sum);
         }
-        if (type == 'P' && number > 0) result = QString::number(primes[number-1]);
+        // Bounds-checked. primes holds the 78,498 primes below a million, and
+        // this read off the end of it for anything larger - an out-of-range
+        // index into a std::vector is not an error, it is whatever happened to
+        // be in memory, or a crash.
+        if (type == 'P' && number > 0 && number <= static_cast<int>(primes.size()))
+            result = QString::number(primes[number-1]);
 
     return result;
 }

@@ -454,6 +454,37 @@ private slots:
         QVERIFY(large.find("<") == std::string::npos);
     }
 
+    void anOutOfRangePrimeSeatIsRefusedRatherThanRead()
+    {
+        // numberseat('P', n) used to return primes[n-1] unchecked. The vector
+        // holds the primes below a million - 78,498 of them in the running
+        // program, and none at all here - so anything larger read off the end
+        // of it. That is not an error at runtime; it is whatever was in memory,
+        // or a crash. A Word Square passes 78,498 easily.
+        QCOMPARE(numberseat('P', 1000000000), QString());
+        // ::primes, because this class has a test slot of the same name.
+        QCOMPARE(numberseat('P', static_cast<int>(::primes.size()) + 1), QString());
+        QCOMPARE(numberseat('P', 0), QString());
+        QCOMPARE(numberseat('P', -5), QString());
+    }
+
+    void numberPropertiesDeclineNumbersTheyCannotDescribe()
+    {
+        // The tooltip on every printed number. It counts up to the number for
+        // the triangular test and indexes the prime table by it, so above the
+        // range those two can answer it now says nothing at all - which is what
+        // stopped a selected Word Square from hanging or crashing the program
+        // before its window appeared.
+        QVERIFY(numberproperties("100000000").isEmpty());
+        QVERIFY(numberproperties("122500").isEmpty());       // a real Word Square
+        QVERIFY(numberproperties("785255008443631165440000000").isEmpty());
+        QVERIFY(numberproperties("0").isEmpty());
+        QVERIFY(numberproperties("-3").isEmpty());
+
+        // Unchanged for everything the older ciphers actually produce.
+        QVERIFY(!numberproperties("153").isEmpty());
+    }
+
     void theTriangularTestCostsItsOwnArgument()
     {
         // It counts from 1 to the value. At a few thousand that is free; at the
