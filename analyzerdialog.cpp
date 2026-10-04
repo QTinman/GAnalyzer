@@ -236,11 +236,27 @@ void AnalyzerDialog::buildUi()
                                   "The key itself is never stored by this program."));
     aiForm->addRow(tr("API key environment variable:"), _aiKeyVariable);
 
+    // Off unless asked for. The current Anthropic models refuse a request that
+    // carries a temperature at all - "`temperature` is deprecated for this
+    // model" - so sending one by default made the feature fail for a setting
+    // nobody had chosen.
+    QHBoxLayout *temperatureRow = new QHBoxLayout;
+
+    _aiSendTemperature = new QCheckBox(tr("Send"), _aiBox);
+    _aiSendTemperature->setToolTip(tr("Some models reject a request that sets a temperature.\n"
+                                      "Leave this off to let the model use its own."));
+
     _aiTemperature = new QDoubleSpinBox(_aiBox);
     _aiTemperature->setRange(0.0, 2.0);
     _aiTemperature->setSingleStep(0.1);
     _aiTemperature->setValue(0.2);
-    aiForm->addRow(tr("Temperature:"), _aiTemperature);
+    _aiTemperature->setEnabled(false);
+
+    temperatureRow->addWidget(_aiSendTemperature);
+    temperatureRow->addWidget(_aiTemperature);
+    temperatureRow->addStretch(1);
+
+    aiForm->addRow(tr("Temperature:"), temperatureRow);
 
     _aiMaxCandidates = new QSpinBox(_aiBox);
     _aiMaxCandidates->setRange(1, 500);
@@ -279,6 +295,8 @@ void AnalyzerDialog::buildUi()
     connect(_aiAnalyze, &QPushButton::clicked, this, &AnalyzerDialog::onAnalyzeWithAi);
 
     connect(_aiEnabled, &QCheckBox::toggled, this, &AnalyzerDialog::onAiSettingsChanged);
+    connect(_aiSendTemperature, &QCheckBox::toggled, _aiTemperature, &QDoubleSpinBox::setEnabled);
+    connect(_aiSendTemperature, &QCheckBox::toggled, this, &AnalyzerDialog::onAiSettingsChanged);
     connect(_aiProvider, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &AnalyzerDialog::onAiSettingsChanged);
     connect(_aiModel, &QLineEdit::editingFinished, this, &AnalyzerDialog::onAiSettingsChanged);
@@ -344,7 +362,9 @@ void AnalyzerDialog::loadAiSettings()
     _aiModel->setText(s.model);
     _aiEndpoint->setText(s.endpoint);
     _aiKeyVariable->setText(s.apiKeyVariable);
+    _aiSendTemperature->setChecked(s.sendTemperature);
     _aiTemperature->setValue(s.temperature);
+    _aiTemperature->setEnabled(s.sendTemperature);
     _aiMaxCandidates->setValue(s.maximumCandidates);
 
     onAiSettingsChanged();
@@ -381,6 +401,7 @@ ai::Settings AnalyzerDialog::aiSettingsFromUi() const
     s.model = _aiModel->text().trimmed();
     s.endpoint = _aiEndpoint->text().trimmed();
     s.apiKeyVariable = _aiKeyVariable->text().trimmed();
+    s.sendTemperature = _aiSendTemperature->isChecked();
     s.temperature = _aiTemperature->value();
     s.maximumCandidates = _aiMaxCandidates->value();
 

@@ -92,6 +92,7 @@ private:
     QLineEdit      *_aiModel;
     QLineEdit      *_aiEndpoint;
     QLineEdit      *_aiKeyVariable;
+    QCheckBox      *_aiSendTemperature;
     QDoubleSpinBox *_aiTemperature;
     QSpinBox       *_aiMaxCandidates;
     QPushButton    *_aiAnalyze;

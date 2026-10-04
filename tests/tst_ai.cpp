@@ -319,6 +319,54 @@ private slots:
         qunsetenv("GANALYZER_TEST_SECRET");
     }
 
+    void noTemperatureIsSentUnlessItIsAskedFor()
+    {
+        // The current Anthropic models refuse a request that carries one at
+        // all - "`temperature` is deprecated for this model" - so sending it by
+        // default broke the feature for a setting nobody had chosen.
+        ai::Settings quiet = workingSettings();
+        quiet.sendTemperature = false;
+
+        const QByteArray without = ai::Client(quiet).requestBody(sampleAnalysis());
+        QVERIFY2(!without.contains("temperature"), without.left(200).constData());
+
+        ai::Settings loud = workingSettings();
+        loud.sendTemperature = true;
+        loud.temperature = 0.7;
+
+        // Ollama nests it under options; Anthropic and OpenAI take it at the
+        // top level. Checked for each, because "not sent" looked identical to
+        // "this provider ignores it" until one of them did.
+
+        const ai::Provider providers[] = { ai::Provider::Anthropic, ai::Provider::OpenAI,
+                                           ai::Provider::OpenAICompatible, ai::Provider::Ollama };
+
+        for (size_t i = 0; i < sizeof(providers) / sizeof(providers[0]); ++i) {
+            ai::Settings off = loud;
+            off.provider = providers[i];
+            off.model = "a-model";
+            off.sendTemperature = false;
+
+            ai::Settings on = off;
+            on.sendTemperature = true;
+
+            const QByteArray quiet = ai::Client(off).requestBody(sampleAnalysis());
+            const QByteArray noisy = ai::Client(on).requestBody(sampleAnalysis());
+
+            QVERIFY2(!quiet.contains("temperature"),
+                     qPrintable(ai::Settings::providerName(providers[i])));
+            QVERIFY2(noisy.contains("temperature"),
+                     qPrintable(ai::Settings::providerName(providers[i])));
+            QVERIFY2(noisy.contains("0.7"),
+                     qPrintable(ai::Settings::providerName(providers[i])));
+        }
+    }
+
+    void sendingTemperatureIsOffByDefault()
+    {
+        QVERIFY(!ai::Settings().sendTemperature);
+    }
+
     void valuesTravelAsStringsSoNothingIsRounded()
     {
         const analyzer::Result result = sampleAnalysis();

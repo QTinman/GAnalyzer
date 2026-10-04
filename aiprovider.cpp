@@ -21,6 +21,7 @@ namespace ai {
 Settings::Settings()
     : enabled(false),
       provider(Provider::Anthropic),
+      sendTemperature(false),
       temperature(0.2),
       maximumCandidates(25),
       timeoutMs(30000)
@@ -174,6 +175,10 @@ Settings Settings::fromSettings()
     s.model = store.value("model", QString()).toString();
     s.endpoint = store.value("endpoint", QString()).toString();
     s.apiKeyVariable = store.value("apiKeyVariable", QString()).toString();
+    // Absent means off: an upgraded installation has a stored temperature of
+    // 0.2 because that was this program's default, not because anybody chose
+    // it, so the flag rather than the number decides.
+    s.sendTemperature = store.value("sendTemperature", false).toBool();
     s.temperature = store.value("temperature", 0.2).toDouble();
     s.maximumCandidates = store.value("maximumCandidates", 25).toInt();
     s.timeoutMs = store.value("timeoutMs", 30000).toInt();
@@ -201,6 +206,7 @@ void Settings::save() const
     // the registry, in every backup of it, and in any screenshot of this page.
     store.setValue("apiKeyVariable", apiKeyVariable);
 
+    store.setValue("sendTemperature", sendTemperature);
     store.setValue("temperature", temperature);
     store.setValue("maximumCandidates", maximumCandidates);
     store.setValue("timeoutMs", timeoutMs);
@@ -477,7 +483,9 @@ QByteArray Client::requestBody(const analyzer::Result &result) const
 
         body.insert("model", model);
         body.insert("max_tokens", 1024);
-        body.insert("temperature", _settings.temperature);
+        if (_settings.sendTemperature)
+            body.insert("temperature", _settings.temperature);
+
         body.insert("system", systemPrompt());
         body.insert("messages", messages);
     } else if (_settings.provider == Provider::Ollama) {
@@ -495,6 +503,16 @@ QByteArray Client::requestBody(const analyzer::Result &result) const
 
         body.insert("model", model);
         body.insert("stream", false);
+
+        // Ollama takes it nested, under options. It was not sent here at all
+        // before, which made the dialog's temperature control a no-op for this
+        // provider - worse than refusing it, because nothing said so.
+        if (_settings.sendTemperature) {
+            QJsonObject options;
+            options.insert("temperature", _settings.temperature);
+            body.insert("options", options);
+        }
+
         body.insert("messages", messages);
     } else {
         QJsonArray messages;
@@ -510,7 +528,10 @@ QByteArray Client::requestBody(const analyzer::Result &result) const
         messages.append(user);
 
         body.insert("model", model);
-        body.insert("temperature", _settings.temperature);
+
+        if (_settings.sendTemperature)
+            body.insert("temperature", _settings.temperature);
+
         body.insert("messages", messages);
     }
 

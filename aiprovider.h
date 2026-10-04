@@ -44,6 +44,14 @@ struct Settings
     // email.
     QString  apiKeyVariable;
 
+    // Whether to send a temperature at all, and what it is.
+    //
+    // Off by default, and deliberately a separate flag rather than a magic
+    // value of the number. Sending it unconditionally was wrong: the current
+    // Anthropic models refuse the request outright with "`temperature` is
+    // deprecated for this model", so a setting nobody had chosen - it was
+    // simply the default of 0.2 - stopped the feature working at all.
+    bool     sendTemperature;
     double   temperature;
 
     // How many candidates may be described to the model. Everything beyond this
