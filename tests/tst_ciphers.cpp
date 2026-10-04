@@ -1,4 +1,5 @@
 #include <QtTest>
+#include <QElapsedTimer>
 #include <string>
 
 #include "ciphers.h"
@@ -427,6 +428,52 @@ private slots:
         QCOMPARE(ciphers::value(mixed, ciphers::EnglishOrdinal), 6LL);     // a+b+c
         QCOMPARE(ciphers::value(mixed, ciphers::GreekIsopsephy), 6LL);     // alpha+beta+gamma
         QCOMPARE(ciphers::value(mixed, ciphers::Abjad), 0LL);
+    }
+
+    // ---- the domain of the two legacy helpers ----------------------------
+    //
+    // Recorded here because getting this wrong hung the program with no window
+    // and no way out but killing it. Anything printing a cipher value next to
+    // "Prime?" or "Triangular?" has to respect both of these.
+
+    void primeAndTriangularTestsTreatLargeValuesAsAFlagNotANumber()
+    {
+        // Both functions read >= 100000 as "return the answer unformatted" and
+        // subtract 100000 before working it out. Six is triangular; so, as far
+        // as these are concerned, is 100006 - and it answers about 6.
+        const std::string small = istriangular(6);
+        const std::string large = istriangular(100006);
+
+        QVERIFY(small.find("Yes") != std::string::npos);
+        QVERIFY(large.find("Yes") != std::string::npos);
+
+        // The large one is the same answer with the formatting stripped, which
+        // is only sensible if the caller meant it as a flag. A caller passing a
+        // genuine value of 100006 gets told about 6.
+        QVERIFY2(small != large, "the two differ only by formatting");
+        QVERIFY(large.find("<") == std::string::npos);
+    }
+
+    void theTriangularTestCostsItsOwnArgument()
+    {
+        // It counts from 1 to the value. At a few thousand that is free; at the
+        // size Multiplicative and Word Square reach it is not, and that is why
+        // printword() asks only below 100000.
+        QElapsedTimer timer;
+
+        timer.start();
+        istriangular(99999);
+        const qint64 big = timer.elapsed();
+
+        timer.restart();
+        istriangular(99);
+        const qint64 small = timer.elapsed();
+
+        QVERIFY2(big >= small, "larger arguments cannot be cheaper");
+
+        // Not a performance assertion - a statement that the cost follows the
+        // value, so nobody hands it a billion.
+        QVERIFY(istriangular(1) != istriangular(99999));
     }
 
     // ---- nothing that already existed has moved --------------------------

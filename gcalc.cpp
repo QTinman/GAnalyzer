@@ -3094,9 +3094,28 @@ QString printword(string line, char save, bool header, bool simpleprint)
               logline << ciphers::name(id).toStdString() << " : &emsp;"
                       << formattext(value.toString().toStdString(), 1, 1);
 
-              // A Multiplicative value can be twenty-nine digits, which is past
-              // what the prime and triangular tests here can take.
-              if (!value.isBig()) {
+              // The prime and triangular tests have a domain, and it is narrow.
+              //
+              // istriangular() counts up to its argument one at a time, so it
+              // costs the value itself in iterations; and both functions read
+              // anything >= 100000 as a "do not format" flag and subtract that
+              // much before answering. Every cipher they were written for tops
+              // out in the low thousands.
+              //
+              // Word Square and Multiplicative do not. Multiplicative passes
+              // sixty-four bits in twelve letters, and the first version of this
+              // loop cast that to int - truncating to something near two billion
+              // and sending istriangular() off to count to it, twice per
+              // iteration with a square root each time. The window never
+              // appeared and the only way out was to kill the program.
+              //
+              // So: ask only where the answer means something, and say nothing
+              // rather than something wrong.
+              const bool testable = !value.isBig()
+                                 && value.toLongLong() >= 0
+                                 && value.toLongLong() < 100000;
+
+              if (testable) {
                   const int v = static_cast<int>(value.toLongLong());
                   logline << " Prime? " << isprime(v, primes) << " Triangular? " << istriangular(v);
               }
